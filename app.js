@@ -1802,20 +1802,15 @@ if (AUTO_PULL_ON_START){
     });
 
     // reset demo
-    $("#btnResetDemo")?.addEventListener("click", ()=>{
-      if (!confirm("데모 데이터를 초기화할까요? (localStorage 초기화)")) return;
-      localStorage.removeItem(LS_KEY);
-      localStorage.removeItem(LS_USER);
-      toast("데모 데이터 초기화");
-      render();
-    });
-     $("#btnSheetBackup")?.addEventListener("click", async ()=>{
-  if (!SHEETS_ENABLED){
-    toast("ℹ️ 시트 백업이 비활성화되어 있습니다. (설정에서 SHEETS_ENABLED=true 필요)");
-    return;
-  }
+$("#btnResetDemo")?.addEventListener("click", ()=>{
+  if (!confirm("데모 데이터를 초기화할까요? (localStorage 초기화)")) return;
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_USER);
+  toast("데모 데이터 초기화");
+  render();
+});
 
-    // sheets backup (수동 Push)
+// sheets backup (수동 Push)
 $("#btnSheetBackup")?.addEventListener("click", async ()=>{
   if (!SHEETS_ENABLED){
     toast("ℹ️ 시트 백업이 비활성화되어 있습니다. (SHEETS_ENABLED=true 필요)");
@@ -1848,7 +1843,7 @@ $("#btnSheetRestore")?.addEventListener("click", async ()=>{
       return;
     }
     const db = sheetsPayloadToDB(data);
-    localStorage.setItem(LS_KEY, JSON.stringify(db)); // restore도 직접 저장(자동 push 방지)
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
     toast("✅ 시트에서 복원 완료");
     render();
   }catch(err){
@@ -1858,6 +1853,7 @@ $("#btnSheetRestore")?.addEventListener("click", async ()=>{
     isPulling = false;
   }
 });
+
 
 
     // route
