@@ -687,3 +687,17 @@ a{ color:inherit; text-decoration:none; }
   .dash{ grid-template-columns: 1fr; }
 }
 
+
+/* ✅ 로고 이미지 */
+.logoImg{
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+  border-radius: 10px;
+}
+
+/* (참고) 기존에 logoBox/logoTri 쓰던 흔적이 있으면 안 보이게 */
+.logoBox, .logoTri{ display:none !important; }
+
+
