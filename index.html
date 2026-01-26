@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CON COST Groupware (MVP)</title>
-  <link rel="stylesheet" href="styles.css?v=3" />
+  <link rel="stylesheet" href="styles.css?v=4" />
 </head>
 <body>
   <header class="topbar">
@@ -21,6 +21,9 @@
         <span class="pill-label">사용자</span>
         <select id="userSelect" class="select small"></select>
       </div>
+
+      <button id="btnSheetBackup" class="btn ghost">시트로 백업</button>
+      <button id="btnSheetRestore" class="btn ghost">시트에서 복원</button>
       <button id="btnResetDemo" class="btn ghost">데모 데이터 초기화</button>
     </div>
   </header>
@@ -29,30 +32,28 @@
     <aside class="sidebar">
       <div class="nav-title">메뉴</div>
       <nav class="nav">
-        <a class="nav-item" href="#/log" data-route="/log">
+        <a class="nav-item" data-route="/log" href="#/log">
           <span class="dot"></span><span>업무일지</span>
         </a>
 
-        <a class="nav-item" href="#/approve" data-route="/approve">
+        <a class="nav-item" data-route="/approve" href="#/approve">
           <span class="dot"></span><span>승인</span>
           <span id="badgePending" class="badge">0</span>
         </a>
 
-        <a class="nav-item" href="#/dashboard" data-route="/dashboard">
+        <a class="nav-item" data-route="/dashboard" href="#/dashboard">
           <span class="dot"></span><span>프로젝트 소요시간</span>
         </a>
 
-        <a class="nav-item" href="#/calendar" data-route="/calendar">
+        <a class="nav-item" data-route="/calendar" href="#/calendar">
           <span class="dot"></span><span>종합 공정관리</span>
         </a>
 
-        <!-- ✅ 체크리스트: 작성/관리(Leader+) -->
-        <a class="nav-item" href="#/checklist" data-route="/checklist">
+        <!-- ✅ 체크리스트 탭 분리 -->
+        <a class="nav-item" data-route="/checklist" href="#/checklist">
           <span class="dot"></span><span>프로젝트별 체크리스트</span>
         </a>
-
-        <!-- ✅ 체크리스트: 목록 전용(Staff도 볼 수 있음) -->
-        <a class="nav-item" href="#/checklist-view" data-route="/checklist-view">
+        <a class="nav-item" data-route="/checklist-view" href="#/checklist-view">
           <span class="dot"></span><span>체크리스트 목록</span>
         </a>
       </nav>
@@ -61,8 +62,8 @@
         <div class="hint">
           <div class="hint-title">정적(GitHub) MVP 안내</div>
           <div class="hint-body">
-            데이터는 브라우저 <b>localStorage</b>에 저장됩니다.<br/>
-            (다중 사용자/권한 보안은 서버 도입 시 확장)
+            기본 저장소는 <b>브라우저 localStorage</b> 입니다.<br/>
+            상단의 <b>시트 백업/복원</b>으로 Google Sheets를 저장소처럼 사용할 수 있습니다.
           </div>
         </div>
       </div>
@@ -89,10 +90,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=3"></script>
-  <script>
-  window.SHEETS_API_URL = https://script.google.com/macros/s/AKfycbxCcvFtAT5_wmE6-F_QwCseWA8s0q4PM16jaI_1DFNtQkA_7Rqm2_kgswM9zxzjyf27/exec;
-</script>
-
+  <script src="app.js?v=4"></script>
 </body>
 </html>
