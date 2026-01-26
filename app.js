@@ -1,6 +1,7 @@
-/* app.js (MVP v0.2) - CON COST Groupware
-   - index.html(제공된 UI Shell)과 1:1 호환
-   - GitHub Pages 정적 + localStorage 저장
+/* app.js (CON COST Groupware MVP v0.2)
+   - index.html: topbar/sidebar/#view 라우팅 구조 사용
+   - routes: #/log, #/approve, #/dashboard, #/calendar, #/checklist
+   - 저장소: localStorage(정적 GitHub MVP)
 */
 
 (() => {
@@ -14,52 +15,56 @@
     "마감": ["내화(뿜칠/도장)","단열/방수","창호","내부마감(석고/도장/타일 등)","외부마감","MEP 협업(간섭/수정)","마감검토/펀치(하자/잔손)"]
   };
 
-  const LS_KEY  = "CONCOST_GW_DB_V02";
-  const LS_USER = "CONCOST_GW_USER_V02";
-
   /***********************
-   * Utils
+   * localStorage DB
    ***********************/
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const LS_KEY = "CONCOST_GROUPWARE_DB_V02";
+  const LS_USER = "CONCOST_GROUPWARE_USER_V02";
 
-  function safeJSONParse(s, fb){ try { return JSON.parse(s); } catch { return fb; } }
-  function saveDB(db){ localStorage.setItem(LS_KEY, JSON.stringify(db)); }
-  function loadDB(){ return safeJSONParse(localStorage.getItem(LS_KEY), null); }
-
-  function pad(n){ return String(n).padStart(2,"0"); }
-  function todayISO(){
-    const d=new Date();
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  }
-  function nowISO(){
-    const d=new Date();
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-  function clamp(n,a,b){ return Math.min(b, Math.max(a,n)); }
+  function safeParse(s, fallback){ try { return JSON.parse(s); } catch { return fallback; } }
 
   function uuid(){
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
-      const r = (crypto?.getRandomValues?.(new Uint8Array(1))?.[0] ?? Math.random()*256) & 15;
-      const v = c==="x" ? r : (r & 0x3) | 0x8;
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (crypto?.getRandomValues?.(new Uint8Array(1))?.[0] ?? Math.random() * 256) & 15;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   }
 
-  /***********************
-   * DB Seed
-   ***********************/
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function nowISO(){
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+  }
+
+  function todayISO(){
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  }
+
+  function clamp(n,a,b){ return Math.min(b, Math.max(a,n)); }
+
+  function loadDB(){
+    const raw = localStorage.getItem(LS_KEY);
+    return raw ? safeParse(raw, null) : null;
+  }
+
+  function saveDB(db){
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
+  }
+
   function seedDB(){
     const db = {
       meta: { version:"0.2", createdAt: nowISO() },
       users: [
         { userId:"u_staff_1", name:"작업자A", role:"staff" },
         { userId:"u_staff_2", name:"작업자B", role:"staff" },
-        { userId:"u_leader",  name:"팀장",   role:"leader" },
-        { userId:"u_manager", name:"실장",   role:"manager" },
+        { userId:"u_leader",  name:"팀장", role:"leader" },
+        { userId:"u_manager", name:"실장", role:"manager" },
         { userId:"u_director",name:"본부장", role:"director" },
-        { userId:"u_vp",      name:"상무",   role:"vp" },
-        { userId:"u_ceo",     name:"대표",   role:"ceo" }
+        { userId:"u_vp",      name:"상무", role:"vp" },
+        { userId:"u_ceo",     name:"대표", role:"ceo" }
       ],
       projects: [
         { projectId:"p_a123", projectCode:"Project A-123", projectName:"프로젝트 A", startDate:"2024-05-01", endDate:"" },
@@ -70,260 +75,227 @@
       checklists: []
     };
     saveDB(db);
-    localStorage.setItem(LS_USER, db.users[0].userId);
     return db;
   }
 
   function ensureDB(){
-    const db = loadDB();
-    return db ? db : seedDB();
+    return loadDB() || seedDB();
   }
 
-  function getCurrentUserId(db){
-    const id = localStorage.getItem(LS_USER);
-    if (id && db.users.some(u=>u.userId===id)) return id;
-    localStorage.setItem(LS_USER, db.users[0]?.userId || "");
-    return db.users[0]?.userId || "";
+  function getUserId(db){
+    const saved = localStorage.getItem(LS_USER);
+    if (saved && db.users.some(u => u.userId === saved)) return saved;
+    localStorage.setItem(LS_USER, db.users[0].userId);
+    return db.users[0].userId;
   }
 
-  function setCurrentUserId(id){ localStorage.setItem(LS_USER, id); }
+  function setUserId(uid){ localStorage.setItem(LS_USER, uid); }
 
-  function getUser(db,id){ return db.users.find(u=>u.userId===id) || null; }
-  function getProject(db,id){ return db.projects.find(p=>p.projectId===id) || null; }
+  function userById(db, id){ return db.users.find(u => u.userId === id) || null; }
+  function projById(db, id){ return db.projects.find(p => p.projectId === id) || null; }
 
   /***********************
-   * Toast / Modal
+   * DOM helpers
    ***********************/
-  const toastEl = () => $("#toast");
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
-  function toast(msg){
-    const t = toastEl();
-    if (!t) return alert(msg);
-    t.textContent = msg;
-    t.style.display = "block";
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(()=>{ t.style.display="none"; }, 2200);
-  }
-
-  const modal = {
-    backdrop: () => $("#modalBackdrop"),
-    title: () => $("#modalTitle"),
-    body: () => $("#modalBody"),
-    foot: () => $("#modalFoot"),
-    closeBtn: () => $("#modalClose"),
-    open(title, bodyNode, footNode){
-      modal.title().textContent = title;
-      modal.body().innerHTML = "";
-      modal.foot().innerHTML = "";
-      if (bodyNode) modal.body().appendChild(bodyNode);
-      if (footNode) modal.foot().appendChild(footNode);
-      modal.backdrop().classList.remove("hidden");
-    },
-    close(){
-      modal.backdrop().classList.add("hidden");
-    }
-  };
-
-  function wireModal(){
-    $("#modalClose")?.addEventListener("click", modal.close);
-    $("#modalBackdrop")?.addEventListener("click", (e)=>{
-      if (e.target?.id === "modalBackdrop") modal.close();
-    });
-    window.addEventListener("keydown", (e)=>{
-      if (e.key==="Escape") modal.close();
-    });
-  }
-
-  /***********************
-   * Router
-   ***********************/
-  const ROUTES = {
-    "/log": { title: "업무일지", render: renderLog },
-    "/approve": { title: "승인", render: renderApprove },
-    "/dashboard": { title: "프로젝트별 인원대비 소요시간", render: renderDashboard },
-    "/calendar": { title: "종합 공정관리 & 체크리스트", render: renderCalendar }
-  };
-
-  function getRoutePath(){
-    const h = location.hash || "#/log";
-    const path = h.split("?")[0].replace("#","");
-    return ROUTES[path] ? path : "/log";
-  }
-
-  function setActiveNav(){
-    const path = getRoutePath();
-    $$(".nav-item").forEach(a=>{
-      const href = a.getAttribute("href") || "";
-      a.classList.toggle("active", href === `#${path}`);
-    });
-  }
-
-  function setRouteTitle(){
-    const path = getRoutePath();
-    $("#routeTitle").textContent = ROUTES[path].title;
-  }
-
-  /***********************
-   * Common UI Builders
-   ***********************/
-  function el(tag, attrs={}, ...kids){
+  function el(tag, attrs={}, ...children){
     const n = document.createElement(tag);
     for (const [k,v] of Object.entries(attrs||{})){
-      if (k==="class") n.className = v;
-      else if (k==="html") n.innerHTML = v;
-      else if (k.startsWith("on") && typeof v==="function") n.addEventListener(k.slice(2), v);
-      else if (v != null) n.setAttribute(k, String(v));
+      if (k === "class") n.className = v;
+      else if (k === "html") n.innerHTML = v;
+      else if (k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2), v);
+      else if (v != null && v !== false) n.setAttribute(k, String(v));
     }
-    for (const c of kids){
-      if (c==null) continue;
-      if (typeof c==="string") n.appendChild(document.createTextNode(c));
+    for (const c of children){
+      if (c == null) continue;
+      if (typeof c === "string") n.appendChild(document.createTextNode(c));
       else n.appendChild(c);
     }
     return n;
   }
 
-  function buildSelect(options, value, onChange, cls="select"){
-    const s = el("select", { class: cls, onchange: (e)=>onChange?.(e.target.value) });
-    options.forEach(o=>{
-      const opt = el("option", { value: o.value }, o.label);
-      if (o.value === value) opt.selected = true;
-      s.appendChild(opt);
+  function toast(msg){
+    const host = $("#toast");
+    const t = el("div", { class:"t" }, msg);
+    host.appendChild(t);
+    setTimeout(() => t.remove(), 2300);
+  }
+
+  function modalOpen(title, bodyNode, footNode){
+    $("#modalTitle").textContent = title || "";
+    const body = $("#modalBody");
+    const foot = $("#modalFoot");
+    body.innerHTML = "";
+    foot.innerHTML = "";
+    if (bodyNode) body.appendChild(bodyNode);
+    if (footNode) foot.appendChild(footNode);
+    $("#modalBackdrop").classList.remove("hidden");
+  }
+
+  function modalClose(){
+    $("#modalBackdrop").classList.add("hidden");
+  }
+
+  async function fileToDataURL(file){
+    return new Promise((resolve,reject)=>{
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result||""));
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
     });
+  }
+
+  /***********************
+   * Route
+   ***********************/
+  const ROUTE_META = {
+    "/log":       "업무일지",
+    "/approve":   "승인",
+    "/dashboard": "프로젝트별 인원대비 소요시간",
+    "/calendar":  "종합 공정관리",
+    "/checklist": "프로젝트별 체크리스트"
+  };
+
+  function getRoute(){
+    const h = location.hash || "#/log";
+    const m = h.match(/^#(\/[^?]*)/);
+    return m ? m[1] : "/log";
+  }
+
+  function setActiveNav(){
+    const route = getRoute();
+    $$(".nav-item").forEach(a => {
+      const href = a.getAttribute("href") || "";
+      const is = href === `#${route}`;
+      a.classList.toggle("active", is);
+    });
+    $("#routeTitle").textContent = ROUTE_META[route] || "";
+  }
+
+  /***********************
+   * Aggregations
+   ***********************/
+  function pendingCount(db){
+    return db.logs.filter(l => l.status === "submitted").length;
+  }
+
+  function computeProjectDays(db, projectId){
+    // 승인된 업무일지에서 (projectId + date) unique count
+    const set = new Set();
+    for (const l of db.logs){
+      if (l.status !== "approved") continue;
+      if (l.projectId !== projectId) continue;
+      set.add(`${l.projectId}__${l.date}`);
+    }
+    return set.size;
+  }
+
+  function computeProjectHeadcount(db, projectId){
+    const set = new Set();
+    for (const l of db.logs){
+      if (l.status !== "approved") continue;
+      if (l.projectId !== projectId) continue;
+      set.add(l.writerId);
+    }
+    return set.size;
+  }
+
+  function computeProjectBreakdown(db, projectId){
+    const map = {};
+    for (const l of db.logs){
+      if (l.status !== "approved") continue;
+      if (l.projectId !== projectId) continue;
+      const k = `${l.category}||${l.process}`;
+      map[k] = (map[k]||0) + (Number(l.ratio)||0);
+    }
+    return map;
+  }
+
+  /***********************
+   * Controls Builders
+   ***********************/
+  function buildProjectSelect(db, value, onChange){
+    const s = el("select", { class:"select", onchange:(e)=>onChange?.(e.target.value) });
+    for (const p of db.projects){
+      const o = el("option", { value:p.projectId }, `${p.projectCode} (${p.projectName})`);
+      if (p.projectId === value) o.selected = true;
+      s.appendChild(o);
+    }
     return s;
   }
 
-  function buildProjectSelect(db, value, onChange){
-    return buildSelect(
-      db.projects.map(p=>({ value:p.projectId, label:`${p.projectCode} (${p.projectName})` })),
-      value,
-      onChange
+  function buildCategorySelect(value, onChange){
+    const s = el("select", { class:"select", onchange:(e)=>onChange?.(e.target.value) },
+      el("option", { value:"구조" }, "구조"),
+      el("option", { value:"마감" }, "마감")
     );
+    s.value = value;
+    return s;
   }
 
-  /***********************
-   * Badge Pending Count
-   ***********************/
-  function updatePendingBadge(db){
-    const pending = db.logs.filter(l=>l.status==="submitted").length;
-    const b = $("#badgePending");
-    if (b) b.textContent = String(pending);
-  }
-
-  /***********************
-   * Header User Select / Reset
-   ***********************/
-  function wireHeader(db){
-    const userSelect = $("#userSelect");
-    if (userSelect){
-      userSelect.innerHTML = "";
-      const current = getCurrentUserId(db);
-      db.users.forEach(u=>{
-        const opt = el("option", { value:u.userId }, `${u.name} (${u.role})`);
-        if (u.userId === current) opt.selected = true;
-        userSelect.appendChild(opt);
-      });
-      userSelect.onchange = (e)=>{
-        setCurrentUserId(e.target.value);
-        toast("사용자 전환 완료");
-        render();
-      };
+  function buildProcessSelect(category, value, onChange){
+    const s = el("select", { class:"select", onchange:(e)=>onChange?.(e.target.value) });
+    for (const p of PROCESS_MASTER[category]){
+      const o = el("option", { value:p }, p);
+      if (p === value) o.selected = true;
+      s.appendChild(o);
     }
-
-    $("#btnResetDemo")?.addEventListener("click", ()=>{
-      if (!confirm("데모 데이터를 초기화할까요? (localStorage 삭제)")) return;
-      localStorage.removeItem(LS_KEY);
-      localStorage.removeItem(LS_USER);
-      toast("초기화 완료");
-      location.hash = "#/log";
-      render();
-    });
-  }
-
-  /***********************
-   * KPI logic (승인 시 +1 = 일수 카운트)
-   ***********************/
-  function projectDays(db, projectId){
-    const set = new Set();
-    db.logs.forEach(l=>{
-      if (l.status!=="approved") return;
-      if (l.projectId!==projectId) return;
-      set.add(`${l.projectId}__${l.date}`);
-    });
-    return set.size;
-  }
-  function projectHeadcount(db, projectId){
-    const set = new Set();
-    db.logs.forEach(l=>{
-      if (l.status!=="approved") return;
-      if (l.projectId!==projectId) return;
-      set.add(l.writerId);
-    });
-    return set.size;
-  }
-  function projectBreakdown(db, projectId){
-    const map = {};
-    db.logs.forEach(l=>{
-      if (l.status!=="approved") return;
-      if (l.projectId!==projectId) return;
-      const k = `${l.category}||${l.process}`;
-      map[k] = (map[k]||0) + (Number(l.ratio)||0);
-    });
-    return map;
+    return s;
   }
 
   /***********************
    * View: 업무일지 (#/log)
    ***********************/
-  function renderLog(db, view){
-    const currentUserId = getCurrentUserId(db);
-    const firstProject = db.projects[0]?.projectId || "";
-    let entries = [ makeEmptyEntry(firstProject) ];
+  function viewLog(db){
+    const view = $("#view");
+    view.innerHTML = "";
+
+    const uid = getUserId(db);
 
     const dateInput = el("input", { class:"input", type:"date", value: todayISO() });
+
+    let entries = [ makeEmptyEntry(db) ];
 
     const entriesHost = el("div", { class:"stack" });
 
     function rerenderEntries(){
       entriesHost.innerHTML = "";
-      entries.forEach((ent, idx)=>{
-        entriesHost.appendChild(renderEntry(ent, idx));
+      entries.forEach((ent, idx) => {
+        entriesHost.appendChild(renderEntryCard(ent, idx));
       });
     }
 
-    function renderEntry(ent, idx){
-      const projSel = buildProjectSelect(db, ent.projectId, (v)=>{ ent.projectId=v; });
-
-      const catSel = buildSelect(
-        Object.keys(PROCESS_MASTER).map(k=>({value:k, label:k})),
-        ent.category,
-        (v)=>{ ent.category=v; ent.process=PROCESS_MASTER[v][0]; rerenderEntries(); }
-      );
-
-      const procSel = buildSelect(
-        PROCESS_MASTER[ent.category].map(p=>({value:p, label:p})),
-        ent.process,
-        (v)=>{ ent.process=v; }
-      );
+    function renderEntryCard(ent, idx){
+      const projectSel = buildProjectSelect(db, ent.projectId, v => ent.projectId = v);
 
       const ratio = el("input", {
         class:"input",
-        type:"number",
-        min:"0", max:"100", step:"1",
-        value: String(ent.ratio),
-        oninput:(e)=>{ ent.ratio = clamp(Number(e.target.value||0),0,100); }
+        type:"number", min:"0", max:"100", step:"1",
+        value: ent.ratio,
+        oninput:(e)=> ent.ratio = clamp(Number(e.target.value||0),0,100)
       });
+
+      const catSel = buildCategorySelect(ent.category, (v)=>{
+        ent.category = v;
+        ent.process = PROCESS_MASTER[v][0];
+        rerenderEntries();
+      });
+
+      const procSel = buildProcessSelect(ent.category, ent.process, (v)=> ent.process = v);
 
       const content = el("textarea", {
         class:"textarea",
         rows:"4",
         placeholder:"작업내용을 입력하세요",
-        oninput:(e)=>{ ent.content = e.target.value; }
+        oninput:(e)=> ent.content = e.target.value
       }, ent.content || "");
 
       const delBtn = el("button", {
         class:"btn ghost",
         onclick:()=>{
-          if (entries.length<=1) return toast("최소 1개 항목은 필요합니다.");
+          if (entries.length <= 1) return toast("최소 1개 항목은 필요합니다.");
           entries.splice(idx,1);
           rerenderEntries();
         }
@@ -335,332 +307,378 @@
           delBtn
         ),
         el("div", { class:"grid2" },
-          el("div", {}, el("div",{class:"label"},"프로젝트 코드"), projSel),
-          el("div", {}, el("div",{class:"label"},"업무비율(%)"), ratio)
+          el("div", {},
+            el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "프로젝트 코드"),
+            projectSel
+          ),
+          el("div", {},
+            el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "업무비율(%)"),
+            ratio
+          )
         ),
         el("div", { class:"grid2" },
-          el("div", {}, el("div",{class:"label"},"대분류"), catSel),
-          el("div", {}, el("div",{class:"label"},"세부 공정"), procSel)
+          el("div", {},
+            el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "대분류"),
+            catSel
+          ),
+          el("div", {},
+            el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "세부 공정"),
+            procSel
+          )
         ),
-        el("div", {}, el("div",{class:"label"},"작업내용"), content)
+        el("div", {},
+          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "작업내용"),
+          content
+        )
       );
     }
 
-    const addBtn = el("button", { class:"btn", onclick:()=>{
-      entries.push(makeEmptyEntry(firstProject));
-      rerenderEntries();
-    }}, "+ 업무 항목 추가");
+    const addBtn = el("button", { class:"btn", onclick:()=>{ entries.push(makeEmptyEntry(db)); rerenderEntries(); } }, "+ 업무 항목 추가");
 
-    const submitBtn = el("button", { class:"btn primary", onclick:()=>{
-      const date = dateInput.value;
-      if (!date) return toast("날짜를 선택해 주세요.");
+    const submitBtn = el("button", {
+      class:"btn primary",
+      onclick:()=>{
+        const date = dateInput.value;
+        if (!date) return toast("날짜를 선택해 주세요.");
 
-      for (let i=0;i<entries.length;i++){
-        const e = entries[i];
-        if (!e.projectId) return toast(`업무 항목 ${i+1}: 프로젝트 선택 필요`);
-        if (!e.content || !e.content.trim()) return toast(`업무 항목 ${i+1}: 작업내용 입력 필요`);
-        if (!(e.ratio>=0 && e.ratio<=100)) return toast(`업무 항목 ${i+1}: 비율(0~100)`);
+        for (let i=0;i<entries.length;i++){
+          const e = entries[i];
+          if (!e.projectId) return toast(`업무 항목 ${i+1}: 프로젝트를 선택해 주세요.`);
+          if (!e.content || !e.content.trim()) return toast(`업무 항목 ${i+1}: 작업내용을 입력해 주세요.`);
+          if (!(e.ratio>=0 && e.ratio<=100)) return toast(`업무 항목 ${i+1}: 업무비율(0~100)을 입력해 주세요.`);
+        }
+
+        const submittedAt = nowISO();
+        for (const e of entries){
+          db.logs.push({
+            logId: uuid(),
+            date,
+            projectId: e.projectId,
+            category: e.category,
+            process: e.process,
+            content: e.content.trim(),
+            ratio: Number(e.ratio)||0,
+            writerId: uid,
+            status: "submitted",
+            submittedAt,
+            approvedBy: "",
+            approvedAt: "",
+            rejectedBy: "",
+            rejectedAt: "",
+            rejectReason: ""
+          });
+        }
+
+        saveDB(db);
+        toast("업무일지 제출 완료 (승인 대기)");
+        location.hash = "#/approve";
+        render();
       }
-
-      const submittedAt = nowISO();
-      entries.forEach(e=>{
-        db.logs.push({
-          logId: uuid(),
-          date,
-          projectId: e.projectId,
-          category: e.category,
-          process: e.process,
-          content: e.content.trim(),
-          ratio: Number(e.ratio)||0,
-          writerId: currentUserId,
-          status: "submitted",
-          submittedAt,
-          approvedBy: "",
-          approvedAt: ""
-        });
-      });
-
-      saveDB(db);
-      toast("제출 완료 (승인 대기)");
-      location.hash = "#/approve";
-      render();
-    }}, "제출하기");
+    }, "제출하기");
 
     view.appendChild(
-      el("div",{class:"stack"},
-        el("div",{class:"card"},
-          el("div",{class:"card-head"},
-            el("div",{class:"card-title"},"날짜 선택"),
+      el("div", { class:"stack" },
+        el("div", { class:"card" },
+          el("div", { class:"card-head" },
+            el("div", { class:"card-title" }, "업무일지 작성"),
             addBtn
           ),
-          dateInput
-        ),
-        entriesHost,
-        el("div",{class:"footerbar"}, submitBtn)
+          el("div", { class:"row", style:"margin-bottom:10px;" },
+            el("div", { class:"muted", style:"font-weight:1000;font-size:12px;" }, "날짜 선택"),
+            dateInput
+          ),
+          entriesHost,
+          el("div", { class:"row", style:"justify-content:flex-end;margin-top:12px;" }, submitBtn)
+        )
       )
     );
 
     rerenderEntries();
   }
 
-  function makeEmptyEntry(firstProjectId){
-    return {
-      projectId: firstProjectId,
-      category: "구조",
-      process: PROCESS_MASTER["구조"][0],
-      ratio: 50,
-      content: ""
-    };
+  function makeEmptyEntry(db){
+    const p = db.projects[0]?.projectId || "";
+    return { projectId: p, category:"구조", process: PROCESS_MASTER["구조"][0], ratio:50, content:"" };
   }
 
   /***********************
    * View: 승인 (#/approve)
    ***********************/
-  function renderApprove(db, view){
-    const currentUserId = getCurrentUserId(db);
-    const pending = db.logs.filter(l=>l.status==="submitted");
+  function viewApprove(db){
+    const view = $("#view");
+    view.innerHTML = "";
 
-    // 작성자+날짜로 그룹 묶기
+    const uid = getUserId(db);
+    const submitted = db.logs.filter(l => l.status === "submitted")
+      .sort((a,b)=>(a.submittedAt||"").localeCompare(b.submittedAt||""));
+
+    // 작성자+날짜로 묶기
     const groups = new Map();
-    pending.forEach(l=>{
-      const key = `${l.writerId}__${l.date}`;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key).push(l);
-    });
-
-    if (groups.size===0){
-      view.appendChild(el("div",{class:"empty"}, "승인 대기 업무일지가 없습니다."));
-      return;
+    for (const l of submitted){
+      const k = `${l.writerId}__${l.date}`;
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k).push(l);
     }
 
-    const host = el("div",{class:"stack"});
-    for (const [key, arr] of groups.entries()){
-      const writer = getUser(db, arr[0].writerId);
+    const cards = [];
+
+    for (const arr of groups.values()){
+      const writer = userById(db, arr[0].writerId);
       const date = arr[0].date;
 
-      const list = el("div",{class:"list"},
+      const list = el("div", { class:"list" },
         ...arr.map(l=>{
-          const p = getProject(db, l.projectId);
-          return el("div",{class:"item"},
-            el("div",{class:"item-title"}, `${p?.projectName||"프로젝트"} · ${l.category}/${l.process} · ${l.ratio}%`),
-            el("div",{class:"item-sub"}, l.content)
+          const p = projById(db, l.projectId);
+          return el("div", { class:"list-item" },
+            el("div", { class:"list-title" }, `${p?.projectName||"프로젝트"} · ${l.category}/${l.process} · ${l.ratio}%`),
+            el("div", { class:"list-sub" }, l.content)
           );
         })
       );
 
-      const approveBtn = el("button",{class:"btn primary", onclick:()=>{
-        if (!confirm(`${writer?.name||"작성자"} · ${date} (${arr.length}건) 승인할까요?`)) return;
-        const t = nowISO();
-        arr.forEach(l=>{
-          l.status="approved";
-          l.approvedBy=currentUserId;
-          l.approvedAt=t;
-        });
-        saveDB(db);
-        toast("승인 완료");
-        render();
-      }},"승인");
+      const approveBtn = el("button", {
+        class:"btn primary",
+        onclick:()=>{
+          if (!confirm(`${writer?.name||"작성자"} · ${date} (${arr.length}건) 승인할까요?`)) return;
+          const t = nowISO();
+          for (const l of arr){
+            l.status = "approved";
+            l.approvedBy = uid;
+            l.approvedAt = t;
+          }
+          saveDB(db);
+          toast("승인 완료");
+          render();
+        }
+      }, "승인");
 
-      const rejectBtn = el("button",{class:"btn ghost", onclick:()=>{
-        const reason = prompt("반려 사유(선택)") || "";
-        if (!confirm(`${writer?.name||"작성자"} · ${date} (${arr.length}건) 반려할까요?`)) return;
-        // MVP: 반려는 삭제 대신 rejected로 남길 수도 있지만, 단순화를 위해 상태만 변경
-        const t = nowISO();
-        arr.forEach(l=>{
-          l.status="rejected";
-          l.rejectedBy=currentUserId;
-          l.rejectedAt=t;
-          l.rejectReason=reason;
-        });
-        saveDB(db);
-        toast("반려 완료");
-        render();
-      }},"반려");
+      const rejectBtn = el("button", {
+        class:"btn ghost",
+        onclick:()=>{
+          const reason = prompt("반려 사유(선택)") || "";
+          if (!confirm(`${writer?.name||"작성자"} · ${date} (${arr.length}건) 반려할까요?`)) return;
+          const t = nowISO();
+          for (const l of arr){
+            l.status = "rejected";
+            l.rejectedBy = uid;
+            l.rejectedAt = t;
+            l.rejectReason = reason;
+          }
+          saveDB(db);
+          toast("반려 처리 완료");
+          render();
+        }
+      }, "반려");
 
-      host.appendChild(
-        el("div",{class:"card"},
-          el("div",{class:"card-head"},
-            el("div",{class:"card-title"}, `승인 대기: ${writer?.name||"작성자"} · ${date} (${arr.length}건)`),
-            el("div",{class:"row"}, rejectBtn, approveBtn)
+      cards.push(
+        el("div", { class:"card" },
+          el("div", { class:"card-head" },
+            el("div", { class:"card-title" }, `승인 대기: ${writer?.name||"작성자"} · ${date} (${arr.length}건)`),
+            el("div", { class:"row" }, rejectBtn, approveBtn)
           ),
           list
         )
       );
     }
-    view.appendChild(host);
+
+    view.appendChild(
+      el("div", { class:"stack" },
+        cards.length ? el("div", { class:"stack" }, ...cards)
+          : el("div", { class:"empty" }, "승인 대기 업무일지가 없습니다.")
+      )
+    );
   }
 
   /***********************
    * View: 대시보드 (#/dashboard)
    ***********************/
-  function renderDashboard(db, view){
+  function viewDashboard(db){
+    const view = $("#view");
+    view.innerHTML = "";
+
     const stats = db.projects.map(p=>{
-      const days = projectDays(db, p.projectId);
-      const head = projectHeadcount(db, p.projectId);
+      const days = computeProjectDays(db, p.projectId);
+      const headcount = computeProjectHeadcount(db, p.projectId);
       const approvedEntries = db.logs.filter(l=>l.status==="approved" && l.projectId===p.projectId).length;
-      return { ...p, days, head, approvedEntries };
+      return { ...p, days, headcount, approvedEntries };
     });
 
-    if (stats.length===0){
-      view.appendChild(el("div",{class:"empty"}, "프로젝트가 없습니다."));
-      return;
-    }
+    let selected = stats[0]?.projectId || "";
 
-    // 선택 프로젝트(쿼리 p=)
-    const h = location.hash;
-    const q = h.includes("?") ? h.split("?")[1] : "";
-    const params = new URLSearchParams(q);
-    let selectedId = params.get("p") || stats[0].projectId;
-    if (!db.projects.some(p=>p.projectId===selectedId)) selectedId = stats[0].projectId;
-
-    const left = el("div",{class:"card"},
-      el("div",{class:"card-head"},
-        el("div",{class:"card-title"},"Project List")
-      ),
-      el("div",{class:"list"},
+    const left = el("div", { class:"card" },
+      el("div", { class:"card-head" }, el("div", { class:"card-title" }, "Project List")),
+      stats.length ? el("div", { class:"list" },
         ...stats.map(s=>{
+          const btn = el("button", { class:"btn ghost", style:"width:100%;text-align:left;border-radius:14px;border:1px solid rgba(0,0,0,.06);background:#fff;" }, "");
+          btn.addEventListener("click", ()=>{ selected = s.projectId; render(); });
+
           const maxDays = Math.max(1, ...stats.map(x=>x.days));
           const pct = clamp((s.days/maxDays)*100,0,100);
-          const btn = el("button",{class:`list-btn ${s.projectId===selectedId?"active":""}`, onclick:()=>{
-            location.hash = `#/dashboard?p=${s.projectId}`;
-            render();
-          }},
-            el("div",{class:"item-title"}, `${s.projectName} (${s.days}일 / ${s.head}명)`),
-            el("div",{class:"bar"}, el("div",{style:`width:${pct.toFixed(0)}%`}) ),
-            el("div",{class:"item-sub"}, `승인 건수: ${s.approvedEntries}`)
-          );
+
+          btn.innerHTML = `
+            <div style="font-weight:1100;font-size:13px;">${s.projectName} (${s.days}일 / ${s.headcount}명)</div>
+            <div class="bar"><div style="width:${pct.toFixed(0)}%"></div></div>
+            <div style="margin-top:6px;color:var(--muted);font-size:12px;">승인 건수: ${s.approvedEntries}</div>
+          `;
+
           return btn;
         })
-      )
+      ) : el("div", { class:"empty" }, "프로젝트가 없습니다.")
     );
 
-    const selP = getProject(db, selectedId);
-    const days = projectDays(db, selectedId);
-    const head = projectHeadcount(db, selectedId);
+    // URL 선택 지원
+    const h = location.hash;
+    const m = h.match(/[?&]p=([^&]+)/);
+    if (m && db.projects.some(p=>p.projectId===decodeURIComponent(m[1]))) selected = decodeURIComponent(m[1]);
 
-    const breakdown = projectBreakdown(db, selectedId);
+    const sp = projById(db, selected) || db.projects[0];
+    const days = computeProjectDays(db, sp?.projectId);
+    const hc = computeProjectHeadcount(db, sp?.projectId);
+
+    const breakdown = computeProjectBreakdown(db, sp?.projectId);
     const rows = Object.entries(breakdown).sort((a,b)=>b[1]-a[1]).slice(0, 12);
 
-    const rightTop = el("div",{class:"card"},
-      el("div",{class:"card-head"},
-        el("div",{class:"card-title"}, `Selected Project: ${selP?.projectName||"-"}`),
-        el("div",{class:"badge"}, selP?.projectCode || "")
+    const rightTop = el("div", { class:"card" },
+      el("div", { class:"card-head" },
+        el("div", { class:"card-title" }, `Selected Project: ${sp?.projectName||"-"}`),
+        el("div", { class:"badge" }, sp?.projectCode || "")
       ),
-      rows.length ? el("div",{class:"list"},
+      rows.length ? el("div", { class:"list" },
         ...rows.map(([k,v])=>{
           const [cat, proc] = k.split("||");
-          const max = Math.max(1, rows[0][1]);
-          const pct = clamp((v/max)*100,0,100);
-          return el("div",{class:"item"},
-            el("div",{class:"item-title"}, `${cat} · ${proc} (${v}%)`),
-            el("div",{class:"bar"}, el("div",{style:`width:${pct.toFixed(0)}%`}) )
+          const top = rows[0][1] || 1;
+          const pct = clamp((v/top)*100,0,100);
+          return el("div", { class:"list-item" },
+            el("div", { class:"list-title" }, `${cat} · ${proc} (${v}%)`),
+            el("div", { class:"bar" }, el("div", { style:`width:${pct.toFixed(0)}%` }))
           );
         })
-      ) : el("div",{class:"empty"},"승인된 업무일지가 없습니다.")
+      ) : el("div", { class:"empty" }, "승인된 업무일지가 없습니다.")
     );
 
-    const rightBottom = el("div",{class:"grid2"},
-      el("div",{class:"card"},
-        el("div",{class:"card-head"}, el("div",{class:"card-title"},"총 투입 인원")),
-        el("div",{style:"font-size:30px;font-weight:1100;padding:10px 0;"}, `${head}명`)
+    const rightBottom = el("div", { class:"grid2" },
+      el("div", { class:"card" },
+        el("div", { class:"card-head" }, el("div", { class:"card-title" }, "총 투입 인원")),
+        el("div", { class:"big" }, `${hc}명`)
       ),
-      el("div",{class:"card"},
-        el("div",{class:"card-head"}, el("div",{class:"card-title"},"총 소요일수(카운트)")),
-        el("div",{style:"font-size:30px;font-weight:1100;padding:10px 0;"}, `${days}일`)
+      el("div", { class:"card" },
+        el("div", { class:"card-head" }, el("div", { class:"card-title" }, "총 소요일수(카운트)")),
+        el("div", { class:"big" }, `${days}일`)
       )
     );
 
-    const wrap = el("div",{class:"stack"});
-    const grid = el("div",{class:"grid2"});
-    // grid2는 2컬럼이지만 폭이 커서 레이아웃이 부족할 수 있어 flex로 구성
-    const layout = el("div",{style:"display:grid;grid-template-columns:360px 1fr;gap:14px;align-items:start;"});
-    layout.appendChild(left);
-    layout.appendChild(el("div",{class:"stack"}, rightTop, rightBottom));
-    wrap.appendChild(layout);
+    const right = el("div", { class:"stack" }, rightTop, rightBottom);
 
-    view.appendChild(wrap);
+    view.appendChild(
+      el("div", { class:"dash" },
+        left,
+        right
+      )
+    );
+
+    // 선택 유지 위해 hash 갱신
+    if (sp?.projectId){
+      const base = "#/dashboard";
+      if (!location.hash.includes("?p=") || decodeURIComponent((location.hash.match(/p=([^&]+)/)||[])[1]||"") !== sp.projectId){
+        history.replaceState(null, "", `${base}?p=${encodeURIComponent(sp.projectId)}`);
+        setActiveNav();
+      }
+    }
   }
 
   /***********************
-   * View: 달력 + 체크리스트 (#/calendar)
+   * View: 달력 (#/calendar)
    ***********************/
-  function renderCalendar(db, view){
-    const approved = db.logs.filter(l=>l.status==="approved");
-    let modeMonths = 1;
+  function viewCalendar(db){
+    const view = $("#view");
+    view.innerHTML = "";
+
+    const approved = db.logs.filter(l => l.status === "approved");
+
+    let base = new Date();
+    base.setDate(1);
+
+    let months = 1;
     let filter = "전체";
-    let base = new Date(); base.setDate(1);
 
-    const monthLabel = el("div",{style:"font-weight:1100;"});
-    const prevBtn = el("button",{class:"btn ghost", onclick:()=>{ base.setMonth(base.getMonth()-1); rerender(); }}, "◀");
-    const nextBtn = el("button",{class:"btn ghost", onclick:()=>{ base.setMonth(base.getMonth()+1); rerender(); }}, "▶");
+    const monthText = el("div", { class:"cal-month-title" });
 
-    const modeSel = buildSelect(
-      [{value:"1",label:"1달"},{value:"3",label:"3달"}],
-      "1",
-      (v)=>{ modeMonths = Number(v); rerender(); },
-      "select"
+    const btnPrev = el("button", { class:"pill-btn", onclick:()=>{ base.setMonth(base.getMonth()-1); rerender(); } }, "◀");
+    const btnNext = el("button", { class:"pill-btn", onclick:()=>{ base.setMonth(base.getMonth()+1); rerender(); } }, "▶");
+
+    const selMonths = el("select", { class:"select", onchange:(e)=>{ months = Number(e.target.value); rerender(); } },
+      el("option", { value:"1" }, "1달"),
+      el("option", { value:"3" }, "3달")
     );
 
-    const catSel = buildSelect(
-      [{value:"전체",label:"전체"},{value:"구조",label:"구조"},{value:"마감",label:"마감"}],
-      "전체",
-      (v)=>{ filter = v; rerender(); },
-      "select"
+    const selFilter = el("select", { class:"select", onchange:(e)=>{ filter = e.target.value; rerender(); } },
+      el("option", { value:"전체" }, "전체"),
+      el("option", { value:"구조" }, "구조"),
+      el("option", { value:"마감" }, "마감")
     );
 
-    const top = el("div",{class:"card"},
-      el("div",{class:"row"},
-        prevBtn, monthLabel, nextBtn,
-        el("div",{style:"margin-left:auto;display:flex;gap:10px;flex-wrap:wrap;"},
-          el("div",{class:"row"}, el("span",{style:"font-size:12px;color:var(--muted);font-weight:1000;"},"기간"), modeSel),
-          el("div",{class:"row"}, el("span",{style:"font-size:12px;color:var(--muted);font-weight:1000;"},"필터"), catSel)
+    const toolbar = el("div", { class:"card cal-toolbar" },
+      el("div", { class:"left" }, btnPrev, monthText, btnNext),
+      el("div", { class:"right" },
+        el("div", { style:"display:flex;flex-direction:column;gap:6px;min-width:120px;" },
+          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;" }, "기간"),
+          selMonths
+        ),
+        el("div", { style:"display:flex;flex-direction:column;gap:6px;min-width:120px;" },
+          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;" }, "필터"),
+          selFilter
         )
       )
     );
 
-    const calHost = el("div",{class:"cal-host"});
-    const checklistPanel = el("div",{class:"card"});
+    const host = el("div", { class:"stack" });
 
-    function getItems(dateISO){
+    function monthLabel(d){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)} (표시: ${months}달)`;
+    }
+
+    function getItemsForDate(dateISO){
       const list = approved.filter(l=>l.date===dateISO);
       const filtered = filter==="전체" ? list : list.filter(l=>l.category===filter);
       const set = new Set();
-      filtered.forEach(l=>{
-        const p = getProject(db, l.projectId);
+      for (const l of filtered){
+        const p = projById(db, l.projectId);
         if (p) set.add(p.projectName);
-      });
+      }
       return Array.from(set);
     }
 
-    function openDetail(dateISO){
+    function openDay(dateISO){
       const list = approved.filter(l=>l.date===dateISO);
       const filtered = filter==="전체" ? list : list.filter(l=>l.category===filter);
 
-      const body = el("div",{class:"stack"});
+      const body = el("div", { class:"stack" });
+
       if (!filtered.length){
-        body.appendChild(el("div",{class:"empty"},"승인된 업무일지가 없습니다."));
+        body.appendChild(el("div", { class:"empty" }, "승인된 업무일지가 없습니다."));
       } else {
         const byProj = new Map();
-        filtered.forEach(l=>{
+        for (const l of filtered){
           if (!byProj.has(l.projectId)) byProj.set(l.projectId, []);
           byProj.get(l.projectId).push(l);
-        });
+        }
+
         for (const [pid, logs] of byProj.entries()){
-          const p = getProject(db, pid);
+          const p = projById(db, pid);
           body.appendChild(
-            el("div",{class:"card"},
-              el("div",{class:"card-head"},
-                el("div",{class:"card-title"}, `${p?.projectName||"프로젝트"} (${logs.length}건)`),
-                el("div",{class:"badge"}, p?.projectCode||"")
+            el("div", { class:"card" },
+              el("div", { class:"card-head" },
+                el("div", { class:"card-title" }, `${p?.projectName||"프로젝트"} (${logs.length}건)`),
+                el("div", { class:"badge" }, p?.projectCode||"" )
               ),
-              el("div",{class:"list"},
+              el("div", { class:"list" },
                 ...logs.map(l=>{
-                  const writer = getUser(db, l.writerId);
-                  const approver = getUser(db, l.approvedBy);
-                  return el("div",{class:"item"},
-                    el("div",{class:"item-title"}, `${l.category}/${l.process} · ${l.ratio}% · ${writer?.name||""}`),
-                    el("div",{class:"item-sub"}, l.content),
-                    el("div",{class:"item-sub"}, `승인: ${approver?.name||"-"} · ${l.approvedAt||"-"}`)
+                  const w = userById(db, l.writerId);
+                  const a = userById(db, l.approvedBy);
+                  return el("div", { class:"list-item" },
+                    el("div", { class:"list-title" }, `${l.category}/${l.process} · ${l.ratio}% · ${w?.name||""}`),
+                    el("div", { class:"list-sub" }, l.content),
+                    el("div", { class:"list-sub" }, `승인: ${a?.name||"-"} · ${l.approvedAt||"-"}`)
                   );
                 })
               )
@@ -668,80 +686,114 @@
           );
         }
       }
-      const foot = el("div",{}, el("button",{class:"btn",onclick:modal.close},"닫기"));
-      modal.open(`상세: ${dateISO}`, body, foot);
+
+      const foot = el("div", {}, el("button", { class:"btn", onclick: modalClose }, "닫기"));
+      modalOpen(`상세: ${dateISO}`, body, foot);
     }
 
     function renderOneMonth(d){
-      const y=d.getFullYear(), m=d.getMonth();
-      const first=new Date(y,m,1);
-      const last=new Date(y,m+1,0);
-      const startDow=first.getDay();
-      const days=last.getDate();
+      const y = d.getFullYear();
+      const m = d.getMonth();
 
-      const month = el("div",{class:"cal-month"},
-        el("div",{class:"cal-title"}, `${y}-${pad(m+1)}`),
-        el("div",{class:"cal-dow"},
-          ...["일","월","화","수","목","금","토"].map(s=>el("div",{},s))
-        )
+      const first = new Date(y,m,1);
+      const last = new Date(y,m+1,0);
+      const startDow = first.getDay();
+      const daysInMonth = last.getDate();
+
+      const box = el("div", { class:"card calendar-wrap" });
+      box.appendChild(el("div", { class:"card-title" }, `${y}-${pad2(m+1)}`));
+
+      const dow = el("div", { class:"cal-dow" },
+        ...["일","월","화","수","목","금","토"].map(s=>el("div",{},s))
       );
+      box.appendChild(dow);
 
-      const grid = el("div",{class:"cal-grid"});
-      for (let i=0;i<startDow;i++) grid.appendChild(el("div",{class:"cal-cell empty"}));
+      const grid = el("div", { class:"cal-grid" });
 
-      for (let day=1; day<=days; day++){
-        const dateISO = `${y}-${pad(m+1)}-${pad(day)}`;
-        const items = getItems(dateISO);
-        const cell = el("div",{class:"cal-cell", onclick:()=>openDetail(dateISO)},
-          el("div",{class:"cal-day"}, String(day)),
-          items.length ? el("div",{class:"chips"},
-            ...items.slice(0,4).map(t=>el("div",{class:"chip"}, t)),
-            items.length>4 ? el("div",{class:"more"}, `+${items.length-4}`) : null
+      for (let i=0;i<startDow;i++){
+        grid.appendChild(el("div", { class:"cal-cell cal-empty" }));
+      }
+
+      for (let day=1; day<=daysInMonth; day++){
+        const dateISO = `${y}-${pad2(m+1)}-${pad2(day)}`;
+        const items = getItemsForDate(dateISO);
+
+        const cell = el("div", { class:"cal-cell" },
+          el("div", { class:"cal-day" }, String(day)),
+          items.length ? el("div", { class:"chips" },
+            ...items.slice(0,4).map(t=>el("div",{class:"chip"},t)),
+            items.length>4 ? el("div",{class:"muted",style:"font-size:12px;padding-left:2px;"},`+${items.length-4}`) : null
           ) : null
         );
+        cell.addEventListener("click", ()=>openDay(dateISO));
         grid.appendChild(cell);
       }
 
-      month.appendChild(grid);
-      return month;
+      box.appendChild(grid);
+      return box;
     }
 
-    function renderChecklist(){
-      checklistPanel.innerHTML = "";
+    function rerender(){
+      monthText.textContent = monthLabel(base);
+      host.innerHTML = "";
+      const count = months === 3 ? 3 : 1;
+      for (let i=0;i<count;i++){
+        const md = new Date(base);
+        md.setMonth(base.getMonth()+i);
+        host.appendChild(renderOneMonth(md));
+      }
+    }
 
-      let selectedProjectId = db.projects[0]?.projectId || "";
+    view.appendChild(el("div", { class:"stack" }, toolbar, host));
+    rerender();
+  }
 
-      const projectSel = buildProjectSelect(db, selectedProjectId, (v)=>{
-        selectedProjectId = v;
-        drawList();
-      });
+  /***********************
+   * View: 체크리스트 (#/checklist)  ✅ 분리 탭
+   ***********************/
+  function viewChecklist(db){
+    const view = $("#view");
+    view.innerHTML = "";
 
-      const titleInput = el("input",{class:"input", placeholder:"체크리스트 제목"});
-      const descInput = el("textarea",{class:"textarea", rows:"3", placeholder:"설명(선택)"});
+    let selectedProjectId = db.projects[0]?.projectId || "";
 
-      const assigneeSel = buildSelect(
-        db.users.filter(u=>["staff","leader","manager"].includes(u.role)).map(u=>({value:u.userId,label:`${u.name} (${u.role})`})),
-        db.users[0]?.userId || "",
-        ()=>{}
-      );
+    const projectSel = buildProjectSelect(db, selectedProjectId, (v)=>{
+      selectedProjectId = v;
+      draw();
+    });
 
-      const imgInput = el("input",{class:"input", type:"file", accept:"image/*"});
+    const titleInput = el("input", { class:"input", placeholder:"체크리스트 제목(예: H10 → H13 변경)" });
+    const descInput  = el("textarea", { class:"textarea", rows:"3", placeholder:"설명(선택)" });
 
-      const addBtn = el("button",{class:"btn primary", onclick:async ()=>{
-        const t = titleInput.value.trim();
-        if (!t) return toast("제목을 입력해 주세요.");
+    const assigneeSel = el("select", { class:"select" },
+      ...db.users
+        .filter(u => u.role === "staff" || u.role === "leader")
+        .map(u => el("option", { value:u.userId }, `${u.name} (${u.role})`))
+    );
 
-        const file = imgInput.files?.[0];
-        const imageDataUrl = file ? await fileToDataURL(file) : "";
+    const imageInput = el("input", { class:"input", type:"file", accept:"image/*" });
+
+    const addBtn = el("button", {
+      class:"btn primary",
+      onclick: async ()=>{
+        const title = titleInput.value.trim();
+        if (!title) return toast("체크리스트 제목을 입력해 주세요.");
+
+        const uid = getUserId(db);
+        const assigneeId = assigneeSel.value;
+
+        let imageDataUrl = "";
+        const file = imageInput.files?.[0];
+        if (file) imageDataUrl = await fileToDataURL(file);
 
         db.checklists.push({
           itemId: uuid(),
           projectId: selectedProjectId,
-          title: t,
+          title,
           description: descInput.value.trim(),
           imageDataUrl,
-          writerId: getCurrentUserId(db),
-          assigneeId: assigneeSel.value,
+          writerId: uid,
+          assigneeId,
           status: "open",
           createdAt: nowISO(),
           doneBy: "",
@@ -751,154 +803,191 @@
         saveDB(db);
         titleInput.value = "";
         descInput.value = "";
-        imgInput.value = "";
-        toast("체크리스트 추가 완료");
-        drawList();
-      }},"새 항목 추가");
+        imageInput.value = "";
+        toast("체크리스트 항목 추가 완료");
+        draw();
+      }
+    }, "새 항목 추가");
 
-      const listHost = el("div",{class:"list"});
+    const listHost = el("div", { class:"list" });
 
-      function drawList(){
-        listHost.innerHTML = "";
-        const items = db.checklists
-          .filter(i=>i.projectId===selectedProjectId)
-          .slice()
-          .sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+    function draw(){
+      listHost.innerHTML = "";
+      const items = db.checklists
+        .filter(i => i.projectId === selectedProjectId)
+        .slice()
+        .sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
 
-        if (!items.length){
-          listHost.appendChild(el("div",{class:"empty"},"체크리스트 항목이 없습니다."));
-          return;
-        }
+      if (!items.length){
+        listHost.appendChild(el("div",{class:"empty"}, "체크리스트 항목이 없습니다."));
+        return;
+      }
 
-        for (const it of items){
-          const writer = getUser(db, it.writerId);
-          const assignee = getUser(db, it.assigneeId);
-          const doneBy = it.doneBy ? getUser(db, it.doneBy) : null;
+      for (const it of items){
+        const writer = userById(db, it.writerId);
+        const assignee = userById(db, it.assigneeId);
+        const doneBy = it.doneBy ? userById(db, it.doneBy) : null;
 
-          const cb = el("input",{type:"checkbox"});
-          cb.checked = it.status==="done";
-          cb.onchange = ()=>{
-            if (cb.checked){
-              it.status="done";
-              it.doneBy=getCurrentUserId(db);
-              it.doneAt=nowISO();
+        const checkbox = el("input", {
+          type:"checkbox",
+          checked: it.status === "done",
+          onchange:(e)=>{
+            const checked = e.target.checked;
+            if (checked){
+              it.status = "done";
+              it.doneBy = getUserId(db);
+              it.doneAt = nowISO();
             } else {
-              it.status="open";
-              it.doneBy=""; it.doneAt="";
+              it.status = "open";
+              it.doneBy = "";
+              it.doneAt = "";
             }
             saveDB(db);
-            drawList();
-          };
+            draw();
+          }
+        });
 
-          const title = el("div",{class:`item-title ${it.status==="done"?"done-title":""}`}, it.title);
-          const meta = el("div",{class:"item-sub"}, `작성: ${writer?.name||"-"} · 담당: ${assignee?.name||"-"} · ${it.createdAt||""}`);
-          const doneMeta = it.status==="done" ? el("div",{class:"item-sub done-meta"}, `완료: ${doneBy?.name||"-"} · ${it.doneAt||"-"}`) : null;
-          const desc = it.description ? el("div",{class:"item-sub"}, it.description) : null;
+        const title = el("div", { class:`list-title ${it.status==="done" ? "done-title" : ""}` }, it.title);
 
-          const btnView = it.imageDataUrl
-            ? el("button",{class:"btn ghost", onclick:()=>{
-                const img = el("img",{src:it.imageDataUrl, style:"max-width:100%;border-radius:14px;display:block;"});
-                modal.open("이미지 보기", img, el("div",{}, el("button",{class:"btn",onclick:modal.close},"닫기")));
-              }}, "보기")
-            : el("span",{style:"font-size:12px;color:var(--muted);font-weight:1000;"},"이미지 없음");
+        const meta = el("div", { class:"list-sub" },
+          `작성: ${writer?.name||"-"} · 담당: ${assignee?.name||"-"} · ${it.createdAt||""}`
+        );
 
-          const btnDel = el("button",{class:"btn ghost", onclick:()=>{
-            if (!confirm("삭제할까요?")) return;
-            db.checklists = db.checklists.filter(x=>x.itemId!==it.itemId);
+        const doneMeta = it.status==="done"
+          ? el("div", { class:"list-sub done-meta" }, `완료: ${doneBy?.name||"-"} · ${it.doneAt||"-"}`)
+          : null;
+
+        const desc = it.description ? el("div", { class:"list-sub" }, it.description) : null;
+
+        const btnView = it.imageDataUrl
+          ? el("button", {
+              class:"btn ghost",
+              onclick:()=>{
+                const body = el("div",{}, el("img",{src:it.imageDataUrl, style:"max-width:100%;border-radius:12px;display:block;"}));
+                const foot = el("div",{}, el("button",{class:"btn", onclick:modalClose},"닫기"));
+                modalOpen("이미지 보기", body, foot);
+              }
+            }, "보기")
+          : el("span", { class:"muted", style:"font-size:12px;align-self:flex-start;padding-top:8px;" }, "이미지 없음");
+
+        const btnDel = el("button", {
+          class:"btn ghost",
+          onclick:()=>{
+            if (!confirm("이 항목을 삭제할까요?")) return;
+            db.checklists = db.checklists.filter(x => x.itemId !== it.itemId);
             saveDB(db);
             toast("삭제 완료");
-            drawList();
-          }}, "삭제");
+            draw();
+          }
+        }, "삭제");
 
-          const row = el("div",{class:`item ${it.status==="done"?"done-row":""}`, style:"display:flex;gap:10px;align-items:flex-start;"},
-            el("div",{style:"padding-top:2px;"}, cb),
-            el("div",{style:"flex:1;min-width:0;"}, title, meta, doneMeta, desc),
-            el("div",{style:"display:flex;gap:8px;align-items:flex-start;"}, btnView, btnDel)
-          );
+        const row = el("div", { class:`list-item ${it.status==="done" ? "done-row" : ""}` },
+          el("div", { class:"list-row" },
+            el("div", { class:"list-left" }, checkbox),
+            el("div", { class:"list-mid" }, title, meta, doneMeta, desc),
+            el("div", { class:"list-right" }, btnView, btnDel)
+          )
+        );
 
-          listHost.appendChild(row);
-        }
+        listHost.appendChild(row);
       }
-
-      checklistPanel.appendChild(
-        el("div",{class:"card-head"},
-          el("div",{class:"card-title"},"프로젝트별 체크리스트"),
-          projectSel
-        )
-      );
-      checklistPanel.appendChild(
-        el("div",{class:"grid2"},
-          el("div",{}, el("div",{class:"label"},"제목"), titleInput),
-          el("div",{}, el("div",{class:"label"},"담당자"), assigneeSel)
-        )
-      );
-      checklistPanel.appendChild(el("div",{}, el("div",{class:"label"},"설명(선택)"), descInput));
-      checklistPanel.appendChild(
-        el("div",{class:"grid2"},
-          el("div",{}, el("div",{class:"label"},"이미지 첨부(선택)"), imgInput),
-          el("div",{style:"display:flex;align-items:flex-end;justify-content:flex-end;"}, addBtn)
-        )
-      );
-      checklistPanel.appendChild(el("div",{style:"height:10px;"}));
-      checklistPanel.appendChild(listHost);
-
-      drawList();
     }
 
-    function rerender(){
-      monthLabel.textContent = `${base.getFullYear()}-${pad(base.getMonth()+1)} (표시: ${modeMonths}달)`;
-      calHost.innerHTML = "";
-      const count = modeMonths===3 ? 3 : 1;
-      for (let i=0;i<count;i++){
-        const d = new Date(base);
-        d.setMonth(base.getMonth()+i);
-        calHost.appendChild(renderOneMonth(d));
-      }
-      renderChecklist();
-    }
+    const form = el("div", { class:"card" },
+      el("div", { class:"card-head" },
+        el("div", { class:"card-title" }, "체크리스트 작성"),
+        el("div", { class:"row" }, el("div",{class:"muted",style:"font-weight:1000;font-size:12px;"},"프로젝트"), projectSel)
+      ),
+      el("div", { class:"grid2" },
+        el("div", {},
+          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "제목"),
+          titleInput
+        ),
+        el("div", {},
+          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "담당자"),
+          assigneeSel
+        )
+      ),
+      el("div", {},
+        el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "설명(선택)"),
+        descInput
+      ),
+      el("div", { class:"grid2" },
+        el("div", {},
+          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "이미지 첨부(선택)"),
+          imageInput
+        ),
+        el("div", { style:"display:flex;align-items:flex-end;justify-content:flex-end;" }, addBtn)
+      )
+    );
 
-    view.appendChild(el("div",{class:"stack"}, top, calHost, checklistPanel));
-    rerender();
-  }
+    view.appendChild(el("div",{class:"stack"}, form, el("div",{class:"card"}, el("div",{class:"card-head"}, el("div",{class:"card-title"},"체크리스트 목록")), listHost)));
 
-  function fileToDataURL(file){
-    return new Promise((resolve,reject)=>{
-      const fr = new FileReader();
-      fr.onload = ()=>resolve(String(fr.result||""));
-      fr.onerror = reject;
-      fr.readAsDataURL(file);
-    });
+    draw();
   }
 
   /***********************
-   * Render entry
+   * Boot / Render
    ***********************/
+  function wireTopbar(db){
+    const sel = $("#userSelect");
+    sel.innerHTML = "";
+    const current = getUserId(db);
+
+    for (const u of db.users){
+      const opt = el("option", { value:u.userId }, `${u.name} (${u.role})`);
+      if (u.userId === current) opt.selected = true;
+      sel.appendChild(opt);
+    }
+
+    sel.onchange = (e)=>{
+      setUserId(e.target.value);
+      toast("사용자 전환 완료");
+      render();
+    };
+
+    $("#btnResetDemo").onclick = ()=>{
+      if (!confirm("데모 데이터를 초기화할까요? (localStorage 삭제)")) return;
+      localStorage.removeItem(LS_KEY);
+      toast("초기화 완료");
+      location.hash = "#/log";
+      render();
+    };
+
+    $("#modalClose").onclick = modalClose;
+    $("#modalBackdrop").addEventListener("click", (e)=>{
+      if (e.target === $("#modalBackdrop")) modalClose();
+    });
+  }
+
+  function updateBadge(db){
+    $("#badgePending").textContent = String(pendingCount(db));
+  }
+
   function render(){
     const db = ensureDB();
 
-    wireHeader(db);
-    updatePendingBadge(db);
+    wireTopbar(db);
+    updateBadge(db);
     setActiveNav();
-    setRouteTitle();
 
-    const view = $("#view");
-    view.innerHTML = "";
-
-    const path = getRoutePath();
-    ROUTES[path].render(db, view);
-  }
-
-  function boot(){
-    wireModal();
-    if (!location.hash) location.hash = "#/log";
-    render();
+    const route = getRoute();
+    if (route === "/log") viewLog(db);
+    else if (route === "/approve") viewApprove(db);
+    else if (route === "/dashboard") viewDashboard(db);
+    else if (route === "/calendar") viewCalendar(db);
+    else if (route === "/checklist") viewChecklist(db);
+    else {
+      location.hash = "#/log";
+      viewLog(db);
+    }
   }
 
   window.addEventListener("hashchange", render);
-  window.addEventListener("storage", (e)=>{
-    if (e.key === LS_KEY) render();
-  });
+  window.addEventListener("storage", (e)=>{ if (e.key === LS_KEY) render(); });
 
-  boot();
+  // init
+  if (!location.hash) location.hash = "#/log";
+  render();
 
 })();
