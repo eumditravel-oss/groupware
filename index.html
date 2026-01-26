@@ -4,26 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CON COST Groupware</title>
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=100" />
 </head>
-
 <body>
   <!-- Topbar -->
   <header class="topbar">
     <div class="brand">
-      <div class="logoMark"></div>
+      <div class="logoBox" aria-hidden="true">
+        <div class="logoTri"></div>
+      </div>
       <div class="brandText">
         <div class="title">CON COST Groupware</div>
-        <div class="sub" id="routeTitle">업무관리</div>
+        <div class="sub">업무일지 · 승인 · 공정/일정 · 체크리스트 · 산출 · 전자메일/결재</div>
       </div>
     </div>
 
-    <!-- ✅ 대분류 탭 -->
-    <nav class="topTabs" id="topTabs"></nav>
+    <!-- Top Tabs (대분류) -->
+    <nav id="topTabs" class="topTabs" aria-label="Main Tabs"></nav>
 
-    <div class="topActions">
+    <div class="actions">
       <div class="userBox">
-        <span class="muted small">사용자</span>
+        <div class="muted small" style="font-weight:900;">사용자</div>
         <select id="userSelect" class="select"></select>
       </div>
 
@@ -33,93 +34,56 @@
     </div>
   </header>
 
-  <div class="layout">
-    <!-- Sidebar (소분류 메뉴) -->
-    <aside class="sidebar">
-      <div class="sideTitle">메뉴</div>
-
-      <div class="nav">
-        <!-- 전자메일 -->
-        <a class="nav-item" data-tab="mail" data-route="/mail" href="#/mail/mail">
-          <span class="dot"></span> 전자메일
-        </a>
-
-        <!-- 전자결재 -->
-        <a class="nav-item" data-tab="approval" data-route="/e-approval" href="#/approval/e-approval">
-          <span class="dot"></span> 전자결재
-        </a>
-
-        <!-- 업무관리 (기존 기능) -->
-        <a class="nav-item" data-tab="work" data-route="/log" href="#/work/log">
-          <span class="dot"></span> 업무일지
-        </a>
-
-        <a class="nav-item" data-tab="work" data-route="/approve" href="#/work/approve">
-          <span class="dot"></span> 승인
-          <span class="badge" id="badgePending">0</span>
-        </a>
-
-        <a class="nav-item" data-tab="work" data-route="/dashboard" href="#/work/dashboard">
-          <span class="dot"></span> 프로젝트 소요시간
-        </a>
-
-        <a class="nav-item" data-tab="work" data-route="/calendar" href="#/work/calendar">
-          <span class="dot"></span> 종합 공정관리
-        </a>
-
-        <a class="nav-item" data-tab="work" data-route="/checklist" href="#/work/checklist">
-          <span class="dot"></span> 프로젝트별 체크리스트
-        </a>
-
-        <a class="nav-item" data-tab="work" data-route="/checklist-view" href="#/work/checklist-view">
-          <span class="dot"></span> 체크리스트 목록
-        </a>
-
-        <!-- 산출 -->
-        <a class="nav-item" data-tab="calc" data-route="/calc-fin" href="#/calc/calc-fin">
-          <span class="dot"></span> FIN산출
-        </a>
-
-        <a class="nav-item" data-tab="calc" data-route="/calc-other" href="#/calc/calc-other">
-          <span class="dot"></span> ㅇㅇ산출
-        </a>
-
-        <!-- 일정관리 -->
-        <a class="nav-item" data-tab="schedule" data-route="/schedule" href="#/schedule/schedule">
-          <span class="dot"></span> 일정관리
-        </a>
+  <!-- App Layout -->
+  <div class="app">
+    <!-- Left (소분류) -->
+    <aside class="side">
+      <div class="sideHead">
+        <div class="sideTitle">메뉴</div>
+        <div class="sideHint muted">현재 탭의 소분류</div>
       </div>
 
-      <div class="sideCard">
-        <div class="sideCardTitle">정적(GitHub) MVP 안내</div>
-        <div class="sideCardText">
+      <div id="sideNav" class="sideNav"></div>
+
+      <div class="sideNote">
+        <div class="noteTitle">정책(GitHub MVP 안내)</div>
+        <div class="noteBody">
           기본 저장소는 브라우저 localStorage 입니다.<br/>
-          상단의 시트 백업/복원으로 Google Sheets를 저장소처럼 사용할 수 있습니다.
+          상단의 “시트 백업/복원”으로 Google Sheets를 저장소처럼 사용할 수 있습니다.
         </div>
       </div>
+
+      <div id="toast" class="toastHost" aria-live="polite"></div>
     </aside>
 
     <!-- Main -->
     <main class="main">
+      <div class="mainHead">
+        <div id="routeTitle" class="routeTitle"></div>
+        <div class="rightBadges">
+          <div class="badgeBox">
+            <span class="muted small" style="font-weight:900;">승인대기</span>
+            <span id="badgePending" class="badge">0</span>
+          </div>
+        </div>
+      </div>
+
       <div id="view" class="view"></div>
     </main>
   </div>
 
-  <!-- Toast -->
-  <div id="toast" class="toast"></div>
-
   <!-- Modal -->
-  <div id="modalBackdrop" class="modal-backdrop hidden">
+  <div id="modalBackdrop" class="modalBackdrop hidden">
     <div class="modal">
-      <div class="modal-head">
-        <div id="modalTitle" class="modal-title"></div>
-        <button id="modalClose" class="btn tiny ghost">닫기</button>
+      <div class="modalHead">
+        <div id="modalTitle" class="modalTitle"></div>
+        <button id="modalClose" class="btn ghost tiny">닫기</button>
       </div>
-      <div id="modalBody" class="modal-body"></div>
-      <div id="modalFoot" class="modal-foot"></div>
+      <div id="modalBody" class="modalBody"></div>
+      <div id="modalFoot" class="modalFoot"></div>
     </div>
   </div>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=100"></script>
 </body>
 </html>
