@@ -729,3 +729,15 @@ a{ color:inherit; text-decoration:none; }
   display:block;
   background:#fff;
 }
+
+/* ✅ (노란 박스) 라우트 타이틀/승인대기 바 숨김 */
+#routeTitle,
+#badgePending{
+  display:none !important;
+}
+
+/* 혹시 부모 바가 따로 있으면(있을 때만 적용) */
+.routebar, .subbar, .route-bar, #routeBar{
+  display:none !important;
+}
+
