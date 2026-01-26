@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CON COST Groupware (MVP)</title>
+  <link rel="stylesheet" href="styles.css?v=1" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="logo" src="assets/logo.png" alt="CON COST" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="title">CON COST Groupware</div>
+        <div class="sub">업무일지 → 승인 → 프로젝트 집계 → 종합 공정관리 → 체크리스트</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <div class="pill">
+        <span class="pill-label">사용자</span>
+        <select id="userSelect" class="select small"></select>
+      </div>
+      <button id="btnResetDemo" class="btn ghost">데모 데이터 초기화</button>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="nav-title">메뉴</div>
+      <nav class="nav">
+        <a class="nav-item" href="#/log">
+          <span class="dot"></span><span>업무일지</span>
+        </a>
+        <a class="nav-item" href="#/approve">
+          <span class="dot"></span><span>승인</span>
+          <span id="badgePending" class="badge">0</span>
+        </a>
+        <a class="nav-item" href="#/dashboard">
+          <span class="dot"></span><span>프로젝트 소요시간</span>
+        </a>
+        <a class="nav-item" href="#/calendar">
+          <span class="dot"></span><span>종합 공정관리 & 체크리스트</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="hint">
+          <div class="hint-title">정적(GitHub) MVP 안내</div>
+          <div class="hint-body">
+            데이터는 브라우저 <b>localStorage</b>에 저장됩니다.<br/>
+            (다중 사용자/권한 보안은 서버 도입 시 확장)
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="routeTitle" class="route-title"></div>
+      <div id="view" class="view"></div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <!-- Modal -->
+  <div id="modalBackdrop" class="modal-backdrop hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <div id="modalTitle" class="modal-title">제목</div>
+        <button id="modalClose" class="icon-btn" aria-label="닫기">✕</button>
+      </div>
+      <div id="modalBody" class="modal-body"></div>
+      <div id="modalFoot" class="modal-foot"></div>
+    </div>
+  </div>
+
+  <script src="app.js?v=1"></script>
+</body>
+</html>
