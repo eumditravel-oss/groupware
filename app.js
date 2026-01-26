@@ -1,4 +1,4 @@
-/* app.js (CON COST Groupware MVP v0.4)
+/* app.js (CON COST Groupware MVP v0.4) — FULL (FIXED)
    ✅ 권한 정책
    - staff: 업무일지(/log) + 체크리스트 목록(/checklist-view)만 접근 가능
    - leader 이상: 승인/대시보드/달력 접근 가능, 체크리스트 작성(/checklist) 가능
@@ -9,6 +9,9 @@
    ✅ 부사장(role: svp) 포함
    ✅ Google Sheets(앱스스크립트 WebApp) 백업/복원
    - 상단 버튼으로 export/import
+   ✅ Auto Sync (Sheets = Source of Truth)
+   - 앱 시작 시 시트에서 자동 Pull
+   - DB 변경 시 Debounce 후 자동 Push (Pull 중에는 Push 금지)
 */
 
 (() => {
@@ -46,7 +49,7 @@
   /***********************
    * Storage
    ***********************/
-  const LS_KEY = "CONCOST_GROUPWARE_DB_V04";
+  const LS_KEY  = "CONCOST_GROUPWARE_DB_V04";
   const LS_USER = "CONCOST_GROUPWARE_USER_V04";
 
   // ✅ Google Apps Script WebApp URL (고정)
@@ -63,7 +66,6 @@
   }
 
   function pad2(n){ return String(n).padStart(2,"0"); }
-
   function nowISO(){
     const d = new Date();
     return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
@@ -79,51 +81,62 @@
     return raw ? safeParse(raw, null) : null;
   }
 
-     // ✅ Auto Sync (Sheets = Source of Truth)
+  /***********************
+   * Auto Sync (Sheets)
+   ***********************/
   const AUTO_PULL_ON_START = true;   // 앱 켤 때 무조건 시트에서 최신 로드
-  const AUTO_PUSH_ON_SAVE  = true;   // DB 변경 시 자동 저장
+  const AUTO_PUSH_ON_SAVE  = true;   // DB 변경 시 자동 저장(Push)
   const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기(1.2초)
 
-  let pushTimer = null;
+  let isPulling = false;            // ✅ Pull 중 Push 금지
   let isPushing = false;
+  let pushTimer = null;
+  let pendingPushAfter = false;
 
   function schedulePush(db){
     if (!AUTO_PUSH_ON_SAVE) return;
-    if (isPulling) return; // ✅ 시트에서 가져오는 중엔 다시 시트로 밀지 않음
+    if (isPulling) return;
+
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(async ()=>{
-          if (AUTO_PULL_ON_START){
-      isPulling = true;
+    pushTimer = setTimeout(async () => {
+      // Push 동시 실행 방지
+      if (isPushing){
+        pendingPushAfter = true;
+        return;
+      }
+
+      isPushing = true;
       try{
-        const data = await sheetsExport();
-        if (data && data.ok){
-          const db = sheetsPayloadToDB(data);
-          localStorage.setItem(LS_KEY, JSON.stringify(db)); // ✅ 여기서는 saveDB 말고 직접 저장(자동 push 방지)
-          toast("✅ 시트에서 최신 데이터 불러옴");
+        const payload = dbToSheetsPayload(db);
+        const res = await sheetsImport(payload);
+        if (res && res.ok){
+          toast("✅ 자동 저장 완료(시트)");
         } else {
-          toast("❌ 시트 로드 실패(형식 오류)");
+          toast("❌ 자동 저장 실패(시트 응답 오류)");
         }
       }catch(err){
         console.error(err);
-        toast("❌ 시트 로드 실패(콘솔 확인) → 로컬 데이터 사용");
+        toast("❌ 자동 저장 실패(콘솔 확인)");
       }finally{
-        isPulling = false;
+        isPushing = false;
+        if (pendingPushAfter){
+          pendingPushAfter = false;
+          schedulePush(ensureDB());
+        }
       }
-    }
-
-
-
-     let isPulling = false;
-
-   
-    function saveDB(db){
-    localStorage.setItem(LS_KEY, JSON.stringify(db));
-    schedulePush(db); // ✅ 변경 즉시(디바운스) 시트로 자동 저장
+    }, PUSH_DEBOUNCE_MS);
   }
 
+  function saveDB(db){
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
+    schedulePush(db);
+  }
 
-  function seedDB(){
-    const db = {
+  /***********************
+   * Seed / Ensure
+   ***********************/
+  function makeSeedDB(){
+    return {
       meta: { version:"0.4", createdAt: nowISO() },
       users: [
         { userId:"u_staff_1", name:"작업자A", role:"staff" },
@@ -143,7 +156,12 @@
       logs: [],
       checklists: []
     };
-    saveDB(db);
+  }
+
+  function seedDB(){
+    // ✅ 초기 시드 생성은 "시트 덮어쓰기" 위험이 있어 로컬에만 저장(자동 push 유발 X)
+    const db = makeSeedDB();
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
     return db;
   }
 
@@ -374,11 +392,11 @@
       return ensureChecklistShape(item);
     }).filter(c=>c.itemId);
 
-    const baseSeed = seedDB(); // 최소 보정용
+    const seed = makeSeedDB(); // ✅ 저장(side-effect) 없는 시드
     const db = {
       meta,
-      users: users.length ? users : baseSeed.users,
-      projects: projects.length ? projects : baseSeed.projects,
+      users: users.length ? users : seed.users,
+      projects: projects.length ? projects : seed.projects,
       logs,
       checklists
     };
@@ -1302,7 +1320,7 @@
         const confirmMeta = el("div", { class:"list-sub", style:"margin-top:6px;" }, `확인: ${confirmText}`);
         const desc = it.description ? el("div", { class:"list-sub" }, it.description) : null;
 
-        // ✅ leader+는 확인 버튼(검토 기록) 가능
+        // ✅ leader+는 확인 버튼(검토 기록) 가능 (staff는 disabled)
         const btnConfirm = el("button", {
           class:"btn tiny",
           disabled: !isLeaderPlus(me),
@@ -1410,18 +1428,22 @@
 
     // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
     if (AUTO_PULL_ON_START){
+      isPulling = true;
       try{
         const data = await sheetsExport();
         if (data && data.ok){
           const db = sheetsPayloadToDB(data);
-          saveDB(db); // saveDB가 auto push를 걸 수 있으니 아래에서 임시로 막는 게 안전
+          // ✅ Pull 결과 저장은 "직접 localStorage"로 저장 (자동 push 방지)
+          localStorage.setItem(LS_KEY, JSON.stringify(db));
           toast("✅ 시트에서 최신 데이터 불러옴");
         } else {
-          toast("❌ 시트 로드 실패(형식 오류)");
+          toast("❌ 시트 로드 실패(형식 오류) → 로컬 데이터 사용");
         }
       }catch(err){
         console.error(err);
         toast("❌ 시트 로드 실패(콘솔 확인) → 로컬 데이터 사용");
+      }finally{
+        isPulling = false;
       }
     }
 
@@ -1448,31 +1470,38 @@
       render();
     });
 
-    // sheets backup
+    // sheets backup (수동 Push)
     $("#btnSheetBackup")?.addEventListener("click", async ()=>{
       try{
         const db = ensureDB();
         const payload = dbToSheetsPayload(db);
-        await sheetsImport(payload);
-        toast("✅ 시트로 백업 완료");
+        const res = await sheetsImport(payload);
+        if (res && res.ok) toast("✅ 시트로 백업 완료");
+        else toast("❌ 백업 실패(시트 응답 오류)");
       }catch(err){
         console.error(err);
         toast("❌ 백업 실패(콘솔 확인)");
       }
     });
 
-    // sheets restore
+    // sheets restore (수동 Pull)
     $("#btnSheetRestore")?.addEventListener("click", async ()=>{
+      isPulling = true;
       try{
         const data = await sheetsExport();
-        if (!data || !data.ok) return toast("❌ 시트 export 실패");
+        if (!data || !data.ok){
+          toast("❌ 시트 export 실패");
+          return;
+        }
         const db = sheetsPayloadToDB(data);
-        saveDB(db);
+        localStorage.setItem(LS_KEY, JSON.stringify(db)); // ✅ restore도 직접 저장(자동 push 방지)
         toast("✅ 시트에서 복원 완료");
         render();
       }catch(err){
         console.error(err);
         toast("❌ 복원 실패(콘솔 확인)");
+      }finally{
+        isPulling = false;
       }
     });
 
