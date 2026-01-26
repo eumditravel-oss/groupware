@@ -145,8 +145,9 @@ a{ color:inherit; text-decoration:none; }
 
 .app{
   display:flex;
-  min-height: calc(100vh - var(--topbarH));
+  min-height: 100vh;  /* ✅ 단순화 */
 }
+
 
 .side{
   width: var(--sideW);
