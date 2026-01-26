@@ -912,3 +912,71 @@ header.topbar .topCenter{
 
 /* (선택) 탭이 너무 동글하면 10px~14px 사이로 조절 */
 
+
+/* =========================
+   ✅ TOPBAR: 좌(브랜드) / 중(탭) / 우(사용자)
+   - 탭은 화면 가운데 노란영역에 고정
+========================= */
+.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 14px;
+  background: rgba(255,255,255,.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--softLine);
+}
+
+/* 좌측 브랜드는 내용만큼 */
+.topbar .brand{
+  flex: 0 0 auto;
+  min-width: 260px;
+}
+
+/* ✅ 가운데 영역(노란 박스 자리) */
+.topbar .topCenter{
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: center;   /* 중앙정렬 */
+  align-items: center;
+  min-width: 0;
+}
+
+/* ✅ 탭 컨테이너는 내용만큼만 차지(가운데에 딱) */
+#topTabs.topTabs{
+  width: fit-content;
+  max-width: 100%;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 우측 사용자 */
+#userBoxTop{
+  flex: 0 0 auto;
+  margin-left: 0;   /* auto 쓰지 마 (가운데 배치 깨짐) */
+}
+
+/* =========================
+   ✅ 탭 UI: 알약 → 살짝 둥근 사각형
+========================= */
+
+/* 탭 바(배경 pill)도 너무 둥글면 완화 */
+.topTabs{
+  border-radius: 14px; /* 기존 999px → 완화 */
+}
+
+/* 탭 버튼(둘 다 커버: .topTab, .top-tab) */
+.topTab,
+.top-tab{
+  border-radius: 12px !important;
+  padding: 10px 14px;
+}
+
+
