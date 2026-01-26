@@ -1,7 +1,12 @@
-/* app.js (CON COST Groupware MVP v0.2)
-   - index.html: topbar/sidebar/#view 라우팅 구조 사용
-   - routes: #/log, #/approve, #/dashboard, #/calendar, #/checklist
-   - 저장소: localStorage(정적 GitHub MVP)
+/* app.js (CON COST Groupware MVP v0.3)
+   ✅ 권한 정책
+   - staff: 업무일지(/log) + 체크리스트 목록(/checklist-view)만 접근 가능
+   - leader 이상: 승인/대시보드/달력 접근 가능, 체크리스트 작성(/checklist) 가능
+   ✅ 체크리스트
+   - 작성: leader 이상만
+   - 체크(완료): staff만 가능 (체크 시 doneBy/doneAt 기록)
+   - 확인(검토): leader 이상이 "확인" 버튼으로 기록 (confirmations[]에 누가/언제 확인했는지 누적)
+   ✅ 부사장(role: svp) 추가
 */
 
 (() => {
@@ -16,10 +21,31 @@
   };
 
   /***********************
+   * Roles
+   ***********************/
+  const ROLE_ORDER = ["staff","leader","manager","director","vp","svp","ceo"];
+  const ROLE_LABEL = {
+    staff:"staff",
+    leader:"leader",
+    manager:"manager",
+    director:"director",
+    vp:"vp",
+    svp:"svp",   // ✅ 부사장
+    ceo:"ceo"
+  };
+
+  function roleRank(role){
+    const i = ROLE_ORDER.indexOf(role);
+    return i >= 0 ? i : 0;
+  }
+  function isStaff(user){ return (user?.role || "staff") === "staff"; }
+  function isLeaderPlus(user){ return roleRank(user?.role || "staff") >= roleRank("leader"); }
+
+  /***********************
    * localStorage DB
    ***********************/
-  const LS_KEY = "CONCOST_GROUPWARE_DB_V02";
-  const LS_USER = "CONCOST_GROUPWARE_USER_V02";
+  const LS_KEY = "CONCOST_GROUPWARE_DB_V03";
+  const LS_USER = "CONCOST_GROUPWARE_USER_V03";
 
   function safeParse(s, fallback){ try { return JSON.parse(s); } catch { return fallback; } }
 
@@ -56,7 +82,7 @@
 
   function seedDB(){
     const db = {
-      meta: { version:"0.2", createdAt: nowISO() },
+      meta: { version:"0.3", createdAt: nowISO() },
       users: [
         { userId:"u_staff_1", name:"작업자A", role:"staff" },
         { userId:"u_staff_2", name:"작업자B", role:"staff" },
@@ -64,6 +90,7 @@
         { userId:"u_manager", name:"실장", role:"manager" },
         { userId:"u_director",name:"본부장", role:"director" },
         { userId:"u_vp",      name:"상무", role:"vp" },
+        { userId:"u_svp",     name:"부사장", role:"svp" },   // ✅ 추가
         { userId:"u_ceo",     name:"대표", role:"ceo" }
       ],
       projects: [
@@ -151,11 +178,12 @@
    * Route
    ***********************/
   const ROUTE_META = {
-    "/log":       "업무일지",
-    "/approve":   "승인",
-    "/dashboard": "프로젝트별 인원대비 소요시간",
-    "/calendar":  "종합 공정관리",
-    "/checklist": "프로젝트별 체크리스트"
+    "/log":            "업무일지",
+    "/approve":        "승인",
+    "/dashboard":      "프로젝트별 인원대비 소요시간",
+    "/calendar":       "종합 공정관리",
+    "/checklist":      "프로젝트별 체크리스트",
+    "/checklist-view": "체크리스트 목록"
   };
 
   function getRoute(){
@@ -164,13 +192,51 @@
     return m ? m[1] : "/log";
   }
 
-  function setActiveNav(){
+  function allowedRoutesFor(user){
+    if (isStaff(user)){
+      return new Set(["/log","/checklist-view"]);
+    }
+    // leader+
+    return new Set(["/log","/approve","/dashboard","/calendar","/checklist","/checklist-view"]);
+  }
+
+  function enforceRouteAuth(db){
+    const uid = getUserId(db);
+    const me = userById(db, uid);
     const route = getRoute();
+    const allowed = allowedRoutesFor(me);
+
+    if (!allowed.has(route)){
+      // staff가 checklist(작성) 접근하면 목록으로 보내기
+      if (isStaff(me) && route === "/checklist"){
+        location.hash = "#/checklist-view";
+      } else {
+        location.hash = "#/log";
+      }
+      return false;
+    }
+    return true;
+  }
+
+  function setActiveNav(db){
+    const uid = getUserId(db);
+    const me = userById(db, uid);
+    const allowed = allowedRoutesFor(me);
+    const route = getRoute();
+
+    // 메뉴 숨김/표시
     $$(".nav-item").forEach(a => {
-      const href = a.getAttribute("href") || "";
-      const is = href === `#${route}`;
-      a.classList.toggle("active", is);
+      const r = a.getAttribute("data-route") || "";
+      const show = allowed.has(r);
+      a.classList.toggle("hidden", !show);
     });
+
+    // active 처리
+    $$(".nav-item").forEach(a => {
+      const r = a.getAttribute("data-route") || "";
+      a.classList.toggle("active", r === route);
+    });
+
     $("#routeTitle").textContent = ROUTE_META[route] || "";
   }
 
@@ -182,7 +248,6 @@
   }
 
   function computeProjectDays(db, projectId){
-    // 승인된 업무일지에서 (projectId + date) unique count
     const set = new Set();
     for (const l of db.logs){
       if (l.status !== "approved") continue;
@@ -257,14 +322,11 @@
     const dateInput = el("input", { class:"input", type:"date", value: todayISO() });
 
     let entries = [ makeEmptyEntry(db) ];
-
     const entriesHost = el("div", { class:"stack" });
 
     function rerenderEntries(){
       entriesHost.innerHTML = "";
-      entries.forEach((ent, idx) => {
-        entriesHost.appendChild(renderEntryCard(ent, idx));
-      });
+      entries.forEach((ent, idx) => entriesHost.appendChild(renderEntryCard(ent, idx)));
     }
 
     function renderEntryCard(ent, idx){
@@ -371,7 +433,7 @@
 
         saveDB(db);
         toast("업무일지 제출 완료 (승인 대기)");
-        location.hash = "#/approve";
+        // staff는 승인 화면 접근 불가 → 그냥 토스트만
         render();
       }
     }, "제출하기");
@@ -402,7 +464,7 @@
   }
 
   /***********************
-   * View: 승인 (#/approve)
+   * View: 승인 (#/approve) (Leader+만 접근)
    ***********************/
   function viewApprove(db){
     const view = $("#view");
@@ -412,7 +474,6 @@
     const submitted = db.logs.filter(l => l.status === "submitted")
       .sort((a,b)=>(a.submittedAt||"").localeCompare(b.submittedAt||""));
 
-    // 작성자+날짜로 묶기
     const groups = new Map();
     for (const l of submitted){
       const k = `${l.writerId}__${l.date}`;
@@ -490,7 +551,7 @@
   }
 
   /***********************
-   * View: 대시보드 (#/dashboard)
+   * View: 대시보드 (#/dashboard) (Leader+만 접근)
    ***********************/
   function viewDashboard(db){
     const view = $("#view");
@@ -526,7 +587,6 @@
       ) : el("div", { class:"empty" }, "프로젝트가 없습니다.")
     );
 
-    // URL 선택 지원
     const h = location.hash;
     const m = h.match(/[?&]p=([^&]+)/);
     if (m && db.projects.some(p=>p.projectId===decodeURIComponent(m[1]))) selected = decodeURIComponent(m[1]);
@@ -569,25 +629,19 @@
 
     const right = el("div", { class:"stack" }, rightTop, rightBottom);
 
-    view.appendChild(
-      el("div", { class:"dash" },
-        left,
-        right
-      )
-    );
+    view.appendChild(el("div", { class:"dash" }, left, right));
 
-    // 선택 유지 위해 hash 갱신
     if (sp?.projectId){
       const base = "#/dashboard";
       if (!location.hash.includes("?p=") || decodeURIComponent((location.hash.match(/p=([^&]+)/)||[])[1]||"") !== sp.projectId){
         history.replaceState(null, "", `${base}?p=${encodeURIComponent(sp.projectId)}`);
-        setActiveNav();
+        setActiveNav(db);
       }
     }
   }
 
   /***********************
-   * View: 달력 (#/calendar)
+   * View: 달력 (#/calendar) (Leader+만 접근)
    ***********************/
   function viewCalendar(db){
     const view = $("#view");
@@ -710,9 +764,7 @@
 
       const grid = el("div", { class:"cal-grid" });
 
-      for (let i=0;i<startDow;i++){
-        grid.appendChild(el("div", { class:"cal-cell cal-empty" }));
-      }
+      for (let i=0;i<startDow;i++) grid.appendChild(el("div", { class:"cal-cell cal-empty" }));
 
       for (let day=1; day<=daysInMonth; day++){
         const dateISO = `${y}-${pad2(m+1)}-${pad2(day)}`;
@@ -749,11 +801,57 @@
   }
 
   /***********************
-   * View: 체크리스트 (#/checklist)  ✅ 분리 탭
+   * Checklist Utils
+   ***********************/
+  function ensureChecklistShape(item){
+    // v0.3 필드 보정
+    if (!Array.isArray(item.confirmations)) item.confirmations = [];
+    if (typeof item.status !== "string") item.status = "open";
+    if (typeof item.doneBy !== "string") item.doneBy = "";
+    if (typeof item.doneAt !== "string") item.doneAt = "";
+    return item;
+  }
+
+  function confirmChecklist(db, item, confirmerId){
+    ensureChecklistShape(item);
+    const exists = item.confirmations.some(c => c.userId === confirmerId);
+    if (!exists){
+      item.confirmations.push({ userId: confirmerId, at: nowISO() });
+    } else {
+      // 이미 확인했으면 최신 시간으로 갱신 (원하면 누적 대신 갱신)
+      const c = item.confirmations.find(x => x.userId === confirmerId);
+      if (c) c.at = nowISO();
+    }
+  }
+
+  function setChecklistDone(db, item, done){
+    ensureChecklistShape(item);
+    if (done){
+      item.status = "done";
+      item.doneBy = getUserId(db);
+      item.doneAt = nowISO();
+    } else {
+      item.status = "open";
+      item.doneBy = "";
+      item.doneAt = "";
+    }
+  }
+
+  /***********************
+   * View: 체크리스트 작성/관리 (#/checklist) (Leader+만)
    ***********************/
   function viewChecklist(db){
     const view = $("#view");
     view.innerHTML = "";
+
+    const uid = getUserId(db);
+    const me = userById(db, uid);
+
+    if (!isLeaderPlus(me)){
+      // staff가 들어오면 목록으로
+      location.hash = "#/checklist-view";
+      return;
+    }
 
     let selectedProjectId = db.projects[0]?.projectId || "";
 
@@ -765,10 +863,11 @@
     const titleInput = el("input", { class:"input", placeholder:"체크리스트 제목(예: H10 → H13 변경)" });
     const descInput  = el("textarea", { class:"textarea", rows:"3", placeholder:"설명(선택)" });
 
+    // 담당자는 staff 대상으로
     const assigneeSel = el("select", { class:"select" },
       ...db.users
-        .filter(u => u.role === "staff" || u.role === "leader")
-        .map(u => el("option", { value:u.userId }, `${u.name} (${u.role})`))
+        .filter(u => u.role === "staff")
+        .map(u => el("option", { value:u.userId }, `${u.name} (${ROLE_LABEL[u.role]})`))
     );
 
     const imageInput = el("input", { class:"input", type:"file", accept:"image/*" });
@@ -779,26 +878,26 @@
         const title = titleInput.value.trim();
         if (!title) return toast("체크리스트 제목을 입력해 주세요.");
 
-        const uid = getUserId(db);
         const assigneeId = assigneeSel.value;
 
         let imageDataUrl = "";
         const file = imageInput.files?.[0];
         if (file) imageDataUrl = await fileToDataURL(file);
 
-        db.checklists.push({
+        db.checklists.push(ensureChecklistShape({
           itemId: uuid(),
           projectId: selectedProjectId,
           title,
           description: descInput.value.trim(),
           imageDataUrl,
-          writerId: uid,
-          assigneeId,
+          writerId: uid,          // leader+ 작성자
+          assigneeId,             // staff 담당자
           status: "open",
           createdAt: nowISO(),
           doneBy: "",
-          doneAt: ""
-        });
+          doneAt: "",
+          confirmations: []       // ✅ 누가/언제 확인했는지
+        }));
 
         saveDB(db);
         titleInput.value = "";
@@ -814,6 +913,7 @@
     function draw(){
       listHost.innerHTML = "";
       const items = db.checklists
+        .map(ensureChecklistShape)
         .filter(i => i.projectId === selectedProjectId)
         .slice()
         .sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
@@ -828,52 +928,53 @@
         const assignee = userById(db, it.assigneeId);
         const doneBy = it.doneBy ? userById(db, it.doneBy) : null;
 
-        const checkbox = el("input", {
-          type:"checkbox",
-          checked: it.status === "done",
-          onchange:(e)=>{
-            const checked = e.target.checked;
-            if (checked){
-              it.status = "done";
-              it.doneBy = getUserId(db);
-              it.doneAt = nowISO();
-            } else {
-              it.status = "open";
-              it.doneBy = "";
-              it.doneAt = "";
-            }
+        const btnConfirm = el("button", {
+          class:"btn tiny",
+          onclick:()=>{
+            confirmChecklist(db, it, uid);
             saveDB(db);
+            toast("확인 기록 저장");
             draw();
           }
-        });
+        }, "확인");
+
+        const confirmText = it.confirmations.length
+          ? it.confirmations
+              .slice()
+              .sort((a,b)=> (b.at||"").localeCompare(a.at||""))
+              .map(c => `${userById(db,c.userId)?.name||"-"}(${c.at})`)
+              .join(" · ")
+          : "확인 기록 없음";
 
         const title = el("div", { class:`list-title ${it.status==="done" ? "done-title" : ""}` }, it.title);
 
-        const meta = el("div", { class:"list-sub" },
-          `작성: ${writer?.name||"-"} · 담당: ${assignee?.name||"-"} · ${it.createdAt||""}`
+        const meta = el("div", { class:"meta-line" },
+          el("span",{class:"pill-mini orange"},`담당: ${assignee?.name||"-"}`),
+          el("span",{class:"pill-mini"},`작성: ${writer?.name||"-"} · ${it.createdAt||"-"}`),
+          it.status==="done"
+            ? el("span",{class:"pill-mini green"},`체크완료: ${doneBy?.name||"-"} · ${it.doneAt||"-"}`)
+            : el("span",{class:"pill-mini"},`체크완료: -`)
         );
 
-        const doneMeta = it.status==="done"
-          ? el("div", { class:"list-sub done-meta" }, `완료: ${doneBy?.name||"-"} · ${it.doneAt||"-"}`)
-          : null;
+        const confirmMeta = el("div", { class:"list-sub", style:"margin-top:6px;" }, `확인: ${confirmText}`);
 
         const desc = it.description ? el("div", { class:"list-sub" }, it.description) : null;
 
         const btnView = it.imageDataUrl
           ? el("button", {
-              class:"btn ghost",
+              class:"btn tiny ghost",
               onclick:()=>{
                 const body = el("div",{}, el("img",{src:it.imageDataUrl, style:"max-width:100%;border-radius:12px;display:block;"}));
                 const foot = el("div",{}, el("button",{class:"btn", onclick:modalClose},"닫기"));
                 modalOpen("이미지 보기", body, foot);
               }
-            }, "보기")
-          : el("span", { class:"muted", style:"font-size:12px;align-self:flex-start;padding-top:8px;" }, "이미지 없음");
+            }, "이미지")
+          : el("span", { class:"muted", style:"font-size:12px;" }, "이미지 없음");
 
-        const btnDel = el("button", {
-          class:"btn ghost",
+        const delBtn = el("button", {
+          class:"btn tiny ghost",
           onclick:()=>{
-            if (!confirm("이 항목을 삭제할까요?")) return;
+            if (!confirm("이 체크리스트 항목을 삭제할까요?")) return;
             db.checklists = db.checklists.filter(x => x.itemId !== it.itemId);
             saveDB(db);
             toast("삭제 완료");
@@ -881,113 +982,297 @@
           }
         }, "삭제");
 
-        const row = el("div", { class:`list-item ${it.status==="done" ? "done-row" : ""}` },
-          el("div", { class:"list-row" },
-            el("div", { class:"list-left" }, checkbox),
-            el("div", { class:"list-mid" }, title, meta, doneMeta, desc),
-            el("div", { class:"list-right" }, btnView, btnDel)
+        const headRight = el("div", { class:"row" }, btnView, btnConfirm, delBtn);
+
+        listHost.appendChild(
+          el("div", { class:`list-item ${it.status==="done" ? "done" : ""}` },
+            el("div", { class:"row", style:"justify-content:space-between;align-items:flex-start;gap:10px;" },
+              el("div", { style:"min-width:0;" },
+                title,
+                meta,
+                desc,
+                confirmMeta
+              ),
+              headRight
+            )
           )
         );
-
-        listHost.appendChild(row);
       }
     }
 
-    const form = el("div", { class:"card" },
-      el("div", { class:"card-head" },
-        el("div", { class:"card-title" }, "체크리스트 작성"),
-        el("div", { class:"row" }, el("div",{class:"muted",style:"font-weight:1000;font-size:12px;"},"프로젝트"), projectSel)
-      ),
-      el("div", { class:"grid2" },
-        el("div", {},
-          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "제목"),
-          titleInput
+    view.appendChild(
+      el("div", { class:"stack" },
+        el("div", { class:"card" },
+          el("div", { class:"card-head" },
+            el("div", { class:"card-title" }, "체크리스트 작성"),
+            el("div", { class:"row" },
+              el("div", { class:"muted", style:"font-weight:1000;font-size:12px;" }, "프로젝트"),
+              projectSel
+            )
+          ),
+          el("div", { class:"grid2" },
+            el("div", {},
+              el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "제목"),
+              titleInput
+            ),
+            el("div", {},
+              el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "담당자(staff)"),
+              assigneeSel
+            )
+          ),
+          el("div", { class:"grid2" },
+            el("div", {},
+              el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "설명(선택)"),
+              descInput
+            ),
+            el("div", {},
+              el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "이미지 첨부(선택)"),
+              imageInput
+            )
+          ),
+          el("div", { class:"row", style:"justify-content:flex-end;margin-top:10px;" }, addBtn)
         ),
-        el("div", {},
-          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "담당자"),
-          assigneeSel
+
+        el("div", { class:"card" },
+          el("div", { class:"card-head" },
+            el("div", { class:"card-title" }, "체크리스트 목록"),
+            el("div", { class:"badge" }, "Leader+ 관리 화면")
+          ),
+          listHost
         )
-      ),
-      el("div", {},
-        el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "설명(선택)"),
-        descInput
-      ),
-      el("div", { class:"grid2" },
-        el("div", {},
-          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;margin:2px 0 6px;" }, "이미지 첨부(선택)"),
-          imageInput
-        ),
-        el("div", { style:"display:flex;align-items:flex-end;justify-content:flex-end;" }, addBtn)
       )
     );
-
-    view.appendChild(el("div",{class:"stack"}, form, el("div",{class:"card"}, el("div",{class:"card-head"}, el("div",{class:"card-title"},"체크리스트 목록")), listHost)));
 
     draw();
   }
 
   /***********************
-   * Boot / Render
+   * View: 체크리스트 목록 (#/checklist-view)
+   * - staff도 접근 가능
+   * - staff: 체크(완료) 가능
+   * - leader+: 확인(검토) 기록 버튼만 가능(체크는 불가)
    ***********************/
-  function wireTopbar(db){
-    const sel = $("#userSelect");
-    sel.innerHTML = "";
-    const current = getUserId(db);
+  function viewChecklistView(db){
+    const view = $("#view");
+    view.innerHTML = "";
 
-    for (const u of db.users){
-      const opt = el("option", { value:u.userId }, `${u.name} (${u.role})`);
-      if (u.userId === current) opt.selected = true;
-      sel.appendChild(opt);
+    const uid = getUserId(db);
+    const me = userById(db, uid);
+
+    let selectedProjectId = db.projects[0]?.projectId || "";
+
+    const projectSel = buildProjectSelect(db, selectedProjectId, (v)=>{
+      selectedProjectId = v;
+      draw();
+    });
+
+    const listHost = el("div", { class:"list" });
+
+    function draw(){
+      listHost.innerHTML = "";
+
+      const items = db.checklists
+        .map(ensureChecklistShape)
+        .filter(i => i.projectId === selectedProjectId)
+        .slice()
+        .sort((a,b)=>(b.createdAt||"").localeCompare(a.createdAt||""));
+
+      if (!items.length){
+        listHost.appendChild(el("div",{class:"empty"}, "체크리스트 항목이 없습니다."));
+        return;
+      }
+
+      for (const it of items){
+        const writer = userById(db, it.writerId);
+        const assignee = userById(db, it.assigneeId);
+        const doneBy = it.doneBy ? userById(db, it.doneBy) : null;
+
+        // ✅ staff만 체크 가능
+        const canCheck = isStaff(me);
+
+        const check = el("input", {
+          type:"checkbox",
+          class:"chk",
+          checked: it.status === "done",
+          disabled: !canCheck,
+          onchange:()=>{
+            setChecklistDone(db, it, check.checked);
+            saveDB(db);
+            toast(check.checked ? "체크 완료 기록" : "체크 해제");
+            draw();
+          }
+        });
+
+        const title = el("div", { class:`list-title ${it.status==="done" ? "done-title" : ""}` }, it.title);
+
+        const meta = el("div", { class:"meta-line" },
+          el("span",{class:"pill-mini orange"},`담당: ${assignee?.name||"-"}`),
+          el("span",{class:"pill-mini"},`작성: ${writer?.name||"-"} · ${it.createdAt||"-"}`),
+          it.status==="done"
+            ? el("span",{class:"pill-mini green"},`체크완료: ${doneBy?.name||"-"} · ${it.doneAt||"-"}`)
+            : el("span",{class:"pill-mini"},`체크완료: -`)
+        );
+
+        const confirmText = it.confirmations.length
+          ? it.confirmations
+              .slice()
+              .sort((a,b)=> (b.at||"").localeCompare(a.at||""))
+              .map(c => `${userById(db,c.userId)?.name||"-"}(${c.at})`)
+              .join(" · ")
+          : "확인 기록 없음";
+
+        const confirmMeta = el("div", { class:"list-sub", style:"margin-top:6px;" }, `확인: ${confirmText}`);
+
+        const desc = it.description ? el("div", { class:"list-sub" }, it.description) : null;
+
+        // ✅ leader+는 확인 버튼(검토 기록) 가능
+        const btnConfirm = el("button", {
+          class:"btn tiny",
+          disabled: !isLeaderPlus(me),
+          onclick:()=>{
+            confirmChecklist(db, it, uid);
+            saveDB(db);
+            toast("확인 기록 저장");
+            draw();
+          }
+        }, "확인");
+
+        const btnView = it.imageDataUrl
+          ? el("button", {
+              class:"btn tiny ghost",
+              onclick:()=>{
+                const body = el("div",{}, el("img",{src:it.imageDataUrl, style:"max-width:100%;border-radius:12px;display:block;"}));
+                const foot = el("div",{}, el("button",{class:"btn", onclick:modalClose},"닫기"));
+                modalOpen("이미지 보기", body, foot);
+              }
+            }, "이미지")
+          : el("span", { class:"muted", style:"font-size:12px;" }, "이미지 없음");
+
+        listHost.appendChild(
+          el("div", { class:`list-item ${it.status==="done" ? "done" : ""}` },
+            el("div", { class:"row", style:"justify-content:space-between;align-items:flex-start;gap:10px;" },
+              el("div", { style:"min-width:0;display:flex;gap:10px;align-items:flex-start;" },
+                check,
+                el("div", { style:"min-width:0;" },
+                  title,
+                  meta,
+                  desc,
+                  confirmMeta
+                )
+              ),
+              el("div", { class:"row" }, btnView, btnConfirm)
+            )
+          )
+        );
+      }
     }
 
-    sel.onchange = (e)=>{
-      setUserId(e.target.value);
-      toast("사용자 전환 완료");
-      render();
-    };
+    view.appendChild(
+      el("div", { class:"stack" },
+        el("div", { class:"card" },
+          el("div", { class:"card-head" },
+            el("div", { class:"card-title" }, "체크리스트 목록(프로젝트별)"),
+            el("div", { class:"row" },
+              el("div", { class:"muted", style:"font-weight:1000;font-size:12px;" }, "프로젝트"),
+              projectSel
+            )
+          ),
+          listHost
+        )
+      )
+    );
 
-    $("#btnResetDemo").onclick = ()=>{
-      if (!confirm("데모 데이터를 초기화할까요? (localStorage 삭제)")) return;
-      localStorage.removeItem(LS_KEY);
-      toast("초기화 완료");
-      location.hash = "#/log";
-      render();
-    };
-
-    $("#modalClose").onclick = modalClose;
-    $("#modalBackdrop").addEventListener("click", (e)=>{
-      if (e.target === $("#modalBackdrop")) modalClose();
-    });
+    draw();
   }
 
-  function updateBadge(db){
-    $("#badgePending").textContent = String(pendingCount(db));
-  }
-
+  /***********************
+   * Global Render
+   ***********************/
   function render(){
     const db = ensureDB();
+    enforceRouteAuth(db);
 
-    wireTopbar(db);
-    updateBadge(db);
-    setActiveNav();
+    // 사용자 셀렉트
+    const userSel = $("#userSelect");
+    if (userSel && userSel.childElementCount === 0){
+      db.users.forEach(u=>{
+        userSel.appendChild(el("option", { value:u.userId }, `${u.name} (${ROLE_LABEL[u.role]||u.role})`));
+      });
+    }
+
+    const uid = getUserId(db);
+    if (userSel) userSel.value = uid;
+
+    // 승인 배지
+    const b = $("#badgePending");
+    if (b) b.textContent = String(pendingCount(db));
+
+    // nav routes data-route 세팅(처음 1회)
+    $$(".nav-item").forEach(a=>{
+      if (!a.getAttribute("data-route")){
+        const href = a.getAttribute("href") || "";
+        const m = href.match(/^#(\/[^?]*)/);
+        if (m) a.setAttribute("data-route", m[1]);
+      }
+    });
+
+    setActiveNav(db);
 
     const route = getRoute();
+    const view = $("#view");
+    if (!view) return;
+
     if (route === "/log") viewLog(db);
     else if (route === "/approve") viewApprove(db);
     else if (route === "/dashboard") viewDashboard(db);
     else if (route === "/calendar") viewCalendar(db);
     else if (route === "/checklist") viewChecklist(db);
+    else if (route === "/checklist-view") viewChecklistView(db);
     else {
       location.hash = "#/log";
       viewLog(db);
     }
   }
 
-  window.addEventListener("hashchange", render);
-  window.addEventListener("storage", (e)=>{ if (e.key === LS_KEY) render(); });
+  /***********************
+   * Wire events
+   ***********************/
+  function boot(){
+    const db = ensureDB();
 
-  // init
-  if (!location.hash) location.hash = "#/log";
-  render();
+    // modal
+    $("#modalClose")?.addEventListener("click", modalClose);
+    $("#modalBackdrop")?.addEventListener("click", (e)=>{
+      if (e.target === $("#modalBackdrop")) modalClose();
+    });
+
+    // user
+    $("#userSelect")?.addEventListener("change", (e)=>{
+      const uid = e.target.value;
+      setUserId(uid);
+      toast("사용자 변경");
+      render();
+    });
+
+    // reset demo
+    $("#btnResetDemo")?.addEventListener("click", ()=>{
+      if (!confirm("데모 데이터를 초기화할까요? (localStorage 초기화)")) return;
+      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem(LS_USER);
+      toast("데모 데이터 초기화");
+      render();
+    });
+
+    // route
+    window.addEventListener("hashchange", render);
+
+    // default route
+    if (!location.hash) location.hash = "#/log";
+
+    render();
+  }
+
+  document.addEventListener("DOMContentLoaded", boot);
 
 })();
+
