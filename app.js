@@ -1660,8 +1660,8 @@
           el("div", { class:"card-head" },
             el("div", { class:"card-title" }, "체크리스트 목록(프로젝트별)"),
             el("div", { class:"row" },
-              el("div", { class:"muted", style:"font-weight:1000;font-size
-:12px;" }, "프로젝트"),
+              el("div", { class:"muted", style:"font-weight:1000;font-size:12px;" }, "프로젝트"),
+
               projectSel
             )
           ),
