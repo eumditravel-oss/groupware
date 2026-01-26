@@ -1269,6 +1269,27 @@
     // default route
     if (!location.hash) location.hash = "#/log";
 
+     async function sheetsExport(){
+  const url = (window.SHEETS_API_URL||"").trim();
+  if (!url) return toast("SHEETS_API_URL이 없습니다.");
+  const res = await fetch(`${url}?action=export`, { method:"GET" });
+  if (!res.ok) throw new Error("export failed");
+  return await res.json();
+}
+
+async function sheetsImport(payload){
+  const url = (window.SHEETS_API_URL||"").trim();
+  if (!url) return toast("SHEETS_API_URL이 없습니다.");
+  const res = await fetch(`${url}?action=import`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error("import failed");
+  return await res.json();
+}
+
+
     render();
   }
 
