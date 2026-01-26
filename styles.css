@@ -741,3 +741,32 @@ a{ color:inherit; text-decoration:none; }
   display:none !important;
 }
 
+/* ✅ 상단바 레이아웃: 탭을 한 줄 아래로 내리기 */
+header.topbar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+}
+
+/* brand(로고/타이틀) */
+header.topbar .brand{
+  order:1;
+}
+
+/* actions(우측 버튼/사용자 선택) */
+header.topbar .actions{
+  order:2;
+  margin-left:auto;
+}
+
+/* ✅ 대분류 탭: 아래줄로 내림 */
+#topTabs{
+  order:3;
+  width:100%;
+  margin-top:6px;
+  display:flex;
+  gap:8px;
+  justify-content:flex-start; /* 왼쪽 정렬 */
+}
+
