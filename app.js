@@ -99,57 +99,38 @@ const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
   let pendingPushAfter = false;
 
   function schedulePush(db){
-    if (!AUTO_PUSH_ON_SAVE) return;
-    if (isPulling) return;
+  if (!AUTO_PUSH_ON_SAVE) return;
+  if (isPulling) return;
 
-    clearTimeout(pushTimer);
-    pushTimer = setTimeout(async () => {
-      if (isPushing){
-        pendingPushAfter = true;
-        return;
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(async () => {
+    if (isPushing){
+      pendingPushAfter = true;
+      return;
+    }
+
+    isPushing = true;
+    try{
+      const payload = dbToSheetsPayload(db);
+      const res = await sheetsImport(payload);
+      if (res && res.ok){
+        toast("✅ 자동 저장 완료(시트)");
+      } else {
+        toast("❌ 자동 저장 실패(시트 응답 오류)");
       }
-       async function sheetsImport(payload){
-  const url = (SHEETS_API_URL || "").trim();
-  if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
-
-  // ✅ CORS 차단/비활성화면 아예 요청 안 함
-  if (!SHEETS_ENABLED){
-    toast("ℹ️ 시트 기능이 비활성화되어 있습니다. (SHEETS_ENABLED=false)");
-    return null;
-  }
-
-  const res = await fetch(`${url}?action=import`, {
-    method:"POST",
-    headers:{ "Content-Type":"text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
-  });
-
-  if (!res.ok) throw new Error("import failed");
-  return await res.json();
+    }catch(err){
+      console.error(err);
+      toast("❌ 자동 저장 실패(콘솔 확인)");
+    }finally{
+      isPushing = false;
+      if (pendingPushAfter){
+        pendingPushAfter = false;
+        schedulePush(ensureDB());
+      }
+    }
+  }, PUSH_DEBOUNCE_MS);
 }
 
-
-      isPushing = true;
-      try{
-        const payload = dbToSheetsPayload(db);
-        const res = await sheetsImport(payload);
-        if (res && res.ok){
-          toast("✅ 자동 저장 완료(시트)");
-        } else {
-          toast("❌ 자동 저장 실패(시트 응답 오류)");
-        }
-      }catch(err){
-        console.error(err);
-        toast("❌ 자동 저장 실패(콘솔 확인)");
-      }finally{
-        isPushing = false;
-        if (pendingPushAfter){
-          pendingPushAfter = false;
-          schedulePush(ensureDB());
-        }
-      }
-    }, PUSH_DEBOUNCE_MS);
-  }
 
   function saveDB(db){
     localStorage.setItem(LS_KEY, JSON.stringify(db));
@@ -261,7 +242,6 @@ const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
   const url = (SHEETS_API_URL || "").trim();
   if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
 
-  // ✅ CORS 차단 환경에서는 fetch 자체를 하지 않아서 콘솔 빨간줄을 방지
   if (!SHEETS_ENABLED){
     toast("ℹ️ 시트 기능이 비활성화되어 있습니다. (SHEETS_ENABLED=false)");
     return null;
@@ -276,7 +256,11 @@ async function sheetsImport(payload){
   const url = (SHEETS_API_URL || "").trim();
   if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
 
-  // ✅ Apps Script WebApp에서 CORS/Preflight(OPTIONS) 회피용
+  if (!SHEETS_ENABLED){
+    toast("ℹ️ 시트 기능이 비활성화되어 있습니다. (SHEETS_ENABLED=false)");
+    return null;
+  }
+
   const res = await fetch(`${url}?action=import`, {
     method:"POST",
     headers:{ "Content-Type":"text/plain;charset=utf-8" },
@@ -286,6 +270,7 @@ async function sheetsImport(payload){
   if (!res.ok) throw new Error("import failed");
   return await res.json();
 }
+
 
 
 
@@ -1831,44 +1816,49 @@ if (AUTO_PULL_ON_START){
   }
 
     // sheets backup (수동 Push)
-    $("#btnSheetBackup")?.addEventListener("click", async ()=>{
-      try{
-        const db = ensureDB();
-        const payload = dbToSheetsPayload(db);
-        const res = await sheetsImport(payload);
-        if (res && res.ok) toast("✅ 시트로 백업 완료");
-        else toast("❌ 백업 실패(시트 응답 오류)");
-      }catch(err){
-        console.error(err);
-        toast("❌ 백업 실패(콘솔 확인)");
-      }
-    });
-        $("#btnSheetRestore")?.addEventListener("click", async ()=>{
+$("#btnSheetBackup")?.addEventListener("click", async ()=>{
   if (!SHEETS_ENABLED){
-    toast("ℹ️ 시트 복원이 비활성화되어 있습니다. (설정에서 SHEETS_ENABLED=true 필요)");
+    toast("ℹ️ 시트 백업이 비활성화되어 있습니다. (SHEETS_ENABLED=true 필요)");
     return;
-        
+  }
+  try{
+    const db = ensureDB();
+    const payload = dbToSheetsPayload(db);
+    const res = await sheetsImport(payload);
+    if (res && res.ok) toast("✅ 시트로 백업 완료");
+    else toast("❌ 백업 실패(시트 응답 오류)");
+  }catch(err){
+    console.error(err);
+    toast("❌ 백업 실패(콘솔 확인)");
+  }
+});
 
-    // sheets restore (수동 Pull)
-    $("#btnSheetRestore")?.addEventListener("click", async ()=>{
-      isPulling = true;
-      try{
-        const data = await sheetsExport();
-        if (!data || !data.ok){
-          toast("❌ 시트 export 실패");
-          return;
-        }
-        const db = sheetsPayloadToDB(data);
-        localStorage.setItem(LS_KEY, JSON.stringify(db)); // ✅ restore도 직접 저장(자동 push 방지)
-        toast("✅ 시트에서 복원 완료");
-        render();
-      }catch(err){
-        console.error(err);
-        toast("❌ 복원 실패(콘솔 확인)");
-      }finally{
-        isPulling = false;
-      }
-    });
+// sheets restore (수동 Pull)
+$("#btnSheetRestore")?.addEventListener("click", async ()=>{
+  if (!SHEETS_ENABLED){
+    toast("ℹ️ 시트 복원이 비활성화되어 있습니다. (SHEETS_ENABLED=true 필요)");
+    return;
+  }
+
+  isPulling = true;
+  try{
+    const data = await sheetsExport();
+    if (!data || !data.ok){
+      toast("❌ 시트 export 실패");
+      return;
+    }
+    const db = sheetsPayloadToDB(data);
+    localStorage.setItem(LS_KEY, JSON.stringify(db)); // restore도 직접 저장(자동 push 방지)
+    toast("✅ 시트에서 복원 완료");
+    render();
+  }catch(err){
+    console.error(err);
+    toast("❌ 복원 실패(콘솔 확인)");
+  }finally{
+    isPulling = false;
+  }
+});
+
 
     // route
     window.addEventListener("hashchange", render);
