@@ -700,6 +700,8 @@ function setHash(tab, sub){
       )
     );
   }
+   const FIN_URL = "https://eumditravel-oss.github.io/FIN/"; // ✅ FIN 산출 링크
+
 
   /***********************
    * VIEW: 산출
@@ -707,25 +709,38 @@ function setHash(tab, sub){
   function viewCalc(db, sub){
     const view = $("#view");
     if (!view) return;
-    view.innerHTML = "";
+    // ✅ 탭별 화면 렌더링 (최소 MVP)
+view.innerHTML = "";
 
-    setRouteTitle("산출");
+// 1) 산출 탭
+if (tab === "산출") {
+  // 타이틀
+  setRouteTitle("산출");
 
-    if (sub === "fin"){
-      window.location.href = "https://eumditravel-oss.github.io/FIN2/";
-      return;
-    }
+  // 우측 상단(노란 박스) - 새 창 열기 버튼
+  const tools = el("div", { class: "viewTopTools" },
+    el("button", {
+      class: "btn",
+      onclick: () => window.open(FIN_URL, "_blank", "noopener,noreferrer")
+    }, "새 창으로 열기")
+  );
 
-    view.appendChild(
-      el("div", { class:"card" },
-        el("div", { class:"card-head" },
-          el("div", { class:"card-title" }, "ㅇㅇ산출"),
-          el("div", { class:"badge" }, "준비중")
-        ),
-        el("div", { class:"empty" }, "추가 산출 모듈 연결 예정")
-      )
-    );
-  }
+  // 빨간 박스 영역 - iframe 임베드
+  const wrap = el("div", { class: "embedWrap" },
+    el("iframe", {
+      class: "embedFrame",
+      src: FIN_URL,
+      title: "FIN 산출",
+      loading: "lazy",
+      referrerpolicy: "no-referrer"
+    })
+  );
+
+  view.appendChild(tools);
+  view.appendChild(wrap);
+  return;
+}
+
 
   /***********************
    * VIEW: 일정관리 (휴가/회사일정 placeholder)
