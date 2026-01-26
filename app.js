@@ -108,6 +108,26 @@ const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
         pendingPushAfter = true;
         return;
       }
+       async function sheetsImport(payload){
+  const url = (SHEETS_API_URL || "").trim();
+  if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
+
+  // ✅ CORS 차단/비활성화면 아예 요청 안 함
+  if (!SHEETS_ENABLED){
+    toast("ℹ️ 시트 기능이 비활성화되어 있습니다. (SHEETS_ENABLED=false)");
+    return null;
+  }
+
+  const res = await fetch(`${url}?action=import`, {
+    method:"POST",
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!res.ok) throw new Error("import failed");
+  return await res.json();
+}
+
 
       isPushing = true;
       try{
@@ -1804,6 +1824,11 @@ if (AUTO_PULL_ON_START){
       toast("데모 데이터 초기화");
       render();
     });
+     $("#btnSheetBackup")?.addEventListener("click", async ()=>{
+  if (!SHEETS_ENABLED){
+    toast("ℹ️ 시트 백업이 비활성화되어 있습니다. (설정에서 SHEETS_ENABLED=true 필요)");
+    return;
+  }
 
     // sheets backup (수동 Push)
     $("#btnSheetBackup")?.addEventListener("click", async ()=>{
@@ -1818,6 +1843,11 @@ if (AUTO_PULL_ON_START){
         toast("❌ 백업 실패(콘솔 확인)");
       }
     });
+        $("#btnSheetRestore")?.addEventListener("click", async ()=>{
+  if (!SHEETS_ENABLED){
+    toast("ℹ️ 시트 복원이 비활성화되어 있습니다. (설정에서 SHEETS_ENABLED=true 필요)");
+    return;
+        
 
     // sheets restore (수동 Pull)
     $("#btnSheetRestore")?.addEventListener("click", async ()=>{
