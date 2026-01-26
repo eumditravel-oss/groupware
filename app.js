@@ -700,28 +700,33 @@ function setHash(tab, sub){
       )
     );
   }
-   const FIN_URL = "https://eumditravel-oss.github.io/FIN/"; // ✅ FIN 산출 링크
+   const FIN_URL = "https://eumditravel-oss.github.io/FIN2/"; // ✅ FIN 산출 링크(FIN2)
+
 
 
   /***********************
-   * VIEW: 산출
-   ***********************/
-  function viewCalc(db, sub){
-    const view = $("#view");
-    if (!view) return;
-    // ✅ 탭별 화면 렌더링 (최소 MVP)
-view.innerHTML = "";
+ * VIEW: 산출
+ ***********************/
+function viewCalc(db, sub){
+  const view = $("#view");
+  if (!view) return;
 
-// 1) 산출 탭
-if (tab === "산출") {
-  // 타이틀
+  view.innerHTML = "";
   setRouteTitle("산출");
+
+  // sub: fin / etc
+  const isFIN = (sub === "fin");
+  const url = isFIN ? FIN_URL : "about:blank";
 
   // 우측 상단(노란 박스) - 새 창 열기 버튼
   const tools = el("div", { class: "viewTopTools" },
     el("button", {
       class: "btn",
-      onclick: () => window.open(FIN_URL, "_blank", "noopener,noreferrer")
+      onclick: () => {
+        if (url === "about:blank") return;
+        window.open(url, "_blank", "noopener,noreferrer");
+      },
+      ...(url === "about:blank" ? { disabled:true } : {})
     }, "새 창으로 열기")
   );
 
@@ -729,17 +734,31 @@ if (tab === "산출") {
   const wrap = el("div", { class: "embedWrap" },
     el("iframe", {
       class: "embedFrame",
-      src: FIN_URL,
-      title: "FIN 산출",
+      src: url,
+      title: isFIN ? "FIN 산출" : "산출",
       loading: "lazy",
       referrerpolicy: "no-referrer"
     })
   );
 
+  // etc(placeholder) 안내
+  if (!isFIN){
+    view.appendChild(
+      el("div", { class:"card", style:"margin-bottom:10px;" },
+        el("div", { class:"card-head" },
+          el("div", { class:"card-title" }, "ㅇㅇ산출 (준비중)")
+        ),
+        el("div", { class:"muted", style:"padding:12px;" },
+          "현재는 FIN산출만 연결되어 있습니다."
+        )
+      )
+    );
+  }
+
   view.appendChild(tools);
   view.appendChild(wrap);
-  return;
 }
+
 
 
   /***********************
