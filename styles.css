@@ -855,3 +855,60 @@ header.topbar .brand{
 .sideNote{
   display:none !important;
 }
+
+
+/* =========================
+   ✅ Top Tabs를 가운데(노란 영역)로 배치
+========================= */
+header.topbar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+/* brand는 좌측 */
+header.topbar .brand{
+  flex: 0 0 auto;
+}
+
+/* ✅ 가운데 슬롯: 남는 공간을 다 먹고 가운데 정렬 */
+header.topbar .topCenter{
+  flex: 1 1 auto;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-width: 0;
+}
+
+/* ✅ 실제 탭 컨테이너를 가운데에 "딱" */
+#topTabs{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  align-items:center;
+  width: fit-content;     /* 내용만큼 */
+  max-width: 100%;
+}
+
+/* 사용자 박스는 우측 */
+#userBoxTop{
+  flex: 0 0 auto;
+  margin-left:auto;
+}
+
+/* =========================
+   ✅ 탭 버튼: 동그라미(알약) → 살짝 둥근 사각형
+========================= */
+
+/* 탭이 button/a/div 어떤 태그든 잡히게 넓게 처리 */
+#topTabs button,
+#topTabs a,
+#topTabs .tab,
+#topTabs .tabBtn,
+#topTabs .topTab{
+  border-radius: 12px !important;   /* ✅ 999px(알약) 대신 */
+  padding: 10px 14px;               /* 버튼 느낌 */
+}
+
+/* (선택) 탭이 너무 동글하면 10px~14px 사이로 조절 */
+
