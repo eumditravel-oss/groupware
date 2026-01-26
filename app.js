@@ -49,7 +49,7 @@
   const LS_USER = "CONCOST_GROUPWARE_USER_V05";
 
   // ✅ Google Apps Script WebApp URL (고정)
-  const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxCcvFtAT5_wmE6-F_QwCseWA8s0q4PM16jaI_1DFNtQkA_7Rqm2_kgswM9zxzjyf27/exec";
+  const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbz0VVYfP-AFvH4GFRVeB9jRPROrmJeoewa7L45bueOn7cC2O6IGqztwhEgaXs1LY8Zo/exec";
 
   function safeParse(s, fallback){ try { return JSON.parse(s); } catch { return fallback; } }
 
@@ -256,20 +256,17 @@ async function sheetsImport(payload){
   const url = (SHEETS_API_URL || "").trim();
   if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
 
-  // ✅ CORS 차단 환경에서는 fetch 자체를 하지 않아서 콘솔 빨간줄을 방지
-  if (!SHEETS_ENABLED){
-    toast("ℹ️ 시트 기능이 비활성화되어 있습니다. (SHEETS_ENABLED=false)");
-    return null;
-  }
-
+  // ✅ Apps Script WebApp에서 CORS/Preflight(OPTIONS) 회피용
   const res = await fetch(`${url}?action=import`, {
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
     body: JSON.stringify(payload)
   });
+
   if (!res.ok) throw new Error("import failed");
   return await res.json();
 }
+
 
 
   function ensureChecklistShape(item){
