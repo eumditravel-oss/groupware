@@ -10,28 +10,33 @@
   <!-- Topbar -->
   <header class="topbar">
     <div class="brand">
-      <!-- ✅ 로고 이미지로 교체 -->
       <img class="logoImg" src="./assets/logo.png?v=1" alt="CON COST" />
 
       <div class="brandText">
-        <div class="title">CON COST Groupware</div>
-        <div class="sub">업무일지 · 승인 · 공정/일정 · 체크리스트 · 산출 · 전자메일/결재</div>
+        <!-- ✅ 문구 변경 + 크게 -->
+        <div class="title">Con-Cost 그룹웨어</div>
+        <!-- ✅ 아래 설명문구 제거 -->
+        <!-- <div class="sub">업무일지 · 승인 · 공정/일정 · 체크리스트 · 산출 · 전자메일/결재</div> -->
       </div>
     </div>
 
     <!-- Top Tabs (대분류) -->
     <nav id="topTabs" class="topTabs" aria-label="Main Tabs"></nav>
 
-    <div class="actions">
-      <div class="userBox">
-        <div class="muted small" style="font-weight:900;">사용자</div>
-        <select id="userSelect" class="select"></select>
-      </div>
+    <!-- ✅ 사용자 탭을 actions에서 분리해서 topTabs 오른쪽(화살표 영역)으로 배치 -->
+    <div class="userBox" id="userBoxTop">
+      <div class="muted small" style="font-weight:900;">사용자</div>
+      <select id="userSelect" class="select"></select>
+    </div>
 
+    <!-- ✅ 3개 버튼은 화면에서 제거(아예 삭제) -->
+    <!--
+    <div class="actions">
       <button id="btnSheetBackup" class="btn">시트로 백업</button>
       <button id="btnSheetRestore" class="btn">시트에서 복원</button>
       <button id="btnResetDemo" class="btn ghost">데모 데이터 초기화</button>
     </div>
+    -->
   </header>
 
   <!-- App Layout -->
@@ -45,6 +50,8 @@
 
       <nav id="sideMenu" class="sideNav"></nav>
 
+      <!-- ✅ 정책 안내 박스 삭제 -->
+      <!--
       <div class="sideNote">
         <div class="noteTitle">정책(GitHub MVP 안내)</div>
         <div class="noteBody">
@@ -52,6 +59,7 @@
           상단의 “시트 백업/복원”으로 Google Sheets를 저장소처럼 사용할 수 있습니다.
         </div>
       </div>
+      -->
 
       <div id="toast" class="toastHost" aria-live="polite"></div>
     </aside>
