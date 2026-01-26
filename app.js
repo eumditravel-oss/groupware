@@ -461,16 +461,24 @@ async function sheetsImport(payload){
   };
 
   function parseHash(){
-    const h = (location.hash || "").replace(/^#/, "");
-    const [tabRaw, subRaw] = h.split("/");
-    const tab = tabRaw || "업무관리";
-    const sub = subRaw || firstMenuKey(tab);
-    return { tab, sub };
-  }
+  const raw = (location.hash || "").replace(/^#/, "");
+  const [tabEnc, subEncWithQ] = raw.split("/");
 
-  function setHash(tab, sub){
-    location.hash = `#${tab}/${sub || firstMenuKey(tab)}`;
-  }
+  const tab = decodeURIComponent(tabEnc || "업무관리");
+
+  // sub에 ?p= 같은 쿼리가 붙는 케이스(viewDashboard) 대비
+  const subEnc = (subEncWithQ || "").split("?")[0];
+  const sub = decodeURIComponent(subEnc || firstMenuKey(tab));
+
+  return { tab, sub };
+}
+
+function setHash(tab, sub){
+  const t = encodeURIComponent(tab);
+  const s = encodeURIComponent(sub || firstMenuKey(tab));
+  location.hash = `#${t}/${s}`;
+}
+
 
   function firstMenuKey(tab){
     return SIDE_MENUS[tab]?.[0]?.key || "log";
