@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CON COST Groupware (MVP)</title>
-  <link rel="stylesheet" href="styles.css?v=2" />
+  <link rel="stylesheet" href="styles.css?v=3" />
 </head>
 <body>
   <header class="topbar">
@@ -29,26 +29,31 @@
     <aside class="sidebar">
       <div class="nav-title">메뉴</div>
       <nav class="nav">
-        <a class="nav-item" href="#/log">
+        <a class="nav-item" href="#/log" data-route="/log">
           <span class="dot"></span><span>업무일지</span>
         </a>
 
-        <a class="nav-item" href="#/approve">
+        <a class="nav-item" href="#/approve" data-route="/approve">
           <span class="dot"></span><span>승인</span>
           <span id="badgePending" class="badge">0</span>
         </a>
 
-        <a class="nav-item" href="#/dashboard">
+        <a class="nav-item" href="#/dashboard" data-route="/dashboard">
           <span class="dot"></span><span>프로젝트 소요시간</span>
         </a>
 
-        <a class="nav-item" href="#/calendar">
+        <a class="nav-item" href="#/calendar" data-route="/calendar">
           <span class="dot"></span><span>종합 공정관리</span>
         </a>
 
-        <!-- ✅ 분리된 체크리스트 탭 -->
-        <a class="nav-item" href="#/checklist">
+        <!-- ✅ 체크리스트: 작성/관리(Leader+) -->
+        <a class="nav-item" href="#/checklist" data-route="/checklist">
           <span class="dot"></span><span>프로젝트별 체크리스트</span>
+        </a>
+
+        <!-- ✅ 체크리스트: 목록 전용(Staff도 볼 수 있음) -->
+        <a class="nav-item" href="#/checklist-view" data-route="/checklist-view">
+          <span class="dot"></span><span>체크리스트 목록</span>
         </a>
       </nav>
 
@@ -84,6 +89,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
