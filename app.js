@@ -78,11 +78,20 @@
   }
 
   /***********************
-   * Auto Sync (Sheets)
-   ***********************/
-  const AUTO_PULL_ON_START = true;   // 앱 켤 때 무조건 시트에서 최신 로드
-  const AUTO_PUSH_ON_SAVE  = true;   // DB 변경 시 자동 저장(Push)
-  const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
+ * Auto Sync (Sheets)
+ ***********************/
+// ✅ GitHub Pages에서는 Apps Script CORS가 막히는 경우가 많아서 기본 OFF
+const IS_GITHUB_PAGES = location.hostname.endsWith("github.io");
+
+// ✅ 필요할 때만 true로 켜세요 (CORS 허용된 Apps Script일 때만)
+const SHEETS_ENABLED = false;
+
+// ✅ 자동 동기화는 SHEETS_ENABLED가 true일 때만 동작
+const AUTO_PULL_ON_START = SHEETS_ENABLED && !IS_GITHUB_PAGES;
+const AUTO_PUSH_ON_SAVE  = SHEETS_ENABLED && !IS_GITHUB_PAGES;
+
+const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
+
 
   let isPulling = false;            // ✅ Pull 중 Push 금지
   let isPushing = false;
@@ -229,24 +238,39 @@
    * Google Sheets API
    ***********************/
   async function sheetsExport(){
-    const url = (SHEETS_API_URL || "").trim();
-    if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
-    const res = await fetch(`${url}?action=export`, { method:"GET" });
-    if (!res.ok) throw new Error("export failed");
-    return await res.json();
+  const url = (SHEETS_API_URL || "").trim();
+  if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
+
+  // ✅ CORS 차단 환경에서는 fetch 자체를 하지 않아서 콘솔 빨간줄을 방지
+  if (!SHEETS_ENABLED){
+    toast("ℹ️ 시트 기능이 비활성화되어 있습니다. (SHEETS_ENABLED=false)");
+    return null;
   }
 
-  async function sheetsImport(payload){
-    const url = (SHEETS_API_URL || "").trim();
-    if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
-    const res = await fetch(`${url}?action=import`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw new Error("import failed");
-    return await res.json();
+  const res = await fetch(`${url}?action=export`, { method:"GET" });
+  if (!res.ok) throw new Error("export failed");
+  return await res.json();
+}
+
+async function sheetsImport(payload){
+  const url = (SHEETS_API_URL || "").trim();
+  if (!url) { toast("SHEETS_API_URL이 없습니다."); return null; }
+
+  // ✅ CORS 차단 환경에서는 fetch 자체를 하지 않아서 콘솔 빨간줄을 방지
+  if (!SHEETS_ENABLED){
+    toast("ℹ️ 시트 기능이 비활성화되어 있습니다. (SHEETS_ENABLED=false)");
+    return null;
   }
+
+  const res = await fetch(`${url}?action=import`, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error("import failed");
+  return await res.json();
+}
+
 
   function ensureChecklistShape(item){
     if (!Array.isArray(item.confirmations)) item.confirmations = [];
@@ -1739,25 +1763,27 @@
     ensureDB();
 
     // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
-    if (AUTO_PULL_ON_START){
-      isPulling = true;
-      try{
-        const data = await sheetsExport();
-        if (data && data.ok){
-          const db = sheetsPayloadToDB(data);
-          // ✅ Pull 결과 저장은 "직접 localStorage"로 저장 (자동 push 방지)
-          localStorage.setItem(LS_KEY, JSON.stringify(db));
-          toast("✅ 시트에서 최신 데이터 불러옴");
-        } else {
-          toast("❌ 시트 로드 실패(형식 오류) → 로컬 데이터 사용");
-        }
-      }catch(err){
-        console.error(err);
-        toast("❌ 시트 로드 실패(콘솔 확인) → 로컬 데이터 사용");
-      }finally{
-        isPulling = false;
-      }
+    // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
+if (AUTO_PULL_ON_START){
+  isPulling = true;
+  try{
+    const data = await sheetsExport();
+    if (data && data.ok){
+      const db = sheetsPayloadToDB(data);
+      // ✅ Pull 결과 저장은 "직접 localStorage"로 저장 (자동 push 방지)
+      localStorage.setItem(LS_KEY, JSON.stringify(db));
+      toast("✅ 시트에서 최신 데이터 불러옴");
+    } else {
+      toast("ℹ️ 시트 로드 생략/실패 → 로컬 데이터 사용");
     }
+  }catch(err){
+    // ✅ 콘솔 빨간 에러 최소화(원하면 console.error로 되돌려도 됨)
+    toast("ℹ️ 시트 로드 실패(CORS 등) → 로컬 데이터 사용");
+  }finally{
+    isPulling = false;
+  }
+}
+
 
     // modal
     $("#modalClose")?.addEventListener("click", modalClose);
