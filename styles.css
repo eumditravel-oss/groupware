@@ -35,15 +35,20 @@ a{ color:inherit; text-decoration:none; }
   position:sticky;
   top:0;
   z-index:50;
-  height:var(--topbarH);
+
+  /* ✅ 기존: height:var(--topbarH);  <- 이거 때문에 2줄이 제대로 못 잡힘 */
+  height:auto;
+
   display:flex;
+  flex-wrap:wrap;
   align-items:center;
-  gap:14px;
+  gap:10px;
   padding:10px 14px;
   background: rgba(255,255,255,.86);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--softLine);
 }
+
 
 .brand{
   display:flex;
@@ -89,8 +94,12 @@ a{ color:inherit; text-decoration:none; }
   background: rgba(255,255,255,.75);
   box-shadow: 0 10px 24px rgba(0,0,0,.06);
   overflow:auto;
-  max-width: 520px;
+
+  /* ✅ 기존: max-width: 520px;  <- 제거 or 무력화 */
+  max-width: none;
+  width: fit-content; /* pill 폭은 내용만큼 */
 }
+
 
 .topTab{
   border:0;
@@ -760,17 +769,26 @@ header.topbar .actions{
   margin-left:auto;
 }
 
-/* ✅ 대분류 탭: 아래줄로 내림 */
+/* ✅ 대분류 탭: 무조건 한 줄 아래로 */
 #topTabs{
   order:3;
+  flex: 0 0 100%;     /* ✅ 강제 줄바꿈 */
   width:100%;
-  margin-top:6px;
-  display:flex;
-  gap:8px;
-  justify-content:flex-start; /* 왼쪽 정렬 */
-}
+  margin-top:8px;
 
-#topTabs{
+  display:flex;
+  gap:10px;
+  justify-content:flex-start;
+
   padding-top:8px;
   border-top:1px solid rgba(0,0,0,.06);
 }
+
+/* ✅ 노란 영역(.mainHead) 공간 자체 제거 */
+.mainHead{
+  display:none !important;
+  margin:0 !important;
+  padding:0 !important;
+}
+
+
