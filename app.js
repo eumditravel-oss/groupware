@@ -1,24 +1,20 @@
-/* app.js (CON COST Groupware MVP v0.4) — FULL (FIXED)
-   ✅ 권한 정책
-   - staff: 업무일지(/log) + 체크리스트 목록(/checklist-view)만 접근 가능
-   - leader 이상: 승인/대시보드/달력 접근 가능, 체크리스트 작성(/checklist) 가능
-   ✅ 체크리스트
-   - 작성: leader 이상만
-   - 체크(완료): staff만 가능 (체크 시 doneBy/doneAt 기록 + 제목 가로줄)
-   - 확인(검토): leader 이상이 "확인" 버튼으로 누가/언제 확인했는지 기록(confirmations[])
-   ✅ 부사장(role: svp) 포함
-   ✅ Google Sheets(앱스스크립트 WebApp) 백업/복원
-   - 상단 버튼으로 export/import
-   ✅ Auto Sync (Sheets = Source of Truth)
-   - 앱 시작 시 시트에서 자동 Pull
-   - DB 변경 시 Debounce 후 자동 Push (Pull 중에는 Push 금지)
+/* app.js (CON COST Groupware MVP v0.5) — FULL (UPDATED)
+   ✅ 상단 대분류 탭 도입
+   - 전자메일 / 전자결재 / 업무관리 / 산출 / 일정관리
+   ✅ 좌측 메뉴 = 선택된 탭의 소분류
+   ✅ 기존(업무관리) 기능/권한/Sheets Auto Sync 유지
+   ✅ 산출
+   - FIN산출 클릭 시: https://eumditravel-oss.github.io/FIN2/ 로 이동
+   - ㅇㅇ산출: placeholder
+   ✅ 전자메일/전자결재: placeholder(아이덴티티 유지)
+   ✅ 일정관리: 휴가관리/회사공식일정(캘린더 UI placeholder)
 */
 
 (() => {
   "use strict";
 
   /***********************
-   * 공정 마스터(고정)
+   * 공정 마스터(고정) - 업무관리(종합공정관리)에 사용
    ***********************/
   const PROCESS_MASTER = {
     "구조": ["기초","기둥","보","슬라브","벽/옹벽","철골","접합/도장","구조검토/샵도"],
@@ -35,7 +31,7 @@
     manager:"manager",
     director:"director",
     vp:"vp",
-    svp:"svp",   // ✅ 부사장
+    svp:"svp",
     ceo:"ceo"
   };
 
@@ -49,8 +45,8 @@
   /***********************
    * Storage
    ***********************/
-  const LS_KEY  = "CONCOST_GROUPWARE_DB_V04";
-  const LS_USER = "CONCOST_GROUPWARE_USER_V04";
+  const LS_KEY  = "CONCOST_GROUPWARE_DB_V05";
+  const LS_USER = "CONCOST_GROUPWARE_USER_V05";
 
   // ✅ Google Apps Script WebApp URL (고정)
   const SHEETS_API_URL = "https://script.google.com/macros/s/AKfycbxCcvFtAT5_wmE6-F_QwCseWA8s0q4PM16jaI_1DFNtQkA_7Rqm2_kgswM9zxzjyf27/exec";
@@ -86,7 +82,7 @@
    ***********************/
   const AUTO_PULL_ON_START = true;   // 앱 켤 때 무조건 시트에서 최신 로드
   const AUTO_PUSH_ON_SAVE  = true;   // DB 변경 시 자동 저장(Push)
-  const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기(1.2초)
+  const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
 
   let isPulling = false;            // ✅ Pull 중 Push 금지
   let isPushing = false;
@@ -99,7 +95,6 @@
 
     clearTimeout(pushTimer);
     pushTimer = setTimeout(async () => {
-      // Push 동시 실행 방지
       if (isPushing){
         pendingPushAfter = true;
         return;
@@ -137,7 +132,7 @@
    ***********************/
   function makeSeedDB(){
     return {
-      meta: { version:"0.4", createdAt: nowISO() },
+      meta: { version:"0.5", createdAt: nowISO() },
       users: [
         { userId:"u_staff_1", name:"작업자A", role:"staff" },
         { userId:"u_staff_2", name:"작업자B", role:"staff" },
@@ -159,9 +154,8 @@
   }
 
   function seedDB(){
-    // ✅ 초기 시드 생성은 "시트 덮어쓰기" 위험이 있어 로컬에만 저장(자동 push 유발 X)
     const db = makeSeedDB();
-    localStorage.setItem(LS_KEY, JSON.stringify(db));
+    localStorage.setItem(LS_KEY, JSON.stringify(db)); // ✅ seed는 로컬만
     return db;
   }
 
@@ -211,17 +205,15 @@
   }
 
   function modalOpen(title, bodyNode, footNode){
-    $("#modalTitle").textContent = title || "";
+    $("#modalTitle") && ($("#modalTitle").textContent = title || "");
     const body = $("#modalBody");
     const foot = $("#modalFoot");
-    body.innerHTML = "";
-    foot.innerHTML = "";
-    if (bodyNode) body.appendChild(bodyNode);
-    if (footNode) foot.appendChild(footNode);
-    $("#modalBackdrop").classList.remove("hidden");
+    if (body){ body.innerHTML = ""; if (bodyNode) body.appendChild(bodyNode); }
+    if (foot){ foot.innerHTML = ""; if (footNode) foot.appendChild(footNode); }
+    $("#modalBackdrop")?.classList.remove("hidden");
   }
   function modalClose(){
-    $("#modalBackdrop").classList.add("hidden");
+    $("#modalBackdrop")?.classList.add("hidden");
   }
 
   async function fileToDataURL(file){
@@ -256,7 +248,6 @@
     return await res.json();
   }
 
-  // === DB(JSON) -> Sheets payload(2D arrays) ===
   function ensureChecklistShape(item){
     if (!Array.isArray(item.confirmations)) item.confirmations = [];
     if (typeof item.status !== "string") item.status = "open";
@@ -310,7 +301,6 @@
     return { meta, users, projects, logs, checklists };
   }
 
-  // === Sheets payload(2D arrays) -> DB(JSON) ===
   function sheetsPayloadToDB(data){
     const metaArr = Array.isArray(data.meta) ? data.meta : [];
     const usersArr = Array.isArray(data.users) ? data.users : [];
@@ -318,7 +308,7 @@
     const logsArr = Array.isArray(data.logs) ? data.logs : [];
     const checkArr = Array.isArray(data.checklists) ? data.checklists : [];
 
-    const meta = { version:"0.4", createdAt: nowISO() };
+    const meta = { version:"0.5", createdAt: nowISO() };
     for (let i=1;i<metaArr.length;i++){
       const k = metaArr[i]?.[0];
       const v = metaArr[i]?.[1];
@@ -392,82 +382,158 @@
       return ensureChecklistShape(item);
     }).filter(c=>c.itemId);
 
-    const seed = makeSeedDB(); // ✅ 저장(side-effect) 없는 시드
-    const db = {
+    const seed = makeSeedDB();
+    return {
       meta,
       users: users.length ? users : seed.users,
       projects: projects.length ? projects : seed.projects,
       logs,
       checklists
     };
-    return db;
   }
 
   /***********************
-   * Route / Auth
+   * TOP TABS / SIDE MENUS
    ***********************/
-  const ROUTE_META = {
-    "/log":            "업무일지",
-    "/approve":        "승인",
-    "/dashboard":      "프로젝트별 인원대비 소요시간",
-    "/calendar":       "종합 공정관리",
-    "/checklist":      "프로젝트별 체크리스트",
-    "/checklist-view": "체크리스트 목록"
+  const TOP_TABS = [
+    { key:"전자메일", label:"전자메일" },
+    { key:"전자결재", label:"전자결재" },
+    { key:"업무관리", label:"업무관리" },
+    { key:"산출",     label:"산출" },
+    { key:"일정관리", label:"일정관리" }
+  ];
+
+  const WORK_ROUTES = ["log","approve","dashboard","calendar","checklist","checklist-view"];
+
+  const SIDE_MENUS = {
+    "전자메일": [
+      { key:"mail-inbox", label:"받은편지함" },
+      { key:"mail-sent",  label:"보낸편지함" },
+      { key:"mail-etc",   label:"기타" }
+    ],
+    "전자결재": [
+      { key:"ea-inbox", label:"받은결재함" },
+      { key:"ea-sent",  label:"보낸결재함" },
+      { key:"ea-write", label:"문서작성" }
+    ],
+    "업무관리": [
+      { key:"log",            label:"업무일지" },
+      { key:"approve",        label:"승인", badge:"pending" },
+      { key:"dashboard",      label:"프로젝트 소요시간" },
+      { key:"calendar",       label:"종합 공정관리" },
+      { key:"checklist",      label:"프로젝트별 체크리스트" },
+      { key:"checklist-view", label:"체크리스트 목록" }
+    ],
+    "산출": [
+      { key:"fin", label:"FIN산출" },
+      { key:"etc", label:"ㅇㅇ산출" }
+    ],
+    "일정관리": [
+      { key:"vacation",        label:"휴가관리" },
+      { key:"company-calendar",label:"회사공식일정" }
+    ]
   };
 
-  function getRoute(){
-    const h = location.hash || "#/log";
-    const m = h.match(/^#(\/[^?]*)/);
-    return m ? m[1] : "/log";
+  function parseHash(){
+    const h = (location.hash || "").replace(/^#/, "");
+    const [tabRaw, subRaw] = h.split("/");
+    const tab = tabRaw || "업무관리";
+    const sub = subRaw || firstMenuKey(tab);
+    return { tab, sub };
   }
 
-  function allowedRoutesFor(user){
+  function setHash(tab, sub){
+    location.hash = `#${tab}/${sub || firstMenuKey(tab)}`;
+  }
+
+  function firstMenuKey(tab){
+    return SIDE_MENUS[tab]?.[0]?.key || "log";
+  }
+
+  /***********************
+   * AUTH (업무관리만 강제)
+   ***********************/
+  function allowedWorkRoutesFor(user){
     if (isStaff(user)){
-      return new Set(["/log","/checklist-view"]);
+      return new Set(["log","checklist-view"]);
     }
-    return new Set(["/log","/approve","/dashboard","/calendar","/checklist","/checklist-view"]);
+    return new Set(["log","approve","dashboard","calendar","checklist","checklist-view"]);
   }
 
-  function enforceRouteAuth(db){
-    const uid = getUserId(db);
-    const me = userById(db, uid);
-    const route = getRoute();
-    const allowed = allowedRoutesFor(me);
-
-    if (!allowed.has(route)){
-      if (isStaff(me) && route === "/checklist"){
-        location.hash = "#/checklist-view";
-      } else {
-        location.hash = "#/log";
-      }
+  function enforceAuth(db, tab, sub){
+    if (tab !== "업무관리") return true;
+    const me = userById(db, getUserId(db));
+    const allowed = allowedWorkRoutesFor(me);
+    if (!allowed.has(sub)){
+      if (isStaff(me) && sub === "checklist") setHash("업무관리","checklist-view");
+      else setHash("업무관리","log");
       return false;
     }
     return true;
   }
 
-  function setActiveNav(db){
-    const uid = getUserId(db);
-    const me = userById(db, uid);
-    const allowed = allowedRoutesFor(me);
-    const route = getRoute();
+  /***********************
+   * UI RENDER: TABS / SIDE
+   ***********************/
+  function renderTopTabs(){
+    const host = $("#topTabs");
+    if (!host) return;
+    host.innerHTML = "";
 
-    $$(".nav-item").forEach(a => {
-      const r = a.getAttribute("data-route") || "";
-      a.classList.toggle("hidden", !allowed.has(r));
-      a.classList.toggle("active", r === route);
+    const { tab:curTab } = parseHash();
+
+    TOP_TABS.forEach(t=>{
+      host.appendChild(
+        el("button", {
+          class: `top-tab ${curTab === t.key ? "active" : ""}`,
+          onclick: ()=> setHash(t.key, firstMenuKey(t.key))
+        }, t.label)
+      );
     });
-
-    $("#routeTitle").textContent = ROUTE_META[route] || "";
   }
 
-  /***********************
-   * Aggregations
-   ***********************/
   function pendingCount(db){
     return db.logs.filter(l => l.status === "submitted").length;
   }
 
-  // 승인 시 +1 = "일수 카운트"
+  function renderSideMenu(db){
+    const host = $("#sideMenu");
+    if (!host) return;
+    host.innerHTML = "";
+
+    const { tab, sub } = parseHash();
+    const me = userById(db, getUserId(db));
+
+    const menus = SIDE_MENUS[tab] || [];
+
+    const allowedWork = (tab === "업무관리") ? allowedWorkRoutesFor(me) : null;
+
+    menus.forEach(m=>{
+      // 업무관리만 권한에 따라 숨김
+      if (allowedWork && !allowedWork.has(m.key)) return;
+
+      const badge =
+        (tab === "업무관리" && m.badge === "pending")
+          ? ` (${pendingCount(db)})`
+          : "";
+
+      host.appendChild(
+        el("button", {
+          class: `side-item ${sub === m.key ? "active" : ""}`,
+          onclick: ()=> setHash(tab, m.key)
+        }, `${m.label}${badge}`)
+      );
+    });
+  }
+
+  function setRouteTitle(text){
+    const t = $("#routeTitle");
+    if (t) t.textContent = text || "";
+  }
+
+  /***********************
+   * Aggregations (업무관리)
+   ***********************/
   function computeProjectDays(db, projectId){
     const set = new Set();
     for (const l of db.logs){
@@ -532,7 +598,226 @@
   }
 
   /***********************
-   * View: 업무일지 (#/log)
+   * VIEW: 전자메일 (placeholder)
+   ***********************/
+  function viewMail(db, sub){
+    const view = $("#view");
+    if (!view) return;
+    view.innerHTML = "";
+
+    setRouteTitle("전자메일");
+
+    const left = el("div", { class:"mail-left card" },
+      el("div", { class:"card-head" }, el("div", { class:"card-title" }, "전자메일")),
+      el("div", { class:"mail-fold" },
+        el("div", { class:"mail-folder" }, "받은편지함"),
+        el("div", { class:"mail-folder" }, "보낸편지함"),
+        el("div", { class:"mail-folder" }, "기타")
+      ),
+      el("div", { class:"muted", style:"font-size:12px;margin-top:10px;" },
+        "※ MVP: UI placeholder (기능 확장 예정)"
+      )
+    );
+
+    const right = el("div", { class:"mail-right card" },
+      el("div", { class:"card-head" },
+        el("div", { class:"card-title" }, "메일 목록"),
+        el("div", { class:"row" },
+          el("input", { class:"input", placeholder:"검색" }),
+          el("button", { class:"btn" }, "찾기")
+        )
+      ),
+      el("div", { class:"list" },
+        ...Array.from({length:10}).map((_,i)=> el("div", { class:"list-item" },
+          el("div", { class:"list-title" }, `Fw: 샘플 메일 제목 ${i+1}`),
+          el("div", { class:"list-sub" }, "보낸사람 · 날짜 · 간단 미리보기…")
+        ))
+      )
+    );
+
+    view.appendChild(el("div", { class:"split" }, left, right));
+  }
+
+  /***********************
+   * VIEW: 전자결재 (placeholder)
+   ***********************/
+  function viewEA(db, sub){
+    const view = $("#view");
+    if (!view) return;
+    view.innerHTML = "";
+
+    setRouteTitle("전자결재");
+
+    view.appendChild(
+      el("div", { class:"stack" },
+        el("div", { class:"card" },
+          el("div", { class:"card-head" },
+            el("div", { class:"card-title" }, "전자결재"),
+            el("div", { class:"badge" }, "MVP UI")
+          ),
+          el("div", { class:"grid2" },
+            el("div", { class:"empty" }, "결재함(받은/보낸/협의)"),
+            el("div", { class:"empty" }, "문서작성/양식관리")
+          ),
+          el("div", { class:"muted", style:"margin-top:10px;font-size:12px;" },
+            "※ MVP: 화면 구성만 제공 (기능 확장 예정)"
+          )
+        )
+      )
+    );
+  }
+
+  /***********************
+   * VIEW: 산출
+   ***********************/
+  function viewCalc(db, sub){
+    const view = $("#view");
+    if (!view) return;
+    view.innerHTML = "";
+
+    setRouteTitle("산출");
+
+    if (sub === "fin"){
+      window.location.href = "https://eumditravel-oss.github.io/FIN2/";
+      return;
+    }
+
+    view.appendChild(
+      el("div", { class:"card" },
+        el("div", { class:"card-head" },
+          el("div", { class:"card-title" }, "ㅇㅇ산출"),
+          el("div", { class:"badge" }, "준비중")
+        ),
+        el("div", { class:"empty" }, "추가 산출 모듈 연결 예정")
+      )
+    );
+  }
+
+  /***********************
+   * VIEW: 일정관리 (휴가/회사일정 placeholder)
+   ***********************/
+  function viewSchedule(db, sub){
+    const view = $("#view");
+    if (!view) return;
+    view.innerHTML = "";
+
+    const title = (sub === "vacation") ? "휴가관리" : "회사공식일정";
+    setRouteTitle(`일정관리 · ${title}`);
+
+    // 공정관리 캘린더와 유사한 UI 골격만 (데이터/저장은 추후)
+    let base = new Date(); base.setDate(1);
+    let months = 1;
+
+    const monthText = el("div", { class:"cal-month-title" });
+    const btnPrev = el("button", { class:"pill-btn", onclick:()=>{ base.setMonth(base.getMonth()-1); rerender(); } }, "◀");
+    const btnNext = el("button", { class:"pill-btn", onclick:()=>{ base.setMonth(base.getMonth()+1); rerender(); } }, "▶");
+
+    const selMonths = el("select", { class:"select", onchange:(e)=>{ months = Number(e.target.value); rerender(); } },
+      el("option", { value:"1" }, "1달"),
+      el("option", { value:"3" }, "3달")
+    );
+
+    const toolbar = el("div", { class:"card cal-toolbar" },
+      el("div", { class:"left" }, btnPrev, monthText, btnNext),
+      el("div", { class:"right" },
+        el("div", { style:"display:flex;flex-direction:column;gap:6px;min-width:120px;" },
+          el("div", { class:"muted", style:"font-weight:1000;font-size:12px;" }, "기간"),
+          selMonths
+        )
+      )
+    );
+
+    const host = el("div", { class:"stack" });
+
+    function monthLabel(d){
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)} (표시: ${months}달)`;
+    }
+
+    // 데모 칩(아이덴티티 유지용)
+    function demoChipsFor(dateISO){
+      // 아주 소량 규칙으로만 표시(저장 X)
+      const day = Number(dateISO.slice(-2));
+      if (sub === "vacation"){
+        if (day === 3) return ["연차(샘플)"];
+        if (day === 12) return ["반차(샘플)"];
+        return [];
+      } else {
+        if (day === 5) return ["월간회의(샘플)"];
+        if (day === 20) return ["워크샵(샘플)"];
+        return [];
+      }
+    }
+
+    function openDay(dateISO){
+      const items = demoChipsFor(dateISO);
+      const body = el("div", { class:"stack" },
+        items.length
+          ? el("div", { class:"list" }, ...items.map(t=>el("div",{class:"list-item"},
+              el("div",{class:"list-title"}, t),
+              el("div",{class:"list-sub"}, "MVP: 상세/등록 기능은 추후 연결")
+            )))
+          : el("div", { class:"empty" }, "등록된 일정이 없습니다.")
+      );
+      const foot = el("div", {}, el("button", { class:"btn", onclick: modalClose }, "닫기"));
+      modalOpen(`상세: ${dateISO}`, body, foot);
+    }
+
+    function renderOneMonth(d){
+      const y = d.getFullYear();
+      const m = d.getMonth();
+
+      const first = new Date(y,m,1);
+      const last = new Date(y,m+1,0);
+      const startDow = first.getDay();
+      const daysInMonth = last.getDate();
+
+      const box = el("div", { class:"card calendar-wrap" });
+      box.appendChild(el("div", { class:"card-title" }, `${y}-${pad2(m+1)}`));
+
+      const dow = el("div", { class:"cal-dow" },
+        ...["일","월","화","수","목","금","토"].map(s=>el("div",{},s))
+      );
+      box.appendChild(dow);
+
+      const grid = el("div", { class:"cal-grid" });
+
+      for (let i=0;i<startDow;i++) grid.appendChild(el("div", { class:"cal-cell cal-empty" }));
+
+      for (let day=1; day<=daysInMonth; day++){
+        const dateISO = `${y}-${pad2(m+1)}-${pad2(day)}`;
+        const items = demoChipsFor(dateISO);
+
+        const cell = el("div", { class:"cal-cell" },
+          el("div", { class:"cal-day" }, String(day)),
+          items.length ? el("div", { class:"chips" },
+            ...items.slice(0,4).map(t=>el("div",{class:"chip"},t))
+          ) : null
+        );
+        cell.addEventListener("click", ()=>openDay(dateISO));
+        grid.appendChild(cell);
+      }
+
+      box.appendChild(grid);
+      return box;
+    }
+
+    function rerender(){
+      monthText.textContent = monthLabel(base);
+      host.innerHTML = "";
+      const count = months === 3 ? 3 : 1;
+      for (let i=0;i<count;i++){
+        const md = new Date(base);
+        md.setMonth(base.getMonth()+i);
+        host.appendChild(renderOneMonth(md));
+      }
+    }
+
+    view.appendChild(el("div", { class:"stack" }, toolbar, host));
+    rerender();
+  }
+
+  /***********************
+   * VIEW: 업무관리(기존) - route key 기반
    ***********************/
   function makeEmptyEntry(db){
     const p = db.projects[0]?.projectId || "";
@@ -542,6 +827,8 @@
   function viewLog(db){
     const view = $("#view");
     view.innerHTML = "";
+
+    setRouteTitle("업무관리 · 업무일지");
 
     const uid = getUserId(db);
     const dateInput = el("input", { class:"input", type:"date", value: todayISO() });
@@ -682,12 +969,11 @@
     rerenderEntries();
   }
 
-  /***********************
-   * View: 승인 (#/approve) (Leader+)
-   ***********************/
   function viewApprove(db){
     const view = $("#view");
     view.innerHTML = "";
+
+    setRouteTitle("업무관리 · 승인");
 
     const uid = getUserId(db);
     const submitted = db.logs.filter(l => l.status === "submitted")
@@ -768,12 +1054,11 @@
     );
   }
 
-  /***********************
-   * View: Dashboard (#/dashboard) (Leader+)
-   ***********************/
   function viewDashboard(db){
     const view = $("#view");
     view.innerHTML = "";
+
+    setRouteTitle("업무관리 · 프로젝트 소요시간");
 
     const stats = db.projects.map(p=>{
       const days = computeProjectDays(db, p.projectId);
@@ -795,7 +1080,7 @@
           const btn = el("button", { class:"btn ghost", style:"width:100%;text-align:left;" }, "");
           btn.addEventListener("click", ()=>{
             selected = s.projectId;
-            history.replaceState(null, "", `#/dashboard?p=${encodeURIComponent(selected)}`);
+            history.replaceState(null, "", `#업무관리/dashboard?p=${encodeURIComponent(selected)}`);
             render();
           });
 
@@ -811,8 +1096,7 @@
         })
       ) : el("div", { class:"empty" }, "프로젝트가 없습니다.")
     );
-
-    const sp = projById(db, selected) || db.projects[0];
+         const sp = projById(db, selected) || db.projects[0];
     const days = computeProjectDays(db, sp?.projectId);
     const hc = computeProjectHeadcount(db, sp?.projectId);
 
@@ -848,15 +1132,22 @@
       )
     );
 
-    view.appendChild(el("div", { class:"dash" }, left, el("div", { class:"stack" }, rightTop, rightBottom)));
+    view.appendChild(
+      el("div", { class:"dash" },
+        left,
+        el("div", { class:"stack" }, rightTop, rightBottom)
+      )
+    );
   }
 
   /***********************
-   * View: Calendar (#/calendar) (Leader+)
+   * VIEW: 업무관리 · 종합 공정관리 (기존 calendar 로직 유지)
    ***********************/
-  function viewCalendar(db){
+  function viewWorkCalendar(db){
     const view = $("#view");
     view.innerHTML = "";
+
+    setRouteTitle("업무관리 · 종합 공정관리");
 
     const approved = db.logs.filter(l => l.status === "approved");
 
@@ -1039,17 +1330,19 @@
   }
 
   /***********************
-   * View: 체크리스트 작성/관리 (#/checklist) (Leader+)
+   * VIEW: 체크리스트 작성/관리 (Leader+)
    ***********************/
   function viewChecklist(db){
     const view = $("#view");
     view.innerHTML = "";
 
+    setRouteTitle("업무관리 · 프로젝트별 체크리스트");
+
     const uid = getUserId(db);
     const me = userById(db, uid);
 
     if (!isLeaderPlus(me)){
-      location.hash = "#/checklist-view";
+      setHash("업무관리","checklist-view");
       return;
     }
 
@@ -1244,14 +1537,13 @@
   }
 
   /***********************
-   * View: 체크리스트 목록 (#/checklist-view)
-   * - staff도 접근 가능
-   * - staff: 체크(완료) 가능
-   * - leader+: 확인(검토) 기록 가능(체크는 불가)
+   * VIEW: 체크리스트 목록 (staff도 접근)
    ***********************/
   function viewChecklistView(db){
     const view = $("#view");
     view.innerHTML = "";
+
+    setRouteTitle("업무관리 · 체크리스트 목록");
 
     const uid = getUserId(db);
     const me = userById(db, uid);
@@ -1320,7 +1612,7 @@
         const confirmMeta = el("div", { class:"list-sub", style:"margin-top:6px;" }, `확인: ${confirmText}`);
         const desc = it.description ? el("div", { class:"list-sub" }, it.description) : null;
 
-        // ✅ leader+는 확인 버튼(검토 기록) 가능 (staff는 disabled)
+        // ✅ leader+는 확인 버튼(검토 기록) 가능
         const btnConfirm = el("button", {
           class:"btn tiny",
           disabled: !isLeaderPlus(me),
@@ -1368,7 +1660,8 @@
           el("div", { class:"card-head" },
             el("div", { class:"card-title" }, "체크리스트 목록(프로젝트별)"),
             el("div", { class:"row" },
-              el("div", { class:"muted", style:"font-weight:1000;font-size:12px;" }, "프로젝트"),
+              el("div", { class:"muted", style:"font-weight:1000;font-size
+:12px;" }, "프로젝트"),
               projectSel
             )
           ),
@@ -1381,42 +1674,61 @@
   }
 
   /***********************
-   * Global Render
+   * VIEW: 업무관리 라우팅 디스패처
+   ***********************/
+  function viewWork(db, sub){
+    if (sub === "log") viewLog(db);
+    else if (sub === "approve") viewApprove(db);
+    else if (sub === "dashboard") viewDashboard(db);
+    else if (sub === "calendar") viewWorkCalendar(db);
+    else if (sub === "checklist") viewChecklist(db);
+    else if (sub === "checklist-view") viewChecklistView(db);
+    else {
+      // fallback
+      setHash("업무관리", "log");
+      viewLog(db);
+    }
+  }
+
+  /***********************
+   * Global Render (탭/좌측메뉴 기반)
    ***********************/
   function render(){
     const db = ensureDB();
-    enforceRouteAuth(db);
 
-    // 사용자 셀렉트
+    const { tab, sub } = parseHash();
+    enforceAuth(db, tab, sub);
+
+    // 상단 탭/좌측 메뉴
+    renderTopTabs();
+    renderSideMenu(db);
+
+    // 사용자 셀렉트(공통)
     const userSel = $("#userSelect");
     if (userSel && userSel.childElementCount === 0){
       db.users.forEach(u=>{
         userSel.appendChild(el("option", { value:u.userId }, `${u.name} (${ROLE_LABEL[u.role]||u.role})`));
       });
     }
-
     const uid = getUserId(db);
     if (userSel) userSel.value = uid;
 
-    // 승인 배지
+    // 승인 배지(기존 상단 뱃지 유지용 - 있으면 업데이트)
     const b = $("#badgePending");
     if (b) b.textContent = String(pendingCount(db));
 
-    setActiveNav(db);
-
-    const route = getRoute();
+    // 메인 뷰
     const view = $("#view");
     if (!view) return;
 
-    if (route === "/log") viewLog(db);
-    else if (route === "/approve") viewApprove(db);
-    else if (route === "/dashboard") viewDashboard(db);
-    else if (route === "/calendar") viewCalendar(db);
-    else if (route === "/checklist") viewChecklist(db);
-    else if (route === "/checklist-view") viewChecklistView(db);
+    if (tab === "전자메일") viewMail(db, sub);
+    else if (tab === "전자결재") viewEA(db, sub);
+    else if (tab === "산출") viewCalc(db, sub);
+    else if (tab === "일정관리") viewSchedule(db, sub);
+    else if (tab === "업무관리") viewWork(db, sub);
     else {
-      location.hash = "#/log";
-      viewLog(db);
+      setHash("업무관리", "log");
+      viewWork(db, "log");
     }
   }
 
@@ -1508,8 +1820,8 @@
     // route
     window.addEventListener("hashchange", render);
 
-    // default route
-    if (!location.hash) location.hash = "#/log";
+    // default route (탭/서브 구조)
+    if (!location.hash) setHash("업무관리", "log");
 
     render();
   }
@@ -1517,3 +1829,4 @@
   document.addEventListener("DOMContentLoaded", boot);
 
 })();
+
