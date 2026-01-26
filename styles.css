@@ -793,3 +793,65 @@ header.topbar .actions{
 }
 
 
+/* =========================
+   ✅ TOPBAR 재배치 (사용자 탭을 topTabs 오른쪽 끝으로)
+========================= */
+
+/* topbar는 줄바꿈 가능 */
+header.topbar{
+  height:auto;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+}
+
+/* 1줄: brand(좌측) */
+header.topbar .brand{
+  order:1;
+}
+
+/* 2줄: topTabs(좌측) */
+#topTabs{
+  order:3;
+  flex: 1 1 auto;       /* ✅ 남는 공간을 topTabs가 먹고 */
+  width:auto;
+  margin-top:8px;
+}
+
+/* 2줄: 사용자 탭(우측 끝) */
+#userBoxTop{
+  order:4;
+  margin-top:8px;
+  margin-left:auto;     /* ✅ 오른쪽 끝으로 */
+}
+
+/* ✅ 상단 3개 버튼 영역 자체가 있더라도 숨김(안전장치) */
+#btnSheetBackup,
+#btnSheetRestore,
+#btnResetDemo{
+  display:none !important;
+}
+
+/* =========================
+   ✅ 좌측 상단 타이틀 문구/크기
+========================= */
+
+/* Con-Cost 그룹웨어 글씨 키우기 */
+.brandText .title{
+  font-size:22px;       /* 원하는 만큼 더 키워도 됨 */
+  font-weight:1000;
+  letter-spacing:-0.3px;
+}
+
+/* 기존 sub 문구는 삭제했지만 혹시 남아있으면 숨김 */
+.brandText .sub{
+  display:none !important;
+}
+
+/* =========================
+   ✅ 좌측 메뉴 하단 정책 안내 제거(혹시 남아있을 때)
+========================= */
+.sideNote{
+  display:none !important;
+}
