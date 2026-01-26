@@ -78,9 +78,49 @@
     const raw = localStorage.getItem(LS_KEY);
     return raw ? safeParse(raw, null) : null;
   }
-  function saveDB(db){
+
+     // ✅ Auto Sync (Sheets = Source of Truth)
+  const AUTO_PULL_ON_START = true;   // 앱 켤 때 무조건 시트에서 최신 로드
+  const AUTO_PUSH_ON_SAVE  = true;   // DB 변경 시 자동 저장
+  const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기(1.2초)
+
+  let pushTimer = null;
+  let isPushing = false;
+
+  function schedulePush(db){
+    if (!AUTO_PUSH_ON_SAVE) return;
+    if (isPulling) return; // ✅ 시트에서 가져오는 중엔 다시 시트로 밀지 않음
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(async ()=>{
+          if (AUTO_PULL_ON_START){
+      isPulling = true;
+      try{
+        const data = await sheetsExport();
+        if (data && data.ok){
+          const db = sheetsPayloadToDB(data);
+          localStorage.setItem(LS_KEY, JSON.stringify(db)); // ✅ 여기서는 saveDB 말고 직접 저장(자동 push 방지)
+          toast("✅ 시트에서 최신 데이터 불러옴");
+        } else {
+          toast("❌ 시트 로드 실패(형식 오류)");
+        }
+      }catch(err){
+        console.error(err);
+        toast("❌ 시트 로드 실패(콘솔 확인) → 로컬 데이터 사용");
+      }finally{
+        isPulling = false;
+      }
+    }
+
+
+
+     let isPulling = false;
+
+   
+    function saveDB(db){
     localStorage.setItem(LS_KEY, JSON.stringify(db));
+    schedulePush(db); // ✅ 변경 즉시(디바운스) 시트로 자동 저장
   }
+
 
   function seedDB(){
     const db = {
@@ -1365,8 +1405,25 @@
   /***********************
    * Wire events
    ***********************/
-  function boot(){
+  async function boot(){
     ensureDB();
+
+    // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
+    if (AUTO_PULL_ON_START){
+      try{
+        const data = await sheetsExport();
+        if (data && data.ok){
+          const db = sheetsPayloadToDB(data);
+          saveDB(db); // saveDB가 auto push를 걸 수 있으니 아래에서 임시로 막는 게 안전
+          toast("✅ 시트에서 최신 데이터 불러옴");
+        } else {
+          toast("❌ 시트 로드 실패(형식 오류)");
+        }
+      }catch(err){
+        console.error(err);
+        toast("❌ 시트 로드 실패(콘솔 확인) → 로컬 데이터 사용");
+      }
+    }
 
     // modal
     $("#modalClose")?.addEventListener("click", modalClose);
