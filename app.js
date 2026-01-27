@@ -1065,38 +1065,93 @@ function renderLeftProfile(db){
   const box = (sub === "mail-sent") ? "sent" : (sub === "mail-etc") ? "etc" : "inbox";
   setRouteTitle(`전자메일 · ${box === "inbox" ? "받은메일함" : box === "sent" ? "보낸메일함" : "기타"}`);
 
-  const items = (db.mails || [])
+  const allItems = (db.mails || [])
     .filter(m => m.box === box)
     .slice()
     .sort((a,b)=>String(b.at||"").localeCompare(String(a.at||"")))
-    .slice(0, 30);
+    .slice(0, 200); // ✅ 필요시 늘려도 됨
 
-  const left = el("div", { class:"mail-left card" },
-    el("div", { class:"card-head" }, el("div", { class:"card-title" }, "폴더")),
-    el("div", { class:"mail-fold" },
-      el("button", { class:`side-item ${box==="inbox"?"active":""}`, onclick:()=>setHash("전자메일","mail-inbox") }, "받은편지함"),
-      el("button", { class:`side-item ${box==="sent"?"active":""}`,  onclick:()=>setHash("전자메일","mail-sent") },  "보낸편지함"),
-      el("button", { class:`side-item ${box==="etc"?"active":""}`,   onclick:()=>setHash("전자메일","mail-etc") },   "기타")
-    )
+  // ✅ 검색 UI (메일목록 상단)
+  const selField = el("select", { class:"select" },
+    el("option", { value:"subject" }, "편지제목"),
+    el("option", { value:"from" }, "보낸사람"),
+    el("option", { value:"all" }, "제목+보낸사람")
   );
 
-  const right = el("div", { class:"mail-right card" },
+  const searchInput = el("input", {
+    class:"input",
+    placeholder:"검색어 입력",
+    onkeydown:(e)=>{
+      if (e.key === "Enter") draw();
+    }
+  });
+
+  const btnSearch = el("button", { class:"btn", onclick:()=>draw() }, "찾기");
+
+  const btnReset = el("button", {
+    class:"btn ghost",
+    onclick:()=>{
+      searchInput.value = "";
+      selField.value = "subject";
+      draw();
+    }
+  }, "초기화");
+
+  const tools = el("div", { class:"mail-toolbar" },
+    selField,
+    searchInput,
+    btnSearch,
+    btnReset
+  );
+
+  const listHost = el("div", { class:"list" });
+
+  function draw(){
+    const q = (searchInput.value || "").trim().toLowerCase();
+    const field = selField.value;
+
+    const filtered = !q ? allItems : allItems.filter(m=>{
+      const s = String(m.subject||"").toLowerCase();
+      const f = String(m.from||"").toLowerCase();
+      if (field === "subject") return s.includes(q);
+      if (field === "from") return f.includes(q);
+      return s.includes(q) || f.includes(q);
+    });
+
+    // ✅ 건수 표시 업데이트
+    countBadge.textContent = `${filtered.length}건`;
+
+    listHost.innerHTML = "";
+    if (!filtered.length){
+      listHost.appendChild(el("div", { class:"empty" }, "자료가 존재하지 않습니다."));
+      return;
+    }
+
+    filtered.slice(0, 30).forEach(m=>{
+      listHost.appendChild(
+        el("div", { class:"list-item" },
+          el("div", { class:"list-title" }, m.subject),
+          el("div", { class:"list-sub" }, `${m.from} · ${m.at}`)
+        )
+      );
+    });
+  }
+
+  // ✅ 메일 목록 카드(폴더 카드 제거 → 단일 카드)
+  const countBadge = el("div", { class:"badge" }, `${allItems.length}건`);
+
+  const card = el("div", { class:"card" },
     el("div", { class:"card-head" },
       el("div", { class:"card-title" }, "메일 목록"),
-      el("div", { class:"badge" }, `${items.length}건`)
+      el("div", { class:"row" }, tools, countBadge)
     ),
-    items.length
-      ? el("div", { class:"list" },
-          ...items.map(m => el("div", { class:"list-item" },
-            el("div", { class:"list-title" }, m.subject),
-            el("div", { class:"list-sub" }, `${m.from} · ${m.at}`)
-          ))
-        )
-      : el("div", { class:"empty" }, "자료가 존재하지 않습니다.")
+    listHost
   );
 
-  view.appendChild(el("div", { class:"split" }, left, right));
+  view.appendChild(el("div", { class:"stack" }, card));
+  draw();
 }
+
 
 
   /***********************
