@@ -300,7 +300,7 @@ header.topbar .topCenter{
 }
 
 /* =========================
-   DASHBOARD (NEW)
+   DASHBOARD (LIST STYLE)
 ========================= */
 .dashWrap{
   display:flex;
@@ -329,7 +329,7 @@ header.topbar .topCenter{
   align-items:flex-start;
   justify-content:space-between;
   gap:10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .dashCardTitleLink{
@@ -353,31 +353,48 @@ header.topbar .topCenter{
   font-weight: 900;
 }
 
-.dashMetricGrid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
+/* ✅ 대쉬보드 리스트 */
+.dashList{
+  display:flex;
+  flex-direction:column;
   gap:10px;
 }
 
-.dashMetric{
+.dashItem{
+  padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(245,247,250,.75);
-  padding: 12px 12px;
+  background: rgba(255,255,255,.90);
 }
 
-.dashMetricLabel{
+.dashItemTitle{
+  font-weight: 1000;
+  font-size: 13px;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashItemMeta{
+  margin-top: 4px;
   font-size: 12px;
-  font-weight: 900;
   color: var(--muted);
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.dashMetricValue{
-  margin-top: 6px;
-  font-size: 26px;
-  font-weight: 1200;
-  color: rgba(240,138,36,1);
-  letter-spacing: -0.3px;
+.dashEmpty{
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px dashed rgba(0,0,0,.18);
+  background: rgba(255,255,255,.75);
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 13px;
+  text-align: center;
 }
 
 /* =========================
