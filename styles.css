@@ -1,14 +1,14 @@
 :root{
-  --bg:#f6f1e6;
-  --paper:#fffaf0;
+  --bg:#f3f5f8;
+  --paper:#ffffff;
   --ink:#1d1d1f;
   --muted:#6b6b73;
 
   --line: rgba(0,0,0,.10);
   --softLine: rgba(0,0,0,.06);
 
-  --shadow: 0 12px 30px rgba(0,0,0,.08);
-  --shadow2: 0 16px 38px rgba(0,0,0,.12);
+  --shadow: 0 10px 26px rgba(0,0,0,.08);
+  --shadow2: 0 14px 34px rgba(0,0,0,.12);
 
   --radius: 18px;
 
@@ -25,18 +25,14 @@ body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic";
   color:var(--ink);
-  background: linear-gradient(180deg, #fbf6ee 0%, #f3eee4 100%);
+  background: linear-gradient(180deg, #f6f7fa 0%, #eef1f5 100%);
 }
 
 a{ color:inherit; text-decoration:none; }
 .hidden{ display:none !important; }
 
 /* =========================
-   ✅ TOPBAR (최종 정리)
-   - 좌: brand
-   - 중: topCenter 안의 #topTabs
-   - 우: #userBoxTop
-   - 중복 규칙 제거 / 1개만 남김
+   TOPBAR (레퍼런스 톤)
 ========================= */
 header.topbar{
   position: sticky;
@@ -45,26 +41,37 @@ header.topbar{
 
   height: auto;
   display: flex;
-  flex-wrap: nowrap;            /* ✅ 줄바꿈 금지 */
+  flex-wrap: nowrap;
   align-items: center;
   gap: 12px;
 
   padding: 10px 14px;
-  background: rgba(255,255,255,.86);
+  background: rgba(255,255,255,.92);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--softLine);
+  border-bottom: 1px solid rgba(0,0,0,.06);
 }
 
-/* 좌측 브랜드 */
+/* 브랜드(로고만) */
 header.topbar .brand{
   flex: 0 0 auto;
-  min-width: 260px;
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:10px;
+  padding: 6px 8px;
+  border-radius: 14px;
+}
+header.topbar .brand:hover{
+  background: rgba(240,138,36,.08);
 }
 
-/* ✅ 가운데 슬롯 */
+.logoImg{
+  width: 120px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+}
+
+/* 가운데 탭 슬롯 */
 header.topbar .topCenter{
   flex: 1 1 auto;
   min-width: 0;
@@ -73,26 +80,25 @@ header.topbar .topCenter{
   align-items: center;
 }
 
-/* ✅ 탭 컨테이너 (id=topTabs, class=topTabs) */
+/* 탭 컨테이너 */
 #topTabs.topTabs{
   display:flex;
   align-items:center;
   justify-content:center;
   gap:10px;
-
   padding: 6px 8px;
+
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.80);
   box-shadow: 0 10px 24px rgba(0,0,0,.06);
   overflow:auto;
 
-  width: fit-content;           /* ✅ 내용만큼만 */
+  width: fit-content;
   max-width: 100%;
-
-  border-radius: 14px;          /* ✅ pill 완화 */
+  border-radius: 14px;
 }
 
-/* ✅ 우측 사용자 박스 */
+/* 우측 사용자 */
 #userBoxTop.userBox{
   flex: 0 0 auto;
   display:flex;
@@ -101,34 +107,10 @@ header.topbar .topCenter{
   padding:8px 10px;
   border-radius:14px;
   border:1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.70);
+  background: rgba(255,255,255,.80);
 }
 
-/* =========================
-   ✅ BRAND / LOGO
-========================= */
-.logoImg{
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  display: block;
-  border-radius: 10px;
-}
-
-/* 혹시 남아있을 구형 로고 요소는 숨김 */
-.logoBox, .logoTri{ display:none !important; }
-
-.brandText .title{
-  font-weight:1000;
-  font-size:22px;
-  letter-spacing:-0.3px;
-}
-.brandText .sub{ display:none !important; }
-
-/* =========================
-   ✅ TOP TABS (버튼 스타일)
-   - JS가 .topTab 또는 .top-tab 둘 다 쓸 수 있음
-========================= */
+/* 탭 버튼 */
 .topTab,
 .top-tab,
 #topTabs button,
@@ -137,7 +119,7 @@ header.topbar .topCenter{
   cursor:pointer;
 
   padding:10px 14px;
-  border-radius:12px !important;     /* ✅ 둥근 사각형 */
+  border-radius:12px !important;
   font-weight:950;
   font-size:13px;
   color:#3a3a3f;
@@ -147,10 +129,6 @@ header.topbar .topCenter{
   align-items:center;
   gap:6px;
 }
-
-.topTab .caret,
-.top-tab .caret{ opacity:.7; font-size:12px; }
-
 .topTab:hover,
 .top-tab:hover{ background: rgba(240,138,36,.10); }
 
@@ -158,30 +136,23 @@ header.topbar .topCenter{
 .top-tab.active{
   background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.78));
   color:#fff;
-  box-shadow: 0 12px 26px rgba(240,138,36,.25);
-}
-
-/* (구형 actions 영역이 혹시 남아있으면 영향 최소화) */
-.actions{
-  margin-left:auto;
-  display:flex;
-  align-items:center;
-  gap:10px;
+  box-shadow: 0 12px 26px rgba(240,138,36,.22);
 }
 
 /* =========================
-   ✅ LAYOUT
+   LAYOUT
 ========================= */
 .app{
   display:flex;
   min-height: 100vh;
 }
 
+/* 왼쪽 */
 .side{
   width: var(--sideW);
   padding: 12px 12px 16px;
-  border-right: 1px solid var(--softLine);
-  background: rgba(255,255,255,.55);
+  border-right: 1px solid rgba(0,0,0,.06);
+  background: rgba(255,255,255,.72);
 }
 
 .sideHead{ padding: 8px 8px 10px; }
@@ -191,43 +162,12 @@ header.topbar .topCenter{
 .sideNav{
   display:flex;
   flex-direction:column;
-  gap:6px;
+  gap:8px;
   padding: 6px;
 }
 
-/* ✅ 좌측 메뉴(기본) */
-.sideLink{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding: 11px 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.72);
-  cursor:pointer;
-  font-weight:900;
-  font-size:13px;
-}
-.sideLink:hover{
-  border-color: rgba(240,138,36,.35);
-  box-shadow: 0 10px 24px rgba(0,0,0,.06);
-}
-.sideLink.active{
-  border-color: rgba(240,138,36,.60);
-  background: rgba(240,138,36,.12);
-}
-.sideLink .pill{
-  font-size:11px;
-  padding: 2px 8px;
-  border-radius:999px;
-  border:1px solid rgba(0,0,0,.08);
-  background: rgba(255,255,255,.70);
-  color: var(--muted);
-  font-weight:900;
-}
-
-/* JS alias */
+/* 좌측 메뉴 버튼 */
+.sideLink,
 .side-item{
   display:flex;
   align-items:center;
@@ -236,47 +176,48 @@ header.topbar .topCenter{
   padding: 11px 12px;
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.72);
+  background: rgba(255,255,255,.86);
   cursor:pointer;
   font-weight:900;
   font-size:13px;
 }
+.sideLink:hover,
 .side-item:hover{
-  border-color: rgba(240,138,36,.35);
-  box-shadow: 0 10px 24px rgba(0,0,0,.06);
+  border-color: rgba(240,138,36,.30);
+  box-shadow: 0 10px 22px rgba(0,0,0,.06);
 }
+.sideLink.active,
 .side-item.active{
-  border-color: rgba(240,138,36,.60);
-  background: rgba(240,138,36,.12);
+  border-color: rgba(240,138,36,.55);
+  background: rgba(240,138,36,.10);
 }
 
-/* ✅ 정책 박스는 제거(혹시 남아있으면 숨김) */
-.sideNote{ display:none !important; }
-
+/* 메인 */
 .main{
   flex:1;
-  padding: 14px 16px 24px;
+  padding: 16px 18px 26px;
 }
 
-/* 노란 영역(.mainHead) 공간 제거 */
+/* 기존 mainHead는 숨김(현재 UI에선 routeTitle/뱃지 안씀) */
 .mainHead{
   display:none !important;
   margin:0 !important;
   padding:0 !important;
 }
 
-.view{ min-height: 480px; }
+.view{ min-height: 520px; }
 
 /* =========================
-   ✅ CARD / FORM
+   CARD / FORM
 ========================= */
 .card{
-  background: rgba(255,255,255,.86);
+  background: rgba(255,255,255,.92);
   border: 1px solid rgba(0,0,0,.06);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 14px 14px;
 }
+
 .card-head{
   display:flex;
   align-items:center;
@@ -295,44 +236,45 @@ header.topbar .topCenter{
   padding: 10px 12px;
   border-radius: 14px;
   border:1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.90);
+  background: rgba(255,255,255,.95);
   outline: none;
 }
 .textarea{ resize:vertical; min-height: 92px; }
 
 .btn{
   border:1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.92);
   border-radius: 14px;
   padding: 10px 12px;
   cursor:pointer;
   font-weight:900;
   font-size:13px;
 }
-.btn:hover{ border-color: rgba(240,138,36,.40); }
+.btn:hover{ border-color: rgba(240,138,36,.35); }
 .btn.primary{
   border-color: rgba(240,138,36,.55);
   background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.78));
   color:#fff;
 }
-.btn.ghost{ background: rgba(255,255,255,.55); }
+.btn.ghost{ background: rgba(255,255,255,.70); }
 .btn.tiny{ padding: 7px 10px; font-size:12px; border-radius: 12px; }
 
 .muted{ color:var(--muted); }
 .small{ font-size:12px; }
 
 /* =========================
-   ✅ LIST / PROGRESS
+   LIST / PROGRESS
 ========================= */
 .list{ display:flex; flex-direction:column; gap:10px; }
 .list-item{
   padding: 12px 12px;
   border-radius: 16px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.90);
 }
 .list-title{ font-weight:1000; font-size:13px; margin-bottom:4px; }
 .list-sub{ color: var(--muted); font-size:12px; line-height:1.45; }
+
 .bar{
   height: 10px;
   border-radius: 999px;
@@ -345,11 +287,12 @@ header.topbar .topCenter{
   background: rgba(240,138,36,.55);
   border-radius:999px;
 }
+
 .empty{
   padding: 14px;
   border-radius: 16px;
   border: 1px dashed rgba(0,0,0,.18);
-  background: rgba(255,255,255,.55);
+  background: rgba(255,255,255,.75);
   color: var(--muted);
   font-weight:900;
   font-size:13px;
@@ -357,7 +300,88 @@ header.topbar .topCenter{
 }
 
 /* =========================
-   ✅ TOAST
+   DASHBOARD (NEW)
+========================= */
+.dashWrap{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.dashRow2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+}
+
+.dashRow3{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:14px;
+}
+
+.dashCard{
+  padding: 14px 16px;
+}
+
+.dashCardHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom: 12px;
+}
+
+.dashCardTitleLink{
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 1100;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+}
+.dashCardTitleLink:hover{
+  color: rgba(240,138,36,1);
+  text-decoration: underline;
+}
+
+.dashCardSub{
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.dashMetricGrid{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+
+.dashMetric{
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.06);
+  background: rgba(245,247,250,.75);
+  padding: 12px 12px;
+}
+
+.dashMetricLabel{
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.dashMetricValue{
+  margin-top: 6px;
+  font-size: 26px;
+  font-weight: 1200;
+  color: rgba(240,138,36,1);
+  letter-spacing: -0.3px;
+}
+
+/* =========================
+   TOAST
 ========================= */
 .toastHost{
   position: fixed;
@@ -369,7 +393,7 @@ header.topbar .topCenter{
   gap:8px;
 }
 .toastHost .t{
-  background: rgba(255,255,255,.90);
+  background: rgba(255,255,255,.95);
   border: 1px solid rgba(0,0,0,.10);
   border-left: 4px solid var(--accent);
   padding: 10px 12px;
@@ -380,7 +404,7 @@ header.topbar .topCenter{
 }
 
 /* =========================
-   ✅ MODAL
+   MODAL
 ========================= */
 .modalBackdrop{
   position:fixed;
@@ -396,7 +420,7 @@ header.topbar .topCenter{
   width: min(860px, 96vw);
   max-height: 86vh;
   overflow:auto;
-  background: rgba(255,255,255,.94);
+  background: rgba(255,255,255,.96);
   border: 1px solid rgba(0,0,0,.10);
   border-radius: 18px;
   box-shadow: var(--shadow2);
@@ -420,7 +444,7 @@ header.topbar .topCenter{
 }
 
 /* =========================
-   ✅ EMBED(iframe) 관련
+   EMBED(iframe)
 ========================= */
 .viewTopTools{
   display:flex;
@@ -436,7 +460,7 @@ header.topbar .topCenter{
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 16px;
   overflow:hidden;
-  background: rgba(255,255,255,.65);
+  background: rgba(255,255,255,.75);
 }
 .embedFrame{
   width:100%;
@@ -463,113 +487,23 @@ header.topbar .topCenter{
 }
 
 /* =========================
-   ✅ MAIL / APPROVAL MOCK
-========================= */
-.mailWrap{ display:grid; grid-template-columns: 260px 1fr; gap:12px; }
-.mailLeft{
-  border-radius: 18px;
-  border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.78);
-  box-shadow: var(--shadow);
-  padding: 12px;
-}
-.mailRight{
-  border-radius: 18px;
-  border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.86);
-  box-shadow: var(--shadow);
-  padding: 12px;
-}
-
-/* (JS에서 .mail-left/.mail-right 사용 대비) */
-.mail-left, .mail-right{
-  border-radius: 18px;
-  border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.86);
-  box-shadow: var(--shadow);
-  padding: 12px;
-}
-.mail-left{ background: rgba(255,255,255,.78); }
-
-.folderItem{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding: 10px 10px;
-  border-radius: 14px;
-  cursor:pointer;
-  border:1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.70);
-  font-weight: 950;
-  font-size:13px;
-}
-.folderItem:hover{ border-color: rgba(240,138,36,.35); }
-.folderItem.active{ background: rgba(240,138,36,.12); border-color: rgba(240,138,36,.55); }
-
-.folderBadge{
-  font-size:11px;
-  font-weight:1000;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(38,167,106,.12);
-  border:1px solid rgba(38,167,106,.30);
-  color: #1e6b48;
-}
-
-.tableLike{ width:100%; border-collapse: collapse; font-size:12px; }
-.tableLike th, .tableLike td{
-  border-bottom: 1px solid rgba(0,0,0,.06);
-  padding: 10px 8px;
-  text-align:left;
-  vertical-align:top;
-}
-.tableLike th{
-  font-weight:1000;
-  color:#3a3a3f;
-  background: rgba(0,0,0,.02);
-}
-
-.toolbarLine{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding: 8px 0 10px;
-  border-bottom: 1px solid rgba(0,0,0,.06);
-  margin-bottom: 10px;
-}
-.searchBox{ display:flex; align-items:center; gap:8px; min-width: 320px; }
-.iconBtn{
-  width:34px;height:34px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.85);
-  cursor:pointer;
-  font-weight:1000;
-}
-.iconBtn:hover{ border-color: rgba(240,138,36,.45); }
-
-/* =========================
-   ✅ SPLIT / DASH (JS용)
+   MAIL / SPLIT / DASH / CALENDAR (기존 유지)
 ========================= */
 .split{ display:grid; grid-template-columns: 260px 1fr; gap:12px; }
 .dash{ display:grid; grid-template-columns: 320px 1fr; gap:12px; }
 
-/* =========================
-   ✅ CALENDAR (JS용)
-========================= */
+/* CALENDAR */
 .cal-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
 .cal-month-title{ font-weight:1000; font-size:14px; }
 .pill-btn{
   border:1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.85);
+  background: rgba(255,255,255,.92);
   border-radius: 999px;
   padding: 8px 10px;
   cursor:pointer;
   font-weight:1000;
 }
-.pill-btn:hover{ border-color: rgba(240,138,36,.45); }
+.pill-btn:hover{ border-color: rgba(240,138,36,.35); }
 
 .calendar-wrap{ padding:14px; }
 .cal-dow{
@@ -590,12 +524,12 @@ header.topbar .topCenter{
   min-height: 92px;
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.72);
+  background: rgba(255,255,255,.92);
   padding: 8px;
   cursor:pointer;
 }
-.cal-cell:hover{ border-color: rgba(240,138,36,.35); }
-.cal-empty{ background: rgba(255,255,255,.35); cursor:default; }
+.cal-cell:hover{ border-color: rgba(240,138,36,.30); }
+.cal-empty{ background: rgba(255,255,255,.55); cursor:default; }
 .cal-day{ font-weight:1000; font-size:12px; }
 .chips{ display:flex; flex-direction:column; gap:6px; margin-top:6px; }
 .chip{
@@ -608,7 +542,7 @@ header.topbar .topCenter{
   color:#7a4a12;
 }
 
-/* Checkbox (JS용) */
+/* Checkbox */
 .chk{
   width: 18px;
   height: 18px;
@@ -617,11 +551,14 @@ header.topbar .topCenter{
 }
 
 /* =========================
-   ✅ RESPONSIVE
+   RESPONSIVE
 ========================= */
+@media (max-width: 1100px){
+  .dashRow3{ grid-template-columns: 1fr; }
+}
 @media (max-width: 980px){
   #topTabs.topTabs{ max-width: 360px; }
-  .mailWrap{ grid-template-columns: 1fr; }
+  .dashRow2{ grid-template-columns: 1fr; }
   .side{ display:none; }
   .app{ display:block; }
   .main{ padding: 12px; }
