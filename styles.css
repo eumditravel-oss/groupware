@@ -847,3 +847,15 @@ header.topbar .topRight{
   color: var(--ink);
   font-weight: 800;
 }
+
+
+/* ✅ 전자메일: 목록 상단 검색툴바 */
+.mail-toolbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.mail-toolbar .select{ width: 140px; }
+.mail-toolbar .input{ width: 260px; max-width: 40vw; }
