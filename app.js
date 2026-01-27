@@ -1947,16 +1947,18 @@ function viewCalc(db, sub){
     else if (tab === "산출") viewCalc(db, sub);
     else if (tab === "일정관리") viewSchedule(db, sub);
     else if (tab === "업무관리") viewWork(db, sub);
-    else {
-      setHash("대쉬보드", "home");
-      viewHomeDashboard(db);
-    }
+      else {
+    setHash("대쉬보드", "home");
+    viewHomeDashboard(db);
+  }
+} // ✅ render() 종료 ← 이 줄이 반드시 있어야 함
 
-  /***********************
-   * Wire events
-   ***********************/
-  async function boot(){
-    ensureDB();
+/***********************
+ * Wire events
+ ***********************/
+async function boot(){
+  ensureDB();
+
 
     // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
     // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
