@@ -1,65 +1,68 @@
-  /***********************
-   * VIEW: 게시판 (DB 기반 렌더링)
-   ***********************/
-  function viewBoard(db, sub){
-    const view = $("#view");
-    if (!view) return;
-    view.innerHTML = "";
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CON COST Groupware</title>
+  <link rel="stylesheet" href="styles.css?v=5" />
+</head>
+<body>
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <a href="#대쉬보드/home" class="brand" id="logoHome" aria-label="Home">
+      <!-- 로고 이미지가 있으면 아래 src만 맞추세요 -->
+      <!-- 예: assets/logo.png -->
+      <img class="logoImg" src="assets/logo.png" alt="CON COST" onerror="this.style.display='none'">
+    </a>
 
-    const menus = SIDE_MENUS["게시판"] || [];
-    const label = (menus.find(x=>x.key===sub)?.label) || "게시판";
+    <div class="topCenter">
+      <div id="topTabs" class="topTabs"></div>
+    </div>
 
-    setRouteTitle(`게시판 · ${label}`);
+    <div id="userBoxTop" class="userBox">
+      <div class="userLabel">사용자</div>
+      <select id="userSelect" class="select"></select>
 
-    // ✅ sub(boardKey)에 해당하는 게시물만 보여줌
-    const posts = (db.boardPosts || [])
-      .filter(p => String(p.boardKey||"") === String(sub||""))
-      .slice()
-      .sort((a,b)=>String(b.at||"").localeCompare(String(a.at||"")))
-      .slice(0, 30);
+      <!-- (옵션) 버튼들은 CSS에서 숨김 처리되어 있어도 DOM은 존재하면 좋습니다 -->
+      <button id="btnSheetBackup" class="btn tiny" type="button">시트 백업</button>
+      <button id="btnSheetRestore" class="btn tiny" type="button">시트 복원</button>
+      <button id="btnResetDemo" class="btn tiny" type="button">데모 초기화</button>
+    </div>
+  </header>
 
-    const searchInput = el("input", { class:"input", placeholder:"검색(제목/작성자) - 데모", oninput:()=>draw() });
+  <!-- LAYOUT -->
+  <div class="app">
+    <aside class="side">
+      <div class="sideHead">
+        <div class="sideTitle">MENU</div>
+        <div class="sideHint muted">좌측 메뉴는 상단 탭에 따라 바뀝니다</div>
+      </div>
+      <nav class="sideNav" id="sideMenu"></nav>
+    </aside>
 
-    const listHost = el("div", { class:"list" });
+    <main class="main">
+      <div id="routeTitle"></div>
+      <div id="badgePending"></div>
+      <section id="view" class="view"></section>
+    </main>
+  </div>
 
-    function draw(){
-      const q = (searchInput.value || "").trim().toLowerCase();
+  <!-- TOAST -->
+  <div id="toast" class="toastHost"></div>
 
-      const filtered = !q
-        ? posts
-        : posts.filter(p =>
-            String(p.title||"").toLowerCase().includes(q) ||
-            String(p.writer||"").toLowerCase().includes(q)
-          );
+  <!-- MODAL -->
+  <div id="modalBackdrop" class="modalBackdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modalHead">
+        <div id="modalTitle" class="modalTitle"></div>
+        <button id="modalClose" class="btn tiny" type="button">닫기</button>
+      </div>
+      <div id="modalBody" class="modalBody"></div>
+      <div id="modalFoot" class="modalFoot"></div>
+    </div>
+  </div>
 
-      listHost.innerHTML = "";
-
-      if (!filtered.length){
-        listHost.appendChild(el("div", { class:"empty" }, "최근 게시물이 없습니다."));
-        return;
-      }
-
-      filtered.forEach(p=>{
-        listHost.appendChild(
-          el("div", { class:"list-item" },
-            el("div", { class:"list-title" }, p.title),
-            el("div", { class:"list-sub" }, `${p.writer || "-"} · ${p.at || "-"}`)
-          )
-        );
-      });
-    }
-
-    const top = el("div", { class:"card" },
-      el("div", { class:"card-head" },
-        el("div", { class:"card-title" }, label),
-        el("div", { class:"row" },
-          searchInput,
-          el("button", { class:"btn" , onclick:()=>draw() }, "검색")
-        )
-      ),
-      listHost
-    );
-
-    view.appendChild(el("div", { class:"stack" }, top));
-    draw();
-  }
+  <!-- APP -->
+  <script src="app.js?v=5"></script>
+</body>
+</html>
