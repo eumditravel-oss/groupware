@@ -22,25 +22,39 @@
   };
 
   /***********************
-   * Roles
-   ***********************/
-  const ROLE_ORDER = ["staff","leader","manager","director","vp","svp","ceo"];
-  const ROLE_LABEL = {
-    staff:"staff",
-    leader:"leader",
-    manager:"manager",
-    director:"director",
-    vp:"vp",
-    svp:"svp",
-    ceo:"ceo"
-  };
+ * Roles
+ ***********************/
+const ROLE_ORDER = ["staff","leader","manager","director","vp","svp","ceo"];
 
-  function roleRank(role){
-    const i = ROLE_ORDER.indexOf(role);
-    return i >= 0 ? i : 0;
-  }
-  function isStaff(user){ return (user?.role || "staff") === "staff"; }
-  function isLeaderPlus(user){ return roleRank(user?.role || "staff") >= roleRank("leader"); }
+// ✅ 내부 표기(필요시 유지)
+const ROLE_LABEL = {
+  staff:"staff",
+  leader:"leader",
+  manager:"manager",
+  director:"director",
+  vp:"vp",
+  svp:"svp",
+  ceo:"ceo"
+};
+
+// ✅ UI 표시용(요청: 사원~대표)
+const ROLE_LABEL_KO = {
+  staff:"사원",
+  leader:"팀장",
+  manager:"과장",
+  director:"본부장",
+  vp:"상무",
+  svp:"부사장",
+  ceo:"대표"
+};
+
+function roleRank(role){
+  const i = ROLE_ORDER.indexOf(role);
+  return i >= 0 ? i : 0;
+}
+function isStaff(user){ return (user?.role || "staff") === "staff"; }
+function isLeaderPlus(user){ return roleRank(user?.role || "staff") >= roleRank("leader"); }
+
 
   /***********************
    * Storage
@@ -557,6 +571,66 @@ function setHash(tab, sub){
     }
     return true;
   }
+
+   /***********************
+ * LEFT PROFILE CARD
+ ***********************/
+function renderLeftProfile(db){
+  const host = $("#profileCard");
+  if (!host) return;
+
+  const uid = getUserId(db);
+  const me = userById(db, uid);
+
+  // 프로필 UI (요청: 이름/부서 "-" 고정)
+  const avatar = el("div", { class:"profileAvatar", "aria-hidden":"true" },
+    el("div", { class:"profileAvatarInner" })
+  );
+
+  const nameRow = el("div", { class:"profileRow" },
+    el("div", { class:"profileKey" }, "성명"),
+    el("div", { class:"profileVal" }, "-")
+  );
+
+  const roleSelect = el("select", {
+    class:"select profileSelect",
+    onchange:(e)=>{
+      const v = e.target.value;
+      if (!me) return;
+      me.role = v;
+      saveDB(db);
+      toast("직급 변경 완료");
+      // 권한 라우팅 즉시 반영
+      const { tab, sub } = parseHash();
+      enforceAuth(db, tab, sub);
+      render();
+    }
+  });
+
+  ROLE_ORDER.forEach(r=>{
+    roleSelect.appendChild(el("option", { value:r }, ROLE_LABEL_KO[r] || r));
+  });
+  roleSelect.value = (me?.role || "staff");
+
+  const roleRow = el("div", { class:"profileRow" },
+    el("div", { class:"profileKey" }, "직급"),
+    el("div", { class:"profileVal" }, roleSelect)
+  );
+
+  const deptRow = el("div", { class:"profileRow" },
+    el("div", { class:"profileKey" }, "부서"),
+    el("div", { class:"profileVal" }, "-")
+  );
+
+  host.innerHTML = "";
+  host.appendChild(
+    el("div", { class:"profileCard card" },
+      el("div", { class:"profileTop" }, avatar),
+      el("div", { class:"profileBody" }, nameRow, roleRow, deptRow)
+    )
+  );
+}
+
 
   /***********************
    * UI RENDER: TABS / SIDE
@@ -2043,17 +2117,10 @@ function viewCalc(db, sub){
     // 상단 탭/좌측 메뉴
     renderTopTabs();
     renderSideMenu(db);
+     renderLeftProfile(db);
 
-    // 사용자 셀렉트(공통)
-    const userSel = $("#userSelect");
-    if (userSel && userSel.childElementCount === 0){
-      db.users.forEach(u=>{
-        userSel.appendChild(el("option", { value:u.userId }, `${u.name} (${ROLE_LABEL[u.role]||u.role})`));
-      });
-    }
-    const uid = getUserId(db);
-    if (userSel) userSel.value = uid;
 
+    
     // 승인 배지(기존 상단 뱃지 유지용 - 있으면 업데이트)
     const b = $("#badgePending");
     if (b) b.textContent = String(pendingCount(db));
@@ -2111,13 +2178,7 @@ if (AUTO_PULL_ON_START){
       if (e.target === $("#modalBackdrop")) modalClose();
     });
 
-    // user
-    $("#userSelect")?.addEventListener("change", (e)=>{
-      const uid = e.target.value;
-      setUserId(uid);
-      toast("사용자 변경");
-      render();
-    });
+    
 
     // reset demo
 $("#btnResetDemo")?.addEventListener("click", ()=>{
