@@ -1,6 +1,11 @@
 :root{
-  --bg:#f3f5f8;
+  /* ✅ Clean ivory + soft gray (얼룩/밴딩 최소화) */
+  --bg:#f4f6f9;
+  --bg2:#eef2f7;
+
   --paper:#ffffff;
+  --paper2: rgba(255,255,255,.86);
+
   --ink:#1d1d1f;
   --muted:#6b6b73;
 
@@ -15,24 +20,36 @@
   --accent:#f08a24;
   --accent2:#ffb55a;
 
+  --accentSoft: rgba(240,138,36,.10);
+  --accentSoft2: rgba(240,138,36,.18);
+  --accentLine: rgba(240,138,36,.35);
+
   --topbarH: 74px;
   --sideW: 260px;
 }
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
+
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic";
   color:var(--ink);
-  background: linear-gradient(180deg, #f6f7fa 0%, #eef1f5 100%);
+
+  /* ✅ 배경 “얼룩” 느낌 최소화:
+     - 큰 그라데이션 1개 + 아주 약한 라디얼 2개 (밴딩/패치감 줄임)
+  */
+  background:
+    radial-gradient(1200px 700px at 18% -10%, rgba(255,181,90,.18), transparent 60%),
+    radial-gradient(900px 520px at 85% 0%, rgba(240,138,36,.10), transparent 62%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
 }
 
 a{ color:inherit; text-decoration:none; }
 .hidden{ display:none !important; }
 
 /* =========================
-   TOPBAR (레퍼런스 톤)
+   TOPBAR
 ========================= */
 header.topbar{
   position: sticky;
@@ -46,7 +63,7 @@ header.topbar{
   gap: 12px;
 
   padding: 10px 14px;
-  background: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.90);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0,0,0,.06);
 }
@@ -61,7 +78,7 @@ header.topbar .brand{
   border-radius: 14px;
 }
 header.topbar .brand:hover{
-  background: rgba(240,138,36,.08);
+  background: var(--accentSoft);
 }
 
 .logoImg{
@@ -89,8 +106,8 @@ header.topbar .topCenter{
   padding: 6px 8px;
 
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.80);
-  box-shadow: 0 10px 24px rgba(0,0,0,.06);
+  background: rgba(255,255,255,.78);
+  box-shadow: 0 10px 24px rgba(0,0,0,.05);
   overflow:auto;
 
   width: fit-content;
@@ -107,7 +124,7 @@ header.topbar .topCenter{
   padding:8px 10px;
   border-radius:14px;
   border:1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.80);
+  background: rgba(255,255,255,.78);
 }
 
 /* 탭 버튼 */
@@ -128,13 +145,19 @@ header.topbar .topCenter{
   display:flex;
   align-items:center;
   gap:6px;
+
+  /* ✅ hover 밴딩 느낌 완화 */
+  transition: background .12s ease, color .12s ease, box-shadow .12s ease;
 }
+
 .topTab:hover,
-.top-tab:hover{ background: rgba(240,138,36,.10); }
+.top-tab:hover{
+  background: var(--accentSoft);
+}
 
 .topTab.active,
 .top-tab.active{
-  background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.78));
+  background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.80));
   color:#fff;
   box-shadow: 0 12px 26px rgba(240,138,36,.22);
 }
@@ -152,7 +175,7 @@ header.topbar .topCenter{
   width: var(--sideW);
   padding: 12px 12px 16px;
   border-right: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.72);
+  background: rgba(255,255,255,.70);
 }
 
 .sideHead{ padding: 8px 8px 10px; }
@@ -176,20 +199,22 @@ header.topbar .topCenter{
   padding: 11px 12px;
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.86);
+  background: rgba(255,255,255,.88);
   cursor:pointer;
   font-weight:900;
   font-size:13px;
+
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
 }
 .sideLink:hover,
 .side-item:hover{
-  border-color: rgba(240,138,36,.30);
+  border-color: var(--accentLine);
   box-shadow: 0 10px 22px rgba(0,0,0,.06);
 }
 .sideLink.active,
 .side-item.active{
   border-color: rgba(240,138,36,.55);
-  background: rgba(240,138,36,.10);
+  background: var(--accentSoft);
 }
 
 /* 메인 */
@@ -211,7 +236,7 @@ header.topbar .topCenter{
    CARD / FORM
 ========================= */
 .card{
-  background: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.94);
   border: 1px solid rgba(0,0,0,.06);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -236,8 +261,13 @@ header.topbar .topCenter{
   padding: 10px 12px;
   border-radius: 14px;
   border:1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.95);
+  background: rgba(255,255,255,.96);
   outline: none;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.input:focus,.select:focus,.textarea:focus{
+  border-color: rgba(240,138,36,.40);
+  box-shadow: 0 0 0 3px rgba(240,138,36,.12);
 }
 .textarea{ resize:vertical; min-height: 92px; }
 
@@ -249,14 +279,18 @@ header.topbar .topCenter{
   cursor:pointer;
   font-weight:900;
   font-size:13px;
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
 }
-.btn:hover{ border-color: rgba(240,138,36,.35); }
+.btn:hover{
+  border-color: var(--accentLine);
+}
 .btn.primary{
   border-color: rgba(240,138,36,.55);
-  background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.78));
+  background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.80));
   color:#fff;
+  box-shadow: 0 12px 26px rgba(240,138,36,.16);
 }
-.btn.ghost{ background: rgba(255,255,255,.70); }
+.btn.ghost{ background: rgba(255,255,255,.72); }
 .btn.tiny{ padding: 7px 10px; font-size:12px; border-radius: 12px; }
 
 .muted{ color:var(--muted); }
@@ -270,7 +304,7 @@ header.topbar .topCenter{
   padding: 12px 12px;
   border-radius: 16px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.90);
+  background: rgba(255,255,255,.92);
 }
 .list-title{ font-weight:1000; font-size:13px; margin-bottom:4px; }
 .list-sub{ color: var(--muted); font-size:12px; line-height:1.45; }
@@ -292,7 +326,7 @@ header.topbar .topCenter{
   padding: 14px;
   border-radius: 16px;
   border: 1px dashed rgba(0,0,0,.18);
-  background: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.78);
   color: var(--muted);
   font-weight:900;
   font-size:13px;
@@ -364,7 +398,7 @@ header.topbar .topCenter{
   padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.90);
+  background: rgba(255,255,255,.92);
 }
 
 .dashItemTitle{
@@ -390,7 +424,7 @@ header.topbar .topCenter{
   padding: 12px 12px;
   border-radius: 14px;
   border: 1px dashed rgba(0,0,0,.18);
-  background: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.78);
   color: var(--muted);
   font-weight: 900;
   font-size: 13px;
@@ -410,7 +444,7 @@ header.topbar .topCenter{
   gap:8px;
 }
 .toastHost .t{
-  background: rgba(255,255,255,.95);
+  background: rgba(255,255,255,.96);
   border: 1px solid rgba(0,0,0,.10);
   border-left: 4px solid var(--accent);
   padding: 10px 12px;
@@ -437,7 +471,7 @@ header.topbar .topCenter{
   width: min(860px, 96vw);
   max-height: 86vh;
   overflow:auto;
-  background: rgba(255,255,255,.96);
+  background: rgba(255,255,255,.97);
   border: 1px solid rgba(0,0,0,.10);
   border-radius: 18px;
   box-shadow: var(--shadow2);
@@ -477,7 +511,7 @@ header.topbar .topCenter{
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 16px;
   overflow:hidden;
-  background: rgba(255,255,255,.75);
+  background: rgba(255,255,255,.80);
 }
 .embedFrame{
   width:100%;
@@ -504,7 +538,7 @@ header.topbar .topCenter{
 }
 
 /* =========================
-   MAIL / SPLIT / DASH / CALENDAR (기존 유지)
+   MAIL / SPLIT / DASH / CALENDAR
 ========================= */
 .split{ display:grid; grid-template-columns: 260px 1fr; gap:12px; }
 .dash{ display:grid; grid-template-columns: 320px 1fr; gap:12px; }
@@ -519,8 +553,11 @@ header.topbar .topCenter{
   padding: 8px 10px;
   cursor:pointer;
   font-weight:1000;
+  transition: border-color .12s ease, box-shadow .12s ease;
 }
-.pill-btn:hover{ border-color: rgba(240,138,36,.35); }
+.pill-btn:hover{
+  border-color: var(--accentLine);
+}
 
 .calendar-wrap{ padding:14px; }
 .cal-dow{
@@ -541,12 +578,16 @@ header.topbar .topCenter{
   min-height: 92px;
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.94);
   padding: 8px;
   cursor:pointer;
+  transition: border-color .12s ease, box-shadow .12s ease;
 }
-.cal-cell:hover{ border-color: rgba(240,138,36,.30); }
-.cal-empty{ background: rgba(255,255,255,.55); cursor:default; }
+.cal-cell:hover{
+  border-color: var(--accentLine);
+  box-shadow: 0 10px 22px rgba(0,0,0,.05);
+}
+.cal-empty{ background: rgba(255,255,255,.62); cursor:default; box-shadow:none; }
 .cal-day{ font-weight:1000; font-size:12px; }
 .chips{ display:flex; flex-direction:column; gap:6px; margin-top:6px; }
 .chip{
@@ -554,7 +595,7 @@ header.topbar .topCenter{
   padding: 4px 8px;
   border-radius: 999px;
   border: 1px solid rgba(0,0,0,.08);
-  background: rgba(240,138,36,.10);
+  background: var(--accentSoft);
   font-weight:900;
   color:#7a4a12;
 }
