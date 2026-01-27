@@ -4,49 +4,31 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CON COST Groupware</title>
-  <link rel="stylesheet" href="./styles.css?v=1" />
+
+  <!-- ✅ 캐시 방지: 버전 올리기 -->
+  <link rel="stylesheet" href="./styles.css?v=3" />
 </head>
 <body>
   <!-- Topbar -->
-<header class="topbar">
-  <div class="brand">
-    <img class="logoImg" src="./assets/logo.png?v=1" alt="CON COST" />
-    <div class="brandText">
-      <div class="title">Con-Cost Groupware</div>
+  <header class="topbar">
+    <!-- ✅ 좌측: 브랜드 -->
+    <div class="brand">
+      <img class="logoImg" src="./assets/logo.png?v=1" alt="CON COST" />
+      <div class="brandText">
+        <div class="title">Con-Cost Groupware</div>
+      </div>
     </div>
-  </div>
 
-  <!-- ✅ 가운데: 탭 -->
-  <div class="topCenter">
-    <nav id="topTabs" class="topTabs" aria-label="Main Tabs"></nav>
-  </div>
+    <!-- ✅ 가운데: 탭 (문서에 1개만 존재해야 함) -->
+    <div class="topCenter">
+      <nav id="topTabs" class="topTabs" aria-label="Main Tabs"></nav>
+    </div>
 
-  <!-- ✅ 우측: 사용자 -->
-  <div class="userBox" id="userBoxTop">
-    <div class="muted small" style="font-weight:900;">사용자</div>
-    <select id="userSelect" class="select"></select>
-  </div>
-</header>
-
-    
-
-    <!-- Top Tabs (대분류) -->
-    <nav id="topTabs" class="topTabs" aria-label="Main Tabs"></nav>
-
-    <!-- ✅ 사용자 탭을 actions에서 분리해서 topTabs 오른쪽(화살표 영역)으로 배치 -->
+    <!-- ✅ 우측: 사용자 (문서에 1개만 존재해야 함) -->
     <div class="userBox" id="userBoxTop">
       <div class="muted small" style="font-weight:900;">사용자</div>
       <select id="userSelect" class="select"></select>
     </div>
-
-    <!-- ✅ 3개 버튼은 화면에서 제거(아예 삭제) -->
-    <!--
-    <div class="actions">
-      <button id="btnSheetBackup" class="btn">시트로 백업</button>
-      <button id="btnSheetRestore" class="btn">시트에서 복원</button>
-      <button id="btnResetDemo" class="btn ghost">데모 데이터 초기화</button>
-    </div>
-    -->
   </header>
 
   <!-- App Layout -->
@@ -59,17 +41,6 @@
       </div>
 
       <nav id="sideMenu" class="sideNav"></nav>
-
-      <!-- ✅ 정책 안내 박스 삭제 -->
-      <!--
-      <div class="sideNote">
-        <div class="noteTitle">정책(GitHub MVP 안내)</div>
-        <div class="noteBody">
-          기본 저장소는 브라우저 localStorage 입니다.<br/>
-          상단의 “시트 백업/복원”으로 Google Sheets를 저장소처럼 사용할 수 있습니다.
-        </div>
-      </div>
-      -->
 
       <div id="toast" class="toastHost" aria-live="polite"></div>
     </aside>
