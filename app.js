@@ -41,7 +41,7 @@ const ROLE_LABEL = {
 const ROLE_LABEL_KO = {
   staff:"사원",
   leader:"팀장",
-  manager:"과장",
+  manager:"실장",
   director:"본부장",
   vp:"상무",
   svp:"부사장",
