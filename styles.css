@@ -34,6 +34,9 @@
   --pillBg: rgba(255,255,255,.92);
   --pillBorder: rgba(0,0,0,.06);
   --pillShadow: 0 10px 24px rgba(0,0,0,.06);
+
+  /* ✅ 드롭다운 화살표(인라인 SVG) */
+  --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%236b6b73' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
 }
 
 *{ box-sizing:border-box; }
@@ -113,17 +116,17 @@ header.topbar .topCenter{
   align-items: center;
 }
 
-/* ✅ PAD처럼 “큰 pill 바” */
+/* ✅ (노란박스 느낌) 큰 캡슐 바 + 세그먼트 탭 */
 #topTabs.topTabs{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
-  padding: 8px 10px;
+  gap:6px;
+  padding: 7px 8px;
 
-  border: 1px solid var(--pillBorder);
-  background: var(--pillBg);
-  box-shadow: var(--pillShadow);
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(245,247,250,.92);
+  box-shadow: 0 10px 22px rgba(0,0,0,.06);
   overflow:auto;
 
   width: fit-content;
@@ -132,21 +135,22 @@ header.topbar .topCenter{
   scrollbar-width: thin;
 }
 
-/* ✅ 탭 자체도 웹에서 “채워진 pill”로 */
+/* 탭 버튼: 기본은 “회색 세그먼트”, active는 “흰 배경 + 밑줄 강조” */
 .topTab,
 .top-tab,
 #topTabs button,
 #topTabs a{
+  position: relative;
   border: 1px solid rgba(0,0,0,.06);
   cursor:pointer;
 
-  padding:10px 14px;
+  padding:10px 14px 12px;
   border-radius: 14px !important;
   font-weight: 950;
   font-size: 13px;
 
   color:#2f2f34;
-  background: rgba(255,255,255,.82);
+  background: rgba(255,255,255,.60);
 
   display:flex;
   align-items:center;
@@ -158,17 +162,30 @@ header.topbar .topCenter{
 @media (hover:hover) and (pointer:fine){
   .topTab:hover,
   .top-tab:hover{
-    border-color: var(--accentLine);
-    background: rgba(240,138,36,.10);
+    border-color: rgba(0,0,0,.10);
+    background: rgba(255,255,255,.82);
   }
 }
 
+/* ✅ active: 흰 캡슐 + 오렌지 밑줄(드롭다운/탭 구분 확실) */
 .topTab.active,
 .top-tab.active{
-  background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.80));
-  color:#fff;
-  border-color: rgba(240,138,36,.55);
-  box-shadow: 0 12px 26px rgba(240,138,36,.22);
+  background: rgba(255,255,255,.98);
+  color:#111;
+  border-color: rgba(0,0,0,.10);
+  box-shadow: 0 10px 18px rgba(0,0,0,.06);
+}
+.topTab.active::after,
+.top-tab.active::after{
+  content:"";
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:6px;
+  height:3px;
+  border-radius: 999px;
+  background: var(--accent);
+  opacity: .95;
 }
 
 /* ✅ 우측 사용자 (PAD처럼 pill) */
@@ -184,9 +201,8 @@ header.topbar .topCenter{
   background: var(--pillBg);
   box-shadow: var(--pillShadow);
 
-  /* ✅ 줄바꿈/쪼개짐 방지 핵심 */
   white-space: nowrap;
-  min-width: 220px;   /* 필요하면 240~260으로 더 키워도 됨 */
+  min-width: 220px;
 }
 
 .userLabel{
@@ -216,58 +232,72 @@ header.topbar .topCenter{
   width: var(--sideW);
   flex: 0 0 var(--sideW);
 
-  padding: 12px 12px 16px;
+  padding: 12px 10px 16px;
   border-right: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.70);
+  background: rgba(255,255,255,.62);
 }
 
-.sideHead{ padding: 8px 8px 10px; }
+.sideHead{ padding: 8px 10px 10px; }
 .sideTitle{ font-weight:1000; font-size:13px; }
 .sideHint{ font-size:12px; margin-top:4px; }
 
 .sideNav{
   display:flex;
   flex-direction:column;
-  gap:8px;
-  padding: 6px;
+  gap:6px;
+  padding: 6px 6px 0;
 }
 
-/* 좌측 메뉴 버튼 (PAD처럼 채움) */
+/* ✅ (빨간박스 느낌) 좌측 메뉴: 아이콘 없는 리스트 + active 좌측 바 */
 .sideLink,
 .side-item{
+  position: relative;
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  justify-content:flex-start;
   gap:10px;
-  padding: 11px 12px;
 
-  border-radius: 16px;
-  border: 1px solid rgba(0,0,0,.06);
+  padding: 11px 12px 11px 14px;
+  border-radius: 14px;
+  border: 1px solid transparent;
 
-  /* ✅ 기본도 “채워진 느낌” */
-  background: rgba(255,255,255,.92);
-  box-shadow: 0 8px 18px rgba(0,0,0,.04);
-
+  background: transparent;
   cursor:pointer;
-  font-weight:900;
-  font-size:13px;
+  font-weight: 950;
+  font-size: 13px;
+  color: #3a3a40;
 
-  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease, transform .08s ease;
+  transition: background .12s ease, border-color .12s ease, transform .08s ease;
 }
 
 @media (hover:hover) and (pointer:fine){
   .sideLink:hover,
   .side-item:hover{
-    border-color: var(--accentLine);
-    box-shadow: 0 12px 24px rgba(0,0,0,.06);
+    background: rgba(255,255,255,.70);
+    border-color: rgba(0,0,0,.06);
     transform: translateY(-1px);
   }
 }
 
 .sideLink.active,
 .side-item.active{
-  border-color: rgba(240,138,36,.55);
-  background: rgba(240,138,36,.10);
+  background: rgba(255,255,255,.92);
+  border-color: rgba(0,0,0,.08);
+  box-shadow: 0 10px 18px rgba(0,0,0,.06);
+}
+
+/* ✅ active 좌측 오렌지 바 */
+.sideLink.active::before,
+.side-item.active::before{
+  content:"";
+  position:absolute;
+  left:6px;
+  top:50%;
+  transform: translateY(-50%);
+  width:4px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--accent);
 }
 
 /* 메인 */
@@ -296,7 +326,7 @@ header.topbar .topCenter{
   padding: 14px 14px;
 }
 
-/* ✅ 섹션 타이틀이 “채워진 pill”로 보이도록 범용 클래스(앱이 쓰면 자동 적용) */
+/* ✅ 섹션 타이틀이 “채워진 pill”로 보이도록 */
 .sectionTitle,
 .card-title,
 .view h2, .view h3{
@@ -324,6 +354,7 @@ header.topbar .topCenter{
 .row{ display:flex; align-items:center; gap:8px; }
 .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
 
+/* ✅ 드롭다운이 “드롭다운”처럼 보이게 화살표 추가 */
 .input,.select,.textarea{
   width:100%;
   padding: 10px 12px;
@@ -334,6 +365,15 @@ header.topbar .topCenter{
   transition: border-color .12s ease, box-shadow .12s ease;
   color: var(--ink);
 }
+
+.select{
+  padding-right: 38px;
+  background-image: var(--chev);
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px 16px;
+}
+
 .input:focus,.select:focus,.textarea:focus{
   border-color: rgba(240,138,36,.40);
   box-shadow: 0 0 0 3px rgba(240,138,36,.12);
@@ -420,7 +460,6 @@ header.topbar .topCenter{
   margin-bottom: 10px;
 }
 
-/* ✅ 섹션 타이틀(전자메일/게시판/전자결재 등)이 PAD처럼 “채워진 캡슐” */
 .dashCardTitleLink{
   background: rgba(255,255,255,.92);
   border: 1px solid rgba(0,0,0,.06);
@@ -449,7 +488,6 @@ header.topbar .topCenter{
   font-weight: 900;
 }
 
-/* ✅ 대쉬보드 리스트 */
 .dashList{ display:flex; flex-direction:column; gap:10px; }
 
 .dashItem{
