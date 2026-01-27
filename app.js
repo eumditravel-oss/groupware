@@ -452,10 +452,11 @@ async function sheetsImport(payload){
     };
   }
 
-    /***********************
+      /***********************
    * TOP TABS / SIDE MENUS
    ***********************/
   const TOP_TABS = [
+    { key:"대쉬보드", label:"대쉬보드" },
     { key:"전자메일", label:"전자메일" },
     { key:"게시판",   label:"게시판" },
     { key:"전자결재", label:"전자결재" },
@@ -822,39 +823,7 @@ function setHash(tab, sub){
 }
 
 
-     /***********************
-   * VIEW: 게시판 (NEW - placeholder)
-   ***********************/
-  function viewBoard(db, sub){
-    const view = $("#view");
-    if (!view) return;
-    view.innerHTML = "";
-
-    // 메뉴명 표시용
-    const label = (SIDE_MENUS["게시판"].find(x=>x.key===sub)?.label) || "게시판";
-    setRouteTitle(`게시판 · ${label}`);
-
-    // 임의 리스트(placeholder)
-    const list = el("div", { class:"list" },
-      ...Array.from({length:8}).map((_,i)=> el("div", { class:"list-item" },
-        el("div", { class:"list-title" }, `${label} · 샘플 글 제목 ${i+1}`),
-        el("div", { class:"list-sub" }, "MVP: 게시글 상세/작성/첨부 기능은 추후 연결 예정입니다.")
-      ))
-    );
-
-    const top = el("div", { class:"card" },
-      el("div", { class:"card-head" },
-        el("div", { class:"card-title" }, label),
-        el("div", { class:"row" },
-          el("input", { class:"input", placeholder:"검색(placeholder)" }),
-          el("button", { class:"btn" }, "검색")
-        )
-      ),
-      list
-    );
-
-    view.appendChild(el("div", { class:"stack" }, top));
-  }
+     VIEW: 게시판 (DB 기반 렌더링)
 
 
   /***********************
