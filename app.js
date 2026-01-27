@@ -714,8 +714,6 @@ function renderLeftProfile(db){
     };
   }
 
-}
-
 
   /***********************
    * UI RENDER: TABS / SIDE
