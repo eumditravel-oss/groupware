@@ -141,27 +141,61 @@ const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
    * Seed / Ensure
    ***********************/
   function makeSeedDB(){
-    return {
-      meta: { version:"0.5", createdAt: nowISO() },
-      users: [
-        { userId:"u_staff_1", name:"작업자A", role:"staff" },
-        { userId:"u_staff_2", name:"작업자B", role:"staff" },
-        { userId:"u_leader",  name:"팀장", role:"leader" },
-        { userId:"u_manager", name:"실장", role:"manager" },
-        { userId:"u_director",name:"본부장", role:"director" },
-        { userId:"u_vp",      name:"상무", role:"vp" },
-        { userId:"u_svp",     name:"부사장", role:"svp" },
-        { userId:"u_ceo",     name:"대표", role:"ceo" }
-      ],
-      projects: [
-        { projectId:"p_a123", projectCode:"Project A-123", projectName:"프로젝트 A", startDate:"2024-05-01", endDate:"" },
-        { projectId:"p_b234", projectCode:"Project B-234", projectName:"프로젝트 B", startDate:"2024-05-10", endDate:"" },
-        { projectId:"p_c345", projectCode:"Project C-345", projectName:"프로젝트 C", startDate:"2024-05-15", endDate:"" }
-      ],
-      logs: [],
-      checklists: []
-    };
-  }
+  return {
+    meta: { version:"0.5", createdAt: nowISO() },
+    users: [
+      { userId:"u_staff_1", name:"작업자A", role:"staff" },
+      { userId:"u_staff_2", name:"작업자B", role:"staff" },
+      { userId:"u_leader",  name:"팀장", role:"leader" },
+      { userId:"u_manager", name:"실장", role:"manager" },
+      { userId:"u_director",name:"본부장", role:"director" },
+      { userId:"u_vp",      name:"상무", role:"vp" },
+      { userId:"u_svp",     name:"부사장", role:"svp" },
+      { userId:"u_ceo",     name:"대표", role:"ceo" }
+    ],
+    projects: [
+      { projectId:"p_a123", projectCode:"Project A-123", projectName:"프로젝트 A", startDate:"2024-05-01", endDate:"" },
+      { projectId:"p_b234", projectCode:"Project B-234", projectName:"프로젝트 B", startDate:"2024-05-10", endDate:"" },
+      { projectId:"p_c345", projectCode:"Project C-345", projectName:"프로젝트 C", startDate:"2024-05-15", endDate:"" }
+    ],
+
+    // ✅ 전자메일(MVP 더미 데이터)
+    mails: [
+      { mailId: uuid(), box:"inbox", subject:"[현대산업개발] 의왕 스마트시티 문의사항 답변", from:"현대산업개발", at:"2026-01-26 09:12" },
+      { mailId: uuid(), box:"inbox", subject:"[롯데건설] 마트 수지점 주상복합 개발사업 납품자료", from:"롯데건설", at:"2026-01-25 17:40" },
+      { mailId: uuid(), box:"inbox", subject:"[고려건설] 안동동 프로젝트 샘플 도면 송부", from:"고려건설", at:"2026-01-24 10:03" },
+      { mailId: uuid(), box:"sent",  subject:"Re: 견적요청 건 회신드립니다", from:"(보낸메일)", at:"2026-01-23 16:22" }
+    ],
+
+    // ✅ 게시판(MVP 더미 데이터)
+    boardPosts: [
+      { postId: uuid(), boardKey:"notice", title:"2025년 연말정산 안내", writer:"총무팀", at:"2026-01-26" },
+      { postId: uuid(), boardKey:"hr",     title:"인사발령(260126)", writer:"인사팀", at:"2026-01-26" },
+      { postId: uuid(), boardKey:"orders", title:"프로젝트 진행사항_Ver.260123", writer:"영업팀", at:"2026-01-23" },
+      { postId: uuid(), boardKey:"minutes",title:"주간 회의록(1월 3주차)", writer:"PMO", at:"2026-01-21" },
+      { postId: uuid(), boardKey:"manual", title:"신규 입사자 온보딩 메뉴얼", writer:"총무팀", at:"2026-01-15" }
+    ],
+
+    // ✅ 전자결재(MVP 더미 데이터)
+    approvals: [
+      { docId: uuid(), box:"inbox", title:"지출결의서(자재비) 승인 요청", from:"작업자A", at:"2026-01-26 11:20", status:"pending" },
+      { docId: uuid(), box:"inbox", title:"휴가신청서 승인 요청", from:"작업자B", at:"2026-01-25 18:05", status:"pending" },
+      { docId: uuid(), box:"sent",  title:"품의서(장비임차) 제출", from:"(보낸결재)", at:"2026-01-24 09:10", status:"submitted" }
+    ],
+
+    // ✅ 일정관리: 다가오는 휴가/외근(MVP 더미 데이터)
+    staffSchedules: [
+      { evId: uuid(), type:"휴가", name:"작업자A", date:"2026-01-29", note:"연차" },
+      { evId: uuid(), type:"외근", name:"작업자B", date:"2026-01-30", note:"현장 방문(평택)" },
+      { evId: uuid(), type:"외근", name:"팀장",   date:"2026-02-01", note:"미팅(발주처)" },
+      { evId: uuid(), type:"휴가", name:"실장",   date:"2026-02-03", note:"반차" }
+    ],
+
+    logs: [],
+    checklists: []
+  };
+}
+
 
   function seedDB(){
     const db = makeSeedDB();
@@ -657,95 +691,131 @@ function setHash(tab, sub){
    * - 타이틀 클릭 시 해당 탭으로 이동
    ***********************/
   function viewHomeDashboard(db){
-    const view = $("#view");
-    if (!view) return;
-    view.innerHTML = "";
+  const view = $("#view");
+  if (!view) return;
+  view.innerHTML = "";
 
-    setRouteTitle("Dashboard");
+  setRouteTitle("Dashboard");
 
-    // ✅ 현재 DB 기반으로 "보여주기용" 최소 수치만 계산 (메일/게시판은 MVP placeholder)
-    const pending = pendingCount(db);                         // 업무관리 승인대기
-    const openChecklist = db.checklists.filter(c => (c.status||"open") !== "done").length;
-    const totalLogs = db.logs.length;
-
-    // placeholder values (메일/게시판은 아직 데이터가 없으므로 임시)
-    const mailNew = 12;
-    const mailTotal = 43;
-    const boardNew = 3;      // 전사공지/CEO 등 "새글" 느낌
-    const boardTotal = 18;
-
-    // 카드 빌더
-    function dashCard({ title, subtitle, metrics, onGo }){
-      const head = el("div", { class:"dashCardHead" },
-        el("button", { class:"dashCardTitleLink", onclick:onGo }, title),
-        subtitle ? el("div", { class:"dashCardSub" }, subtitle) : el("div", { class:"dashCardSub muted" }, " ")
-      );
-
-      const grid = el("div", { class:"dashMetricGrid" },
-        ...(metrics || []).map(m => el("div", { class:"dashMetric" },
-          el("div", { class:"dashMetricLabel" }, m.label),
-          el("div", { class:"dashMetricValue" }, String(m.value))
-        ))
-      );
-
-      return el("div", { class:"dashCard card" }, head, grid);
-    }
-
-    // 상단 2개 (전자메일 / 게시판)
-    const topRow = el("div", { class:"dashRow2" },
-      dashCard({
-        title: "전자메일",
-        subtitle: "New / Total",
-        metrics: [
-          { label:"New Emails", value: mailNew },
-          { label:"Total Emails", value: mailTotal }
-        ],
-        onGo: ()=> setHash("전자메일", firstMenuKey("전자메일"))
-      }),
-      dashCard({
-        title: "게시판",
-        subtitle: "New / Total",
-        metrics: [
-          { label:"New Posts", value: boardNew },
-          { label:"Total Posts", value: boardTotal }
-        ],
-        onGo: ()=> setHash("게시판", firstMenuKey("게시판"))
-      })
-    );
-
-    // 하단 3개 (전자결재 / 업무관리 / 일정관리)
-    const bottomRow = el("div", { class:"dashRow3" },
-      dashCard({
-        title: "전자결재",
-        subtitle: "MVP Summary",
-        metrics: [
-          { label:"Pending Approvals", value: 3 },
-          { label:"Open Docs", value: 7 }
-        ],
-        onGo: ()=> setHash("전자결재", firstMenuKey("전자결재"))
-      }),
-      dashCard({
-        title: "업무관리",
-        subtitle: "Live Summary",
-        metrics: [
-          { label:"Pending (승인대기)", value: pending },
-          { label:"Total Logs", value: totalLogs }
-        ],
-        onGo: ()=> setHash("업무관리", firstMenuKey("업무관리"))
-      }),
-      dashCard({
-        title: "일정관리",
-        subtitle: "MVP Summary",
-        metrics: [
-          { label:"Vacations", value: 2 },
-          { label:"Company Events", value: 4 }
-        ],
-        onGo: ()=> setHash("일정관리", firstMenuKey("일정관리"))
-      })
-    );
-
-    view.appendChild(el("div", { class:"dashWrap" }, topRow, bottomRow));
+  // ✅ 유틸: 날짜 정렬(문자열 기반)
+  function sortByAtDesc(a, b){
+    return String(b.at||"").localeCompare(String(a.at||""));
   }
+  function sortByDateAsc(a, b){
+    return String(a.date||"").localeCompare(String(b.date||""));
+  }
+
+  // ✅ 표시용 데이터 추출
+  const inboxMails = (db.mails || []).filter(m => m.box === "inbox").slice().sort(sortByAtDesc).slice(0, 6);
+  const recentPosts = (db.boardPosts || []).slice().sort((a,b)=>String(b.at||"").localeCompare(String(a.at||""))).slice(0, 7);
+  const inboxApprovals = (db.approvals || []).filter(d => d.box === "inbox").slice().sort(sortByAtDesc).slice(0, 6);
+
+  const upcoming = (db.staffSchedules || [])
+    .slice()
+    .sort(sortByDateAsc)
+    .filter(x => x.date >= todayISO())
+    .slice(0, 7);
+
+  // 업무관리(기존 데이터 기반)
+  const pending = pendingCount(db);
+  const recentWorkLogs = db.logs
+    .slice()
+    .sort((a,b)=>String(b.submittedAt||"").localeCompare(String(a.submittedAt||"")))
+    .slice(0, 6);
+
+  // ✅ 카드 빌더(리스트형)
+  function dashListCard({ title, subtitle, items, emptyText, onGo }){
+    const head = el("div", { class:"dashCardHead" },
+      el("button", { class:"dashCardTitleLink", onclick:onGo }, title),
+      subtitle ? el("div", { class:"dashCardSub" }, subtitle) : el("div", { class:"dashCardSub muted" }, " ")
+    );
+
+    const list =
+      (items && items.length)
+        ? el("div", { class:"dashList" },
+            ...items.map(it => el("div", { class:"dashItem" },
+              el("div", { class:"dashItemTitle" }, it.title),
+              el("div", { class:"dashItemMeta" }, it.meta || "")
+            ))
+          )
+        : el("div", { class:"dashEmpty" }, emptyText || "자료가 존재하지 않습니다.");
+
+    return el("div", { class:"dashCard card" }, head, list);
+  }
+
+  // ✅ 전자메일(받은메일함 리스트)
+  const cardMail = dashListCard({
+    title: "전자메일",
+    subtitle: "받은메일함",
+    items: inboxMails.map(m => ({
+      title: m.subject,
+      meta: `${m.from} · ${m.at}`
+    })),
+    emptyText: "받은메일함에 메일이 없습니다.",
+    onGo: ()=> setHash("전자메일", "mail-inbox")
+  });
+
+  // ✅ 게시판(최근 게시물)
+  const cardBoard = dashListCard({
+    title: "게시판",
+    subtitle: "최근 게시물",
+    items: recentPosts.map(p => ({
+      title: `[${(SIDE_MENUS["게시판"].find(x=>x.key===p.boardKey)?.label)||p.boardKey}] ${p.title}`,
+      meta: `${p.writer} · ${p.at}`
+    })),
+    emptyText: "최근 게시물이 없습니다.",
+    onGo: ()=> setHash("게시판", firstMenuKey("게시판"))
+  });
+
+  // ✅ 전자결재(받은결재함 리스트)
+  const cardEA = dashListCard({
+    title: "전자결재",
+    subtitle: "받은결재함",
+    items: inboxApprovals.map(d => ({
+      title: d.title,
+      meta: `${d.from} · ${d.at}`
+    })),
+    emptyText: "받은결재함에 문서가 없습니다.",
+    onGo: ()=> setHash("전자결재", "ea-inbox")
+  });
+
+  // ✅ 업무관리(승인대기 + 최근 제출)
+  const cardWork = dashListCard({
+    title: "업무관리",
+    subtitle: `승인대기 ${pending}건 · 최근 제출`,
+    items: recentWorkLogs.length
+      ? recentWorkLogs.map(l => {
+          const p = projById(db, l.projectId);
+          const w = userById(db, l.writerId);
+          return {
+            title: `${p?.projectName||"프로젝트"} · ${l.category}/${l.process} · ${l.ratio}%`,
+            meta: `${w?.name||"-"} · ${l.submittedAt || l.date || ""}`
+          };
+        })
+      : [],
+    emptyText: "최근 제출된 업무일지가 없습니다.",
+    onGo: ()=> setHash("업무관리", "log")
+  });
+
+  // ✅ 일정관리(다가오는 휴가/외근)
+  const cardSchedule = dashListCard({
+    title: "일정관리",
+    subtitle: "다가오는 휴가/외근",
+    items: upcoming.map(e => ({
+      title: `${e.type} · ${e.name}`,
+      meta: `${e.date} · ${e.note || ""}`.trim()
+    })),
+    emptyText: "다가오는 휴가/외근 일정이 없습니다.",
+    onGo: ()=> setHash("일정관리", firstMenuKey("일정관리"))
+  });
+
+  // 레이아웃: 상단 2개(메일/게시판), 하단 3개(결재/업무/일정)
+  const topRow = el("div", { class:"dashRow2" }, cardMail, cardBoard);
+  const bottomRow = el("div", { class:"dashRow3" }, cardEA, cardWork, cardSchedule);
+
+  view.appendChild(el("div", { class:"dashWrap" }, topRow, bottomRow));
+}
+
 
      /***********************
    * VIEW: 게시판 (NEW - placeholder)
@@ -786,71 +856,85 @@ function setHash(tab, sub){
    * VIEW: 전자메일 (placeholder)
    ***********************/
   function viewMail(db, sub){
-    const view = $("#view");
-    if (!view) return;
-    view.innerHTML = "";
+  const view = $("#view");
+  if (!view) return;
+  view.innerHTML = "";
 
-    setRouteTitle("전자메일");
+  const box = (sub === "mail-sent") ? "sent" : (sub === "mail-etc") ? "etc" : "inbox";
+  setRouteTitle(`전자메일 · ${box === "inbox" ? "받은메일함" : box === "sent" ? "보낸메일함" : "기타"}`);
 
-    const left = el("div", { class:"mail-left card" },
-      el("div", { class:"card-head" }, el("div", { class:"card-title" }, "전자메일")),
-      el("div", { class:"mail-fold" },
-        el("div", { class:"mail-folder" }, "받은편지함"),
-        el("div", { class:"mail-folder" }, "보낸편지함"),
-        el("div", { class:"mail-folder" }, "기타")
-      ),
-      el("div", { class:"muted", style:"font-size:12px;margin-top:10px;" },
-        "※ MVP: UI placeholder (기능 확장 예정)"
-      )
-    );
+  const items = (db.mails || [])
+    .filter(m => m.box === box)
+    .slice()
+    .sort((a,b)=>String(b.at||"").localeCompare(String(a.at||"")))
+    .slice(0, 30);
 
-    const right = el("div", { class:"mail-right card" },
-      el("div", { class:"card-head" },
-        el("div", { class:"card-title" }, "메일 목록"),
-        el("div", { class:"row" },
-          el("input", { class:"input", placeholder:"검색" }),
-          el("button", { class:"btn" }, "찾기")
+  const left = el("div", { class:"mail-left card" },
+    el("div", { class:"card-head" }, el("div", { class:"card-title" }, "폴더")),
+    el("div", { class:"mail-fold" },
+      el("button", { class:`side-item ${box==="inbox"?"active":""}`, onclick:()=>setHash("전자메일","mail-inbox") }, "받은편지함"),
+      el("button", { class:`side-item ${box==="sent"?"active":""}`,  onclick:()=>setHash("전자메일","mail-sent") },  "보낸편지함"),
+      el("button", { class:`side-item ${box==="etc"?"active":""}`,   onclick:()=>setHash("전자메일","mail-etc") },   "기타")
+    )
+  );
+
+  const right = el("div", { class:"mail-right card" },
+    el("div", { class:"card-head" },
+      el("div", { class:"card-title" }, "메일 목록"),
+      el("div", { class:"badge" }, `${items.length}건`)
+    ),
+    items.length
+      ? el("div", { class:"list" },
+          ...items.map(m => el("div", { class:"list-item" },
+            el("div", { class:"list-title" }, m.subject),
+            el("div", { class:"list-sub" }, `${m.from} · ${m.at}`)
+          ))
         )
-      ),
-      el("div", { class:"list" },
-        ...Array.from({length:10}).map((_,i)=> el("div", { class:"list-item" },
-          el("div", { class:"list-title" }, `Fw: 샘플 메일 제목 ${i+1}`),
-          el("div", { class:"list-sub" }, "보낸사람 · 날짜 · 간단 미리보기…")
-        ))
-      )
-    );
+      : el("div", { class:"empty" }, "자료가 존재하지 않습니다.")
+  );
 
-    view.appendChild(el("div", { class:"split" }, left, right));
-  }
+  view.appendChild(el("div", { class:"split" }, left, right));
+}
+
 
   /***********************
    * VIEW: 전자결재 (placeholder)
    ***********************/
   function viewEA(db, sub){
-    const view = $("#view");
-    if (!view) return;
-    view.innerHTML = "";
+  const view = $("#view");
+  if (!view) return;
+  view.innerHTML = "";
 
-    setRouteTitle("전자결재");
+  const box = (sub === "ea-sent") ? "sent" : "inbox";
+  setRouteTitle(`전자결재 · ${box === "inbox" ? "받은결재함" : "보낸결재함"}`);
 
-    view.appendChild(
-      el("div", { class:"stack" },
-        el("div", { class:"card" },
-          el("div", { class:"card-head" },
-            el("div", { class:"card-title" }, "전자결재"),
-            el("div", { class:"badge" }, "MVP UI")
-          ),
-          el("div", { class:"grid2" },
-            el("div", { class:"empty" }, "결재함(받은/보낸/협의)"),
-            el("div", { class:"empty" }, "문서작성/양식관리")
-          ),
-          el("div", { class:"muted", style:"margin-top:10px;font-size:12px;" },
-            "※ MVP: 화면 구성만 제공 (기능 확장 예정)"
-          )
-        )
+  const items = (db.approvals || [])
+    .filter(d => d.box === box)
+    .slice()
+    .sort((a,b)=>String(b.at||"").localeCompare(String(a.at||"")))
+    .slice(0, 30);
+
+  view.appendChild(
+    el("div", { class:"stack" },
+      el("div", { class:"card" },
+        el("div", { class:"card-head" },
+          el("div", { class:"card-title" }, box === "inbox" ? "받은결재함" : "보낸결재함"),
+          el("div", { class:"badge" }, `${items.length}건`)
+        ),
+        items.length
+          ? el("div", { class:"list" },
+              ...items.map(d => el("div", { class:"list-item" },
+                el("div", { class:"list-title" }, d.title),
+                el("div", { class:"list-sub" }, `${d.from} · ${d.at}`),
+                el("div", { class:"list-sub" }, `상태: ${d.status || "-"}`)
+              ))
+            )
+          : el("div", { class:"empty" }, "자료가 존재하지 않습니다.")
       )
-    );
-  }
+    )
+  );
+}
+
    const FIN_URL = "https://eumditravel-oss.github.io/FIN2/"; // ✅ FIN 산출 링크(FIN2)
 
 
