@@ -418,11 +418,13 @@ async function sheetsImport(payload){
     };
   }
 
-  /***********************
+    /***********************
    * TOP TABS / SIDE MENUS
    ***********************/
   const TOP_TABS = [
+    { key:"대쉬보드", label:"Dashboard" },
     { key:"전자메일", label:"전자메일" },
+    { key:"게시판",   label:"게시판" },
     { key:"전자결재", label:"전자결재" },
     { key:"업무관리", label:"업무관리" },
     { key:"산출",     label:"산출" },
@@ -432,10 +434,25 @@ async function sheetsImport(payload){
   const WORK_ROUTES = ["log","approve","dashboard","calendar","checklist","checklist-view"];
 
   const SIDE_MENUS = {
+    "대쉬보드": [
+      { key:"home", label:"홈" }
+    ],
     "전자메일": [
       { key:"mail-inbox", label:"받은편지함" },
       { key:"mail-sent",  label:"보낸편지함" },
       { key:"mail-etc",   label:"기타" }
+    ],
+    "게시판": [
+      { key:"ceo",     label:"CEO Message" },
+      { key:"notice",  label:"전사공지" },
+      { key:"hr",      label:"인사발령" },
+      { key:"event",   label:"경조사" },
+      { key:"orders",  label:"수주소식" },
+      { key:"minutes", label:"회의록" },
+      { key:"weekly",  label:"주간 프로젝트 진행사항" },
+      { key:"manual",  label:"메뉴얼" },
+      { key:"album",   label:"사진첩" },
+      { key:"free",    label:"자유게시판" }
     ],
     "전자결재": [
       { key:"ea-inbox", label:"받은결재함" },
@@ -464,7 +481,7 @@ async function sheetsImport(payload){
   const raw = (location.hash || "").replace(/^#/, "");
   const [tabEnc, subEncWithQ] = raw.split("/");
 
-  const tab = decodeURIComponent(tabEnc || "업무관리");
+  const tab = decodeURIComponent(tabEnc || "대쉬보드");
 
   // sub에 ?p= 같은 쿼리가 붙는 케이스(viewDashboard) 대비
   const subEnc = (subEncWithQ || "").split("?")[0];
@@ -472,6 +489,7 @@ async function sheetsImport(payload){
 
   return { tab, sub };
 }
+
 
 function setHash(tab, sub){
   const t = encodeURIComponent(tab);
@@ -630,6 +648,139 @@ function setHash(tab, sub){
     }
     return s;
   }
+
+
+     /***********************
+   * VIEW: 대쉬보드 (NEW)
+   * - 상단: 전자메일 / 게시판 (축소 카드)
+   * - 하단: 전자결재 / 업무관리 / 일정관리 (축소 카드)
+   * - 타이틀 클릭 시 해당 탭으로 이동
+   ***********************/
+  function viewHomeDashboard(db){
+    const view = $("#view");
+    if (!view) return;
+    view.innerHTML = "";
+
+    setRouteTitle("Dashboard");
+
+    // ✅ 현재 DB 기반으로 "보여주기용" 최소 수치만 계산 (메일/게시판은 MVP placeholder)
+    const pending = pendingCount(db);                         // 업무관리 승인대기
+    const openChecklist = db.checklists.filter(c => (c.status||"open") !== "done").length;
+    const totalLogs = db.logs.length;
+
+    // placeholder values (메일/게시판은 아직 데이터가 없으므로 임시)
+    const mailNew = 12;
+    const mailTotal = 43;
+    const boardNew = 3;      // 전사공지/CEO 등 "새글" 느낌
+    const boardTotal = 18;
+
+    // 카드 빌더
+    function dashCard({ title, subtitle, metrics, onGo }){
+      const head = el("div", { class:"dashCardHead" },
+        el("button", { class:"dashCardTitleLink", onclick:onGo }, title),
+        subtitle ? el("div", { class:"dashCardSub" }, subtitle) : el("div", { class:"dashCardSub muted" }, " ")
+      );
+
+      const grid = el("div", { class:"dashMetricGrid" },
+        ...(metrics || []).map(m => el("div", { class:"dashMetric" },
+          el("div", { class:"dashMetricLabel" }, m.label),
+          el("div", { class:"dashMetricValue" }, String(m.value))
+        ))
+      );
+
+      return el("div", { class:"dashCard card" }, head, grid);
+    }
+
+    // 상단 2개 (전자메일 / 게시판)
+    const topRow = el("div", { class:"dashRow2" },
+      dashCard({
+        title: "전자메일",
+        subtitle: "New / Total",
+        metrics: [
+          { label:"New Emails", value: mailNew },
+          { label:"Total Emails", value: mailTotal }
+        ],
+        onGo: ()=> setHash("전자메일", firstMenuKey("전자메일"))
+      }),
+      dashCard({
+        title: "게시판",
+        subtitle: "New / Total",
+        metrics: [
+          { label:"New Posts", value: boardNew },
+          { label:"Total Posts", value: boardTotal }
+        ],
+        onGo: ()=> setHash("게시판", firstMenuKey("게시판"))
+      })
+    );
+
+    // 하단 3개 (전자결재 / 업무관리 / 일정관리)
+    const bottomRow = el("div", { class:"dashRow3" },
+      dashCard({
+        title: "전자결재",
+        subtitle: "MVP Summary",
+        metrics: [
+          { label:"Pending Approvals", value: 3 },
+          { label:"Open Docs", value: 7 }
+        ],
+        onGo: ()=> setHash("전자결재", firstMenuKey("전자결재"))
+      }),
+      dashCard({
+        title: "업무관리",
+        subtitle: "Live Summary",
+        metrics: [
+          { label:"Pending (승인대기)", value: pending },
+          { label:"Total Logs", value: totalLogs }
+        ],
+        onGo: ()=> setHash("업무관리", firstMenuKey("업무관리"))
+      }),
+      dashCard({
+        title: "일정관리",
+        subtitle: "MVP Summary",
+        metrics: [
+          { label:"Vacations", value: 2 },
+          { label:"Company Events", value: 4 }
+        ],
+        onGo: ()=> setHash("일정관리", firstMenuKey("일정관리"))
+      })
+    );
+
+    view.appendChild(el("div", { class:"dashWrap" }, topRow, bottomRow));
+  }
+
+     /***********************
+   * VIEW: 게시판 (NEW - placeholder)
+   ***********************/
+  function viewBoard(db, sub){
+    const view = $("#view");
+    if (!view) return;
+    view.innerHTML = "";
+
+    // 메뉴명 표시용
+    const label = (SIDE_MENUS["게시판"].find(x=>x.key===sub)?.label) || "게시판";
+    setRouteTitle(`게시판 · ${label}`);
+
+    // 임의 리스트(placeholder)
+    const list = el("div", { class:"list" },
+      ...Array.from({length:8}).map((_,i)=> el("div", { class:"list-item" },
+        el("div", { class:"list-title" }, `${label} · 샘플 글 제목 ${i+1}`),
+        el("div", { class:"list-sub" }, "MVP: 게시글 상세/작성/첨부 기능은 추후 연결 예정입니다.")
+      ))
+    );
+
+    const top = el("div", { class:"card" },
+      el("div", { class:"card-head" },
+        el("div", { class:"card-title" }, label),
+        el("div", { class:"row" },
+          el("input", { class:"input", placeholder:"검색(placeholder)" }),
+          el("button", { class:"btn" }, "검색")
+        )
+      ),
+      list
+    );
+
+    view.appendChild(el("div", { class:"stack" }, top));
+  }
+
 
   /***********************
    * VIEW: 전자메일 (placeholder)
@@ -1785,20 +1936,21 @@ function viewCalc(db, sub){
     const b = $("#badgePending");
     if (b) b.textContent = String(pendingCount(db));
 
-    // 메인 뷰
+        // 메인 뷰
     const view = $("#view");
     if (!view) return;
 
-    if (tab === "전자메일") viewMail(db, sub);
+    if (tab === "대쉬보드") viewHomeDashboard(db);
+    else if (tab === "전자메일") viewMail(db, sub);
+    else if (tab === "게시판") viewBoard(db, sub);
     else if (tab === "전자결재") viewEA(db, sub);
     else if (tab === "산출") viewCalc(db, sub);
     else if (tab === "일정관리") viewSchedule(db, sub);
     else if (tab === "업무관리") viewWork(db, sub);
     else {
-      setHash("업무관리", "log");
-      viewWork(db, "log");
+      setHash("대쉬보드", "home");
+      viewHomeDashboard(db);
     }
-  }
 
   /***********************
    * Wire events
@@ -1901,8 +2053,15 @@ $("#btnSheetRestore")?.addEventListener("click", async ()=>{
     // route
     window.addEventListener("hashchange", render);
 
-    // default route (탭/서브 구조)
-    if (!location.hash) setHash("업무관리", "log");
+        // default route (탭/서브 구조)
+    if (!location.hash) setHash("대쉬보드", "home");
+
+     // ✅ logo -> dashboard home
+document.getElementById("logoHome")?.addEventListener("click", (e)=>{
+  e.preventDefault();
+  setHash("대쉬보드", "home");
+});
+
 
     render();
   }
