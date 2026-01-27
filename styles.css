@@ -116,6 +116,12 @@ header.topbar .topCenter{
   align-items: center;
 }
 
+/* 오른쪽은 비워둠(요청: 사용자 박스 제거) */
+header.topbar .topRight{
+  flex: 0 0 auto;
+  width: 12px;
+}
+
 /* ✅ (노란박스 느낌) 큰 캡슐 바 + 세그먼트 탭 */
 #topTabs.topTabs{
   display:flex;
@@ -167,7 +173,7 @@ header.topbar .topCenter{
   }
 }
 
-/* ✅ active: 흰 캡슐 + 오렌지 밑줄(드롭다운/탭 구분 확실) */
+/* ✅ active: 흰 캡슐 + 오렌지 밑줄 */
 .topTab.active,
 .top-tab.active{
   background: rgba(255,255,255,.98);
@@ -186,36 +192,6 @@ header.topbar .topCenter{
   border-radius: 999px;
   background: var(--accent);
   opacity: .95;
-}
-
-/* ✅ 우측 사용자 (PAD처럼 pill) */
-#userBoxTop.userBox{
-  flex: 0 0 auto;
-  display:flex;
-  align-items:center;
-  gap:10px;
-
-  padding:8px 12px;
-  border-radius:18px;
-  border:1px solid var(--pillBorder);
-  background: var(--pillBg);
-  box-shadow: var(--pillShadow);
-
-  white-space: nowrap;
-  min-width: 220px;
-}
-
-.userLabel{
-  flex: 0 0 auto;
-  font-weight: 1000;
-  font-size: 12px;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-#userBoxTop .select{
-  flex: 1 1 auto;
-  min-width: 140px;
 }
 
 /* =========================
@@ -237,6 +213,86 @@ header.topbar .topCenter{
   background: rgba(255,255,255,.62);
 }
 
+/* ✅ LEFT PROFILE CARD */
+.profileCard.card{
+  margin: 2px 6px 12px;
+  padding: 14px 14px;
+  border-radius: 18px;
+}
+
+.profileTop{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 6px 0 10px;
+}
+
+.profileAvatar{
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(245,247,250,.92);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.profileAvatarInner{
+  width: 62px;
+  height: 62px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.86);
+  position: relative;
+}
+.profileAvatarInner::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top: 52px;
+  transform: translateX(-50%);
+  width: 84px;
+  height: 54px;
+  border-radius: 999px 999px 18px 18px;
+  background: rgba(0,0,0,.86);
+}
+
+.profileBody{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.profileRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0,0,0,.08);
+}
+
+.profileKey{
+  font-weight: 1000;
+  font-size: 12px;
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+.profileVal{
+  flex: 1 1 auto;
+  display:flex;
+  justify-content:flex-end;
+  min-width: 0;
+  font-weight: 950;
+}
+
+.profileSelect{
+  width: 140px;
+  max-width: 100%;
+}
+
+/* MENU */
 .sideHead{ padding: 8px 10px 10px; }
 .sideTitle{ font-weight:1000; font-size:13px; }
 .sideHint{ font-size:12px; margin-top:4px; }
@@ -248,7 +304,7 @@ header.topbar .topCenter{
   padding: 6px 6px 0;
 }
 
-/* ✅ (빨간박스 느낌) 좌측 메뉴: 아이콘 없는 리스트 + active 좌측 바 */
+/* ✅ 좌측 메뉴 */
 .sideLink,
 .side-item{
   position: relative;
@@ -286,7 +342,6 @@ header.topbar .topCenter{
   box-shadow: 0 10px 18px rgba(0,0,0,.06);
 }
 
-/* ✅ active 좌측 오렌지 바 */
 .sideLink.active::before,
 .side-item.active::before{
   content:"";
@@ -326,7 +381,6 @@ header.topbar .topCenter{
   padding: 14px 14px;
 }
 
-/* ✅ 섹션 타이틀이 “채워진 pill”로 보이도록 */
 .sectionTitle,
 .card-title,
 .view h2, .view h3{
@@ -354,7 +408,6 @@ header.topbar .topCenter{
 .row{ display:flex; align-items:center; gap:8px; }
 .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
 
-/* ✅ 드롭다운이 “드롭다운”처럼 보이게 화살표 추가 */
 .input,.select,.textarea{
   width:100%;
   padding: 10px 12px;
