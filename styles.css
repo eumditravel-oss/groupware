@@ -236,7 +236,10 @@ header.topbar .topRight{
   display:flex;
   align-items:center;
   justify-content:center;
+
+  overflow: hidden; /* ✅ 추가: 실루엣이 바깥(구분선)으로 침범 못하게 */
 }
+
 
 .profileAvatarInner{
   width: 62px;
