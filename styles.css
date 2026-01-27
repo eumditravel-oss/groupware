@@ -26,27 +26,47 @@
 
   --topbarH: 74px;
   --sideW: 260px;
+
+  /* ✅ 모바일에서도 웹 배치 유지용 최소 폭(가로스크롤 허용) */
+  --minMainW: 820px;
 }
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
+
+/* ✅ iOS/iPadOS 색상 자동보정(다크/폼톤) 흔들림 방지 */
+html{ color-scheme: light; }
+
+/* ✅ iOS 탭 하이라이트 제거 */
+body{
+  -webkit-tap-highlight-color: transparent;
+}
 
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic";
   color:var(--ink);
 
-  /* ✅ 배경 “얼룩” 느낌 최소화:
-     - 큰 그라데이션 1개 + 아주 약한 라디얼 2개 (밴딩/패치감 줄임)
-  */
+  /* ✅ 배경 “얼룩” 느낌 최소화 */
   background:
     radial-gradient(1200px 700px at 18% -10%, rgba(255,181,90,.18), transparent 60%),
     radial-gradient(900px 520px at 85% 0%, rgba(240,138,36,.10), transparent 62%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+
+  /* ✅ 모바일에서 레이아웃 동일 유지(가로 스크롤 허용) */
+  overflow-x: auto;
 }
 
 a{ color:inherit; text-decoration:none; }
 .hidden{ display:none !important; }
+
+/* ✅ iOS 기본 버튼/셀렉트 appearance 제거 */
+button, select, input, textarea{
+  -webkit-appearance: none;
+  appearance: none;
+  font: inherit;
+  color: inherit;
+}
 
 /* =========================
    TOPBAR
@@ -77,8 +97,12 @@ header.topbar .brand{
   padding: 6px 8px;
   border-radius: 14px;
 }
-header.topbar .brand:hover{
-  background: var(--accentSoft);
+
+/* ✅ hover는 PC에서만 적용 (모바일 hover 고착 방지) */
+@media (hover:hover) and (pointer:fine){
+  header.topbar .brand:hover{
+    background: var(--accentSoft);
+  }
 }
 
 .logoImg{
@@ -113,6 +137,9 @@ header.topbar .topCenter{
   width: fit-content;
   max-width: 100%;
   border-radius: 14px;
+
+  /* ✅ 스크롤 바 깔끔 */
+  scrollbar-width: thin;
 }
 
 /* 우측 사용자 */
@@ -139,6 +166,8 @@ header.topbar .topCenter{
   border-radius:12px !important;
   font-weight:950;
   font-size:13px;
+
+  /* ✅ iOS에서 색 흔들림 방지: 명시 */
   color:#3a3a3f;
   background: transparent;
 
@@ -146,13 +175,15 @@ header.topbar .topCenter{
   align-items:center;
   gap:6px;
 
-  /* ✅ hover 밴딩 느낌 완화 */
   transition: background .12s ease, color .12s ease, box-shadow .12s ease;
 }
 
-.topTab:hover,
-.top-tab:hover{
-  background: var(--accentSoft);
+/* ✅ hover는 PC에서만 (모바일 탭 후 hover 고착 방지) */
+@media (hover:hover) and (pointer:fine){
+  .topTab:hover,
+  .top-tab:hover{
+    background: var(--accentSoft);
+  }
 }
 
 .topTab.active,
@@ -168,11 +199,16 @@ header.topbar .topCenter{
 .app{
   display:flex;
   min-height: 100vh;
+
+  /* ✅ 모바일에서도 웹과 동일 배치 유지: 가로 스크롤 허용 */
+  min-width: calc(var(--sideW) + var(--minMainW));
 }
 
 /* 왼쪽 */
 .side{
   width: var(--sideW);
+  flex: 0 0 var(--sideW);
+
   padding: 12px 12px 16px;
   border-right: 1px solid rgba(0,0,0,.06);
   background: rgba(255,255,255,.70);
@@ -206,11 +242,16 @@ header.topbar .topCenter{
 
   transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
 }
-.sideLink:hover,
-.side-item:hover{
-  border-color: var(--accentLine);
-  box-shadow: 0 10px 22px rgba(0,0,0,.06);
+
+/* ✅ hover는 PC에서만 */
+@media (hover:hover) and (pointer:fine){
+  .sideLink:hover,
+  .side-item:hover{
+    border-color: var(--accentLine);
+    box-shadow: 0 10px 22px rgba(0,0,0,.06);
+  }
 }
+
 .sideLink.active,
 .side-item.active{
   border-color: rgba(240,138,36,.55);
@@ -220,6 +261,7 @@ header.topbar .topCenter{
 /* 메인 */
 .main{
   flex:1;
+  min-width: var(--minMainW);
   padding: 16px 18px 26px;
 }
 
@@ -264,6 +306,7 @@ header.topbar .topCenter{
   background: rgba(255,255,255,.96);
   outline: none;
   transition: border-color .12s ease, box-shadow .12s ease;
+  color: var(--ink);
 }
 .input:focus,.select:focus,.textarea:focus{
   border-color: rgba(240,138,36,.40);
@@ -281,9 +324,14 @@ header.topbar .topCenter{
   font-size:13px;
   transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
 }
-.btn:hover{
-  border-color: var(--accentLine);
+
+/* ✅ hover는 PC에서만 */
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{
+    border-color: var(--accentLine);
+  }
 }
+
 .btn.primary{
   border-color: rgba(240,138,36,.55);
   background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.80));
@@ -376,9 +424,13 @@ header.topbar .topCenter{
   letter-spacing: -0.2px;
   color: var(--ink);
 }
-.dashCardTitleLink:hover{
-  color: rgba(240,138,36,1);
-  text-decoration: underline;
+
+/* ✅ hover는 PC에서만 */
+@media (hover:hover) and (pointer:fine){
+  .dashCardTitleLink:hover{
+    color: rgba(240,138,36,1);
+    text-decoration: underline;
+  }
 }
 
 .dashCardSub{
@@ -555,8 +607,8 @@ header.topbar .topCenter{
   font-weight:1000;
   transition: border-color .12s ease, box-shadow .12s ease;
 }
-.pill-btn:hover{
-  border-color: var(--accentLine);
+@media (hover:hover) and (pointer:fine){
+  .pill-btn:hover{ border-color: var(--accentLine); }
 }
 
 .calendar-wrap{ padding:14px; }
@@ -583,9 +635,11 @@ header.topbar .topCenter{
   cursor:pointer;
   transition: border-color .12s ease, box-shadow .12s ease;
 }
-.cal-cell:hover{
-  border-color: var(--accentLine);
-  box-shadow: 0 10px 22px rgba(0,0,0,.05);
+@media (hover:hover) and (pointer:fine){
+  .cal-cell:hover{
+    border-color: var(--accentLine);
+    box-shadow: 0 10px 22px rgba(0,0,0,.05);
+  }
 }
 .cal-empty{ background: rgba(255,255,255,.62); cursor:default; box-shadow:none; }
 .cal-day{ font-weight:1000; font-size:12px; }
@@ -614,11 +668,18 @@ header.topbar .topCenter{
 @media (max-width: 1100px){
   .dashRow3{ grid-template-columns: 1fr; }
 }
+
+/* ✅ 중요: 모바일에서도 웹과 동일 배치 유지
+   - side 숨기지 않음
+   - 가로 스크롤로 처리
+*/
 @media (max-width: 980px){
   #topTabs.topTabs{ max-width: 360px; }
   .dashRow2{ grid-template-columns: 1fr; }
-  .side{ display:none; }
-  .app{ display:block; }
+
+  /* ❌ 기존: .side{ display:none; } 제거 */
+  /* ❌ 기존: .app{ display:block; } 제거 */
+
   .main{ padding: 12px; }
   .split{ grid-template-columns: 1fr; }
   .dash{ grid-template-columns: 1fr; }
