@@ -758,3 +758,91 @@ header.topbar .topRight{
   .split{ grid-template-columns: 1fr; }
   .dash{ grid-template-columns: 1fr; }
 }
+
+.profile-card{
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.08);
+  padding: 14px 14px 12px;
+}
+
+.profile-head{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  margin-bottom: 10px;
+}
+
+.profile-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--ink);
+}
+.profile-badge::before{
+  content:"🏷️";
+  font-size: 14px;
+  opacity:.9;
+}
+
+/* photo box */
+.avatar{
+  display:block;
+  width: 100%;
+  aspect-ratio: 1 / 1;      /* 정사각 */
+  border-radius: 14px;
+  border: 3px solid var(--accent); /* 노란 박스 느낌 */
+  background: rgba(0,0,0,.02);
+  overflow:hidden;
+  cursor:pointer;
+  position:relative;
+}
+
+#avatarPreview{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.avatar-placeholder{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color: rgba(0,0,0,.55);
+}
+
+.avatar-icon{ font-size: 42px; line-height: 1; }
+.avatar-text{ font-size: 13px; font-weight: 700; }
+
+/* meta rows */
+.profile-meta{
+  margin: 12px 2px 0;
+}
+.profile-meta .row{
+  display:grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  align-items:center;
+  padding: 10px 2px;
+  border-top: 1px solid rgba(0,0,0,.10);
+}
+.profile-meta dt{
+  font-size: 12px;
+  color: rgba(0,0,0,.55);
+  font-weight: 800;
+}
+.profile-meta dd{
+  margin:0;
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
