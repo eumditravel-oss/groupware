@@ -629,6 +629,26 @@ function renderLeftProfile(db){
       el("div", { class:"profileBody" }, nameRow, roleRow, deptRow)
     )
   );
+
+     // =========================
+  // Avatar upload preview
+  // =========================
+  const avatarInput = document.getElementById("avatarInput");
+  const avatarPreview = document.getElementById("avatarPreview");
+  const avatarPlaceholder = document.getElementById("avatarPlaceholder");
+
+  if (avatarInput){
+    avatarInput.onchange = (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const url = URL.createObjectURL(file);
+      avatarPreview.src = url;
+      avatarPreview.hidden = false;
+      avatarPlaceholder.hidden = true;
+    };
+  }
+
 }
 
 
