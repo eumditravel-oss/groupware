@@ -823,7 +823,71 @@ function setHash(tab, sub){
 }
 
 
-     VIEW: 게시판 (DB 기반 렌더링)
+  /***********************
+   * VIEW: 게시판 (DB 기반 렌더링)
+   ***********************/
+  function viewBoard(db, sub){
+    const view = $("#view");
+    if (!view) return;
+    view.innerHTML = "";
+
+    const menus = SIDE_MENUS["게시판"] || [];
+    const label = (menus.find(x=>x.key===sub)?.label) || "게시판";
+
+    setRouteTitle(`게시판 · ${label}`);
+
+    // ✅ sub(boardKey)에 해당하는 게시물만 보여줌
+    const posts = (db.boardPosts || [])
+      .filter(p => String(p.boardKey||"") === String(sub||""))
+      .slice()
+      .sort((a,b)=>String(b.at||"").localeCompare(String(a.at||"")))
+      .slice(0, 30);
+
+    const searchInput = el("input", { class:"input", placeholder:"검색(제목/작성자) - 데모", oninput:()=>draw() });
+    const listHost = el("div", { class:"list" });
+
+    function draw(){
+      const q = (searchInput.value || "").trim().toLowerCase();
+
+      const filtered = !q
+        ? posts
+        : posts.filter(p =>
+            String(p.title||"").toLowerCase().includes(q) ||
+            String(p.writer||"").toLowerCase().includes(q)
+          );
+
+      listHost.innerHTML = "";
+
+      if (!filtered.length){
+        listHost.appendChild(el("div", { class:"empty" }, "최근 게시물이 없습니다."));
+        return;
+      }
+
+      filtered.forEach(p=>{
+        listHost.appendChild(
+          el("div", { class:"list-item" },
+            el("div", { class:"list-title" }, p.title),
+            el("div", { class:"list-sub" }, `${p.writer || "-"} · ${p.at || "-"}`)
+          )
+        );
+      });
+    }
+
+    const top = el("div", { class:"card" },
+      el("div", { class:"card-head" },
+        el("div", { class:"card-title" }, label),
+        el("div", { class:"row" },
+          searchInput,
+          el("button", { class:"btn" , onclick:()=>draw() }, "검색")
+        )
+      ),
+      listHost
+    );
+
+    view.appendChild(el("div", { class:"stack" }, top));
+    draw();
+  }
+
 
 
   /***********************
