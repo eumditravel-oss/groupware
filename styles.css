@@ -29,38 +29,34 @@
 
   /* ✅ 모바일에서도 웹 배치 유지용 최소 폭(가로스크롤 허용) */
   --minMainW: 820px;
+
+  /* ✅ PAD 느낌: “pill 채움” 톤 */
+  --pillBg: rgba(255,255,255,.92);
+  --pillBorder: rgba(0,0,0,.06);
+  --pillShadow: 0 10px 24px rgba(0,0,0,.06);
 }
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
-
-/* ✅ iOS/iPadOS 색상 자동보정(다크/폼톤) 흔들림 방지 */
 html{ color-scheme: light; }
-
-/* ✅ iOS 탭 하이라이트 제거 */
-body{
-  -webkit-tap-highlight-color: transparent;
-}
 
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic";
   color:var(--ink);
 
-  /* ✅ 배경 “얼룩” 느낌 최소화 */
   background:
     radial-gradient(1200px 700px at 18% -10%, rgba(255,181,90,.18), transparent 60%),
     radial-gradient(900px 520px at 85% 0%, rgba(240,138,36,.10), transparent 62%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
 
-  /* ✅ 모바일에서 레이아웃 동일 유지(가로 스크롤 허용) */
-  overflow-x: auto;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: auto; /* ✅ 배치 고정 + 스크롤 허용 */
 }
 
 a{ color:inherit; text-decoration:none; }
 .hidden{ display:none !important; }
 
-/* ✅ iOS 기본 버튼/셀렉트 appearance 제거 */
 button, select, input, textarea{
   -webkit-appearance: none;
   appearance: none;
@@ -97,12 +93,8 @@ header.topbar .brand{
   padding: 6px 8px;
   border-radius: 14px;
 }
-
-/* ✅ hover는 PC에서만 적용 (모바일 hover 고착 방지) */
 @media (hover:hover) and (pointer:fine){
-  header.topbar .brand:hover{
-    background: var(--accentSoft);
-  }
+  header.topbar .brand:hover{ background: var(--accentSoft); }
 }
 
 .logoImg{
@@ -121,68 +113,53 @@ header.topbar .topCenter{
   align-items: center;
 }
 
-/* 탭 컨테이너 */
+/* ✅ PAD처럼 “큰 pill 바” */
 #topTabs.topTabs{
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:10px;
-  padding: 6px 8px;
+  gap:8px;
+  padding: 8px 10px;
 
-  border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.78);
-  box-shadow: 0 10px 24px rgba(0,0,0,.05);
+  border: 1px solid var(--pillBorder);
+  background: var(--pillBg);
+  box-shadow: var(--pillShadow);
   overflow:auto;
 
   width: fit-content;
   max-width: 100%;
-  border-radius: 14px;
-
-  /* ✅ 스크롤 바 깔끔 */
+  border-radius: 18px;
   scrollbar-width: thin;
 }
 
-/* 우측 사용자 */
-#userBoxTop.userBox{
-  flex: 0 0 auto;
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 10px;
-  border-radius:14px;
-  border:1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.78);
-}
-
-/* 탭 버튼 */
+/* ✅ 탭 자체도 웹에서 “채워진 pill”로 */
 .topTab,
 .top-tab,
 #topTabs button,
 #topTabs a{
-  border:0;
+  border: 1px solid rgba(0,0,0,.06);
   cursor:pointer;
 
   padding:10px 14px;
-  border-radius:12px !important;
-  font-weight:950;
-  font-size:13px;
+  border-radius: 14px !important;
+  font-weight: 950;
+  font-size: 13px;
 
-  /* ✅ iOS에서 색 흔들림 방지: 명시 */
-  color:#3a3a3f;
-  background: transparent;
+  color:#2f2f34;
+  background: rgba(255,255,255,.82);
 
   display:flex;
   align-items:center;
   gap:6px;
 
-  transition: background .12s ease, color .12s ease, box-shadow .12s ease;
+  transition: background .12s ease, color .12s ease, box-shadow .12s ease, border-color .12s ease;
 }
 
-/* ✅ hover는 PC에서만 (모바일 탭 후 hover 고착 방지) */
 @media (hover:hover) and (pointer:fine){
   .topTab:hover,
   .top-tab:hover{
-    background: var(--accentSoft);
+    border-color: var(--accentLine);
+    background: rgba(240,138,36,.10);
   }
 }
 
@@ -190,7 +167,39 @@ header.topbar .topCenter{
 .top-tab.active{
   background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.80));
   color:#fff;
+  border-color: rgba(240,138,36,.55);
   box-shadow: 0 12px 26px rgba(240,138,36,.22);
+}
+
+/* ✅ 우측 사용자 (PAD처럼 pill) */
+#userBoxTop.userBox{
+  flex: 0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  padding:8px 12px;
+  border-radius:18px;
+  border:1px solid var(--pillBorder);
+  background: var(--pillBg);
+  box-shadow: var(--pillShadow);
+
+  /* ✅ 줄바꿈/쪼개짐 방지 핵심 */
+  white-space: nowrap;
+  min-width: 220px;   /* 필요하면 240~260으로 더 키워도 됨 */
+}
+
+.userLabel{
+  flex: 0 0 auto;
+  font-weight: 1000;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+#userBoxTop .select{
+  flex: 1 1 auto;
+  min-width: 140px;
 }
 
 /* =========================
@@ -199,8 +208,6 @@ header.topbar .topCenter{
 .app{
   display:flex;
   min-height: 100vh;
-
-  /* ✅ 모바일에서도 웹과 동일 배치 유지: 가로 스크롤 허용 */
   min-width: calc(var(--sideW) + var(--minMainW));
 }
 
@@ -225,7 +232,7 @@ header.topbar .topCenter{
   padding: 6px;
 }
 
-/* 좌측 메뉴 버튼 */
+/* 좌측 메뉴 버튼 (PAD처럼 채움) */
 .sideLink,
 .side-item{
   display:flex;
@@ -233,29 +240,34 @@ header.topbar .topCenter{
   justify-content:space-between;
   gap:10px;
   padding: 11px 12px;
-  border-radius: 14px;
+
+  border-radius: 16px;
   border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.88);
+
+  /* ✅ 기본도 “채워진 느낌” */
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 8px 18px rgba(0,0,0,.04);
+
   cursor:pointer;
   font-weight:900;
   font-size:13px;
 
-  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  transition: border-color .12s ease, box-shadow .12s ease, background .12s ease, transform .08s ease;
 }
 
-/* ✅ hover는 PC에서만 */
 @media (hover:hover) and (pointer:fine){
   .sideLink:hover,
   .side-item:hover{
     border-color: var(--accentLine);
-    box-shadow: 0 10px 22px rgba(0,0,0,.06);
+    box-shadow: 0 12px 24px rgba(0,0,0,.06);
+    transform: translateY(-1px);
   }
 }
 
 .sideLink.active,
 .side-item.active{
   border-color: rgba(240,138,36,.55);
-  background: var(--accentSoft);
+  background: rgba(240,138,36,.10);
 }
 
 /* 메인 */
@@ -265,7 +277,6 @@ header.topbar .topCenter{
   padding: 16px 18px 26px;
 }
 
-/* 기존 mainHead는 숨김(현재 UI에선 routeTitle/뱃지 안씀) */
 .mainHead{
   display:none !important;
   margin:0 !important;
@@ -285,6 +296,22 @@ header.topbar .topCenter{
   padding: 14px 14px;
 }
 
+/* ✅ 섹션 타이틀이 “채워진 pill”로 보이도록 범용 클래스(앱이 쓰면 자동 적용) */
+.sectionTitle,
+.card-title,
+.view h2, .view h3{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 8px 18px rgba(0,0,0,.04);
+  font-weight: 1000;
+  letter-spacing: -0.2px;
+}
+
 .card-head{
   display:flex;
   align-items:center;
@@ -292,7 +319,6 @@ header.topbar .topCenter{
   gap:10px;
   margin-bottom:10px;
 }
-.card-title{ font-weight:1000; font-size:14px; }
 
 .stack{ display:flex; flex-direction:column; gap:12px; }
 .row{ display:flex; align-items:center; gap:8px; }
@@ -324,14 +350,9 @@ header.topbar .topCenter{
   font-size:13px;
   transition: border-color .12s ease, box-shadow .12s ease, background .12s ease;
 }
-
-/* ✅ hover는 PC에서만 */
 @media (hover:hover) and (pointer:fine){
-  .btn:hover{
-    border-color: var(--accentLine);
-  }
+  .btn:hover{ border-color: var(--accentLine); }
 }
-
 .btn.primary{
   border-color: rgba(240,138,36,.55);
   background: linear-gradient(180deg, rgba(240,138,36,.95), rgba(240,138,36,.80));
@@ -384,27 +405,12 @@ header.topbar .topCenter{
 /* =========================
    DASHBOARD (LIST STYLE)
 ========================= */
-.dashWrap{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
+.dashWrap{ display:flex; flex-direction:column; gap:14px; }
 
-.dashRow2{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:14px;
-}
+.dashRow2{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+.dashRow3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:14px; }
 
-.dashRow3{
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap:14px;
-}
-
-.dashCard{
-  padding: 14px 16px;
-}
+.dashCard{ padding: 14px 16px; }
 
 .dashCardHead{
   display:flex;
@@ -414,10 +420,15 @@ header.topbar .topCenter{
   margin-bottom: 10px;
 }
 
+/* ✅ 섹션 타이틀(전자메일/게시판/전자결재 등)이 PAD처럼 “채워진 캡슐” */
 .dashCardTitleLink{
-  background: transparent;
-  border: 0;
-  padding: 0;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 8px 18px rgba(0,0,0,.04);
+
+  padding: 8px 12px;
+  border-radius: 16px;
+
   cursor: pointer;
   font-weight: 1100;
   font-size: 16px;
@@ -425,11 +436,10 @@ header.topbar .topCenter{
   color: var(--ink);
 }
 
-/* ✅ hover는 PC에서만 */
 @media (hover:hover) and (pointer:fine){
   .dashCardTitleLink:hover{
+    border-color: var(--accentLine);
     color: rgba(240,138,36,1);
-    text-decoration: underline;
   }
 }
 
@@ -440,11 +450,7 @@ header.topbar .topCenter{
 }
 
 /* ✅ 대쉬보드 리스트 */
-.dashList{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
+.dashList{ display:flex; flex-direction:column; gap:10px; }
 
 .dashItem{
   padding: 10px 12px;
@@ -575,19 +581,13 @@ header.topbar .topCenter{
 
 /* route title / badge 숨김 */
 #routeTitle,
-#badgePending{
-  display:none !important;
-}
-.routebar, .subbar, .route-bar, #routeBar{
-  display:none !important;
-}
+#badgePending{ display:none !important; }
+.routebar, .subbar, .route-bar, #routeBar{ display:none !important; }
 
 /* 상단 3개 버튼 숨김 */
 #btnSheetBackup,
 #btnSheetRestore,
-#btnResetDemo{
-  display:none !important;
-}
+#btnResetDemo{ display:none !important; }
 
 /* =========================
    MAIL / SPLIT / DASH / CALENDAR
@@ -621,11 +621,7 @@ header.topbar .topCenter{
   font-size:12px;
   color: var(--muted);
 }
-.cal-grid{
-  display:grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap:6px;
-}
+.cal-grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap:6px; }
 .cal-cell{
   min-height: 92px;
   border-radius: 14px;
@@ -655,12 +651,7 @@ header.topbar .topCenter{
 }
 
 /* Checkbox */
-.chk{
-  width: 18px;
-  height: 18px;
-  margin-top: 2px;
-  cursor:pointer;
-}
+.chk{ width: 18px; height: 18px; margin-top: 2px; cursor:pointer; }
 
 /* =========================
    RESPONSIVE
@@ -669,17 +660,9 @@ header.topbar .topCenter{
   .dashRow3{ grid-template-columns: 1fr; }
 }
 
-/* ✅ 중요: 모바일에서도 웹과 동일 배치 유지
-   - side 숨기지 않음
-   - 가로 스크롤로 처리
-*/
 @media (max-width: 980px){
   #topTabs.topTabs{ max-width: 360px; }
   .dashRow2{ grid-template-columns: 1fr; }
-
-  /* ❌ 기존: .side{ display:none; } 제거 */
-  /* ❌ 기존: .app{ display:block; } 제거 */
-
   .main{ padding: 12px; }
   .split{ grid-template-columns: 1fr; }
   .dash{ grid-template-columns: 1fr; }
