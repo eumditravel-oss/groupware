@@ -456,7 +456,6 @@ async function sheetsImport(payload){
    * TOP TABS / SIDE MENUS
    ***********************/
   const TOP_TABS = [
-    { key:"대쉬보드", label:"Dashboard" },
     { key:"전자메일", label:"전자메일" },
     { key:"게시판",   label:"게시판" },
     { key:"전자결재", label:"전자결재" },
@@ -682,6 +681,12 @@ function setHash(tab, sub){
     }
     return s;
   }
+
+   function normalizeTabKey(tabKey){
+  // ✅ 대쉬보드 탭 제거: 혹시 남아있는 URL(#대쉬보드/...) 들어오면 첫 탭으로 보냄
+  if (!tabKey || tabKey === "대쉬보드" || tabKey === "Dashboard") return TOP_TABS[0];
+  return tabKey;
+}
 
 
      /***********************
