@@ -41,6 +41,39 @@
     </main>
   </div>
 
+  <!-- Sidebar Profile Card -->
+<section class="profile-card">
+  <div class="profile-head">
+    <span class="profile-badge">사용자</span>
+  </div>
+
+  <!-- photo area (click to upload) -->
+  <label class="avatar" for="avatarInput" title="클릭하여 사진 업로드">
+    <img id="avatarPreview" alt="" hidden />
+    <div class="avatar-placeholder" id="avatarPlaceholder">
+      <span class="avatar-icon">👤</span>
+      <span class="avatar-text">사진 업로드</span>
+    </div>
+  </label>
+  <input id="avatarInput" type="file" accept="image/*" hidden />
+
+  <dl class="profile-meta">
+    <div class="row">
+      <dt>성명</dt>
+      <dd id="metaName"> - </dd>
+    </div>
+    <div class="row">
+      <dt>직급</dt>
+      <dd id="metaRole">과장</dd>
+    </div>
+    <div class="row">
+      <dt>부서</dt>
+      <dd id="metaDept"> - </dd>
+    </div>
+  </dl>
+</section>
+
+
   <!-- TOAST -->
   <div id="toast" class="toastHost"></div>
 
