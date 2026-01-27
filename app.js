@@ -470,20 +470,20 @@ async function sheetsImport(payload){
    * TOP TABS / SIDE MENUS
    ***********************/
   const TOP_TABS = [
-    { key:"대쉬보드", label:"대쉬보드" },
-    { key:"전자메일", label:"전자메일" },
-    { key:"게시판",   label:"게시판" },
-    { key:"전자결재", label:"전자결재" },
-    { key:"업무관리", label:"업무관리" },
-    { key:"산출",     label:"산출" },
-    { key:"일정관리", label:"일정관리" }
-  ];
+  // { key:"대쉬보드", label:"대쉬보드" }, // ✅ 제거
+  { key:"전자메일", label:"전자메일" },
+  { key:"게시판",   label:"게시판" },
+  { key:"전자결재", label:"전자결재" },
+  { key:"업무관리", label:"업무관리" },
+  { key:"산출",     label:"산출" },
+  { key:"일정관리", label:"일정관리" }
+];
+
 
   const WORK_ROUTES = ["log","approve","dashboard","calendar","checklist","checklist-view"];
 
   const SIDE_MENUS = {
-    "대쉬보드": [
-      { key:"home", label:"홈" }
+  // "대쉬보드": [{ key:"home", label:"홈" }], // ✅ 제거
     ],
     "전자메일": [
       { key:"mail-inbox", label:"받은편지함" },
@@ -547,8 +547,10 @@ function setHash(tab, sub){
 
 
   function firstMenuKey(tab){
-    return SIDE_MENUS[tab]?.[0]?.key || "log";
-  }
+  if (tab === "대쉬보드") return "home";   // ✅ 추가
+  return SIDE_MENUS[tab]?.[0]?.key || "log";
+}
+
 
   /***********************
    * AUTH (업무관리만 강제)
@@ -676,35 +678,37 @@ function renderLeftProfile(db){
     return db.logs.filter(l => l.status === "submitted").length;
   }
 
-  function renderSideMenu(db){
-    const host = $("#sideMenu");
-    if (!host) return;
-    host.innerHTML = "";
+ function renderSideMenu(db){
+  const host = $("#sideMenu");
+  if (!host) return;
+  host.innerHTML = "";
 
-    const { tab, sub } = parseHash();
-    const me = userById(db, getUserId(db));
+  const { tab, sub } = parseHash();
 
-    const menus = SIDE_MENUS[tab] || [];
+  // ✅ 대쉬보드에서는 좌측 메뉴 자체가 필요 없음
+  if (tab === "대쉬보드") return;
 
-    const allowedWork = (tab === "업무관리") ? allowedWorkRoutesFor(me) : null;
+  const me = userById(db, getUserId(db));
+  const menus = SIDE_MENUS[tab] || [];
+  const allowedWork = (tab === "업무관리") ? allowedWorkRoutesFor(me) : null;
 
-    menus.forEach(m=>{
-      // 업무관리만 권한에 따라 숨김
-      if (allowedWork && !allowedWork.has(m.key)) return;
+  menus.forEach(m=>{
+    if (allowedWork && !allowedWork.has(m.key)) return;
 
-      const badge =
-        (tab === "업무관리" && m.badge === "pending")
-          ? ` (${pendingCount(db)})`
-          : "";
+    const badge =
+      (tab === "업무관리" && m.badge === "pending")
+        ? ` (${pendingCount(db)})`
+        : "";
 
-      host.appendChild(
-        el("button", {
-          class: `side-item ${sub === m.key ? "active" : ""}`,
-          onclick: ()=> setHash(tab, m.key)
-        }, `${m.label}${badge}`)
-      );
-    });
-  }
+    host.appendChild(
+      el("button", {
+        class: `side-item ${sub === m.key ? "active" : ""}`,
+        onclick: ()=> setHash(tab, m.key)
+      }, `${m.label}${badge}`)
+    );
+  });
+}
+
 
   function setRouteTitle(text){
     const t = $("#routeTitle");
