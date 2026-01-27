@@ -530,7 +530,8 @@ async function sheetsImport(payload){
   const raw = (location.hash || "").replace(/^#/, "");
   const [tabEnc, subEncWithQ] = raw.split("/");
 
-  const tab = decodeURIComponent(tabEnc || "대쉬보드");
+  const rawTab = decodeURIComponent(tabEnc || "대쉬보드");
+  const tab = normalizeTabKey(rawTab);
 
   // sub에 ?p= 같은 쿼리가 붙는 케이스(viewDashboard) 대비
   const subEnc = (subEncWithQ || "").split("?")[0];
@@ -538,6 +539,7 @@ async function sheetsImport(payload){
 
   return { tab, sub };
 }
+
 
 
 function setHash(tab, sub){
@@ -585,11 +587,70 @@ function renderLeftProfile(db){
   const uid = getUserId(db);
   const me = userById(db, uid);
 
-  // 프로필 UI (요청: 이름/부서 "-" 고정)
-  const avatar = el("div", { class:"profileAvatar", "aria-hidden":"true" },
-    el("div", { class:"profileAvatarInner" })
+  // ✅ users[].avatarDataUrl (없으면 빈값)
+  if (me && typeof me.avatarDataUrl !== "string") me.avatarDataUrl = "";
+
+  // =========================
+  // Avatar upload UI (프로필 카드 내부에 직접 생성)
+  // =========================
+  const avatarInput = el("input", {
+    id: "avatarInput",
+    type: "file",
+    accept: "image/*",
+    class: "hidden"
+  });
+
+  const avatarPreview = el("img", {
+    id: "avatarPreview",
+    alt: "profile",
+    ...(me?.avatarDataUrl ? { src: me.avatarDataUrl } : {}),
+    ...(me?.avatarDataUrl ? {} : { hidden: true })
+  });
+
+  const avatarPlaceholder = el("div", {
+    id: "avatarPlaceholder",
+    class: "avatar-placeholder",
+    ...(me?.avatarDataUrl ? { hidden: true } : {})
+  },
+    el("div", { class: "avatar-icon" }, "👤"),
+    el("div", { class: "avatar-text" }, "사진 업로드")
   );
 
+  const avatarBox = el("div", {
+    class: "avatar",
+    role: "button",
+    tabindex: "0",
+    onclick: () => avatarInput.click(),
+    onkeydown: (e) => {
+      if (e.key === "Enter" || e.key === " ") avatarInput.click();
+    }
+  },
+    avatarPreview,
+    avatarPlaceholder
+  );
+
+  avatarInput.addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file || !me) return;
+
+    try{
+      const dataUrl = await fileToDataURL(file);
+      me.avatarDataUrl = dataUrl;     // ✅ DB에 저장
+      saveDB(db);
+
+      // ✅ 즉시 UI 반영
+      avatarPreview.src = dataUrl;
+      avatarPreview.hidden = false;
+      avatarPlaceholder.hidden = true;
+
+      toast("프로필 사진 변경 완료");
+    }catch(err){
+      console.error(err);
+      toast("프로필 사진 업로드 실패");
+    }
+  });
+
+  // 프로필 UI (요청: 이름/부서 "-" 고정)
   const nameRow = el("div", { class:"profileRow" },
     el("div", { class:"profileKey" }, "성명"),
     el("div", { class:"profileVal" }, "-")
@@ -603,7 +664,6 @@ function renderLeftProfile(db){
       me.role = v;
       saveDB(db);
       toast("직급 변경 완료");
-      // 권한 라우팅 즉시 반영
       const { tab, sub } = parseHash();
       enforceAuth(db, tab, sub);
       render();
@@ -628,10 +688,12 @@ function renderLeftProfile(db){
   host.innerHTML = "";
   host.appendChild(
     el("div", { class:"profileCard card" },
-      el("div", { class:"profileTop" }, avatar),
+      el("div", { class:"profileTop" }, avatarBox, avatarInput),
       el("div", { class:"profileBody" }, nameRow, roleRow, deptRow)
     )
   );
+}
+
 
      // =========================
   // Avatar upload preview
@@ -783,10 +845,16 @@ function renderLeftProfile(db){
   }
 
    function normalizeTabKey(tabKey){
-  // ✅ 대쉬보드 탭 제거: 혹시 남아있는 URL(#대쉬보드/...) 들어오면 첫 탭으로 보냄
-  if (!tabKey || tabKey === "대쉬보드" || tabKey === "Dashboard") return TOP_TABS[0];
-  return tabKey;
+  // ✅ 대쉬보드는 탭에 없어도 라우트로는 허용(로고 홈 등)
+  if (!tabKey) return "대쉬보드";
+  if (tabKey === "Dashboard") return "대쉬보드";
+  if (tabKey === "대쉬보드") return "대쉬보드";
+
+  // ✅ TOP_TABS에 없는 탭이면 대쉬보드로 폴백
+  const exists = TOP_TABS.some(t => t.key === tabKey);
+  return exists ? tabKey : "대쉬보드";
 }
+
 
 
      /***********************
