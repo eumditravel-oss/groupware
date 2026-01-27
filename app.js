@@ -484,46 +484,47 @@ async function sheetsImport(payload){
 
   const SIDE_MENUS = {
   // "대쉬보드": [{ key:"home", label:"홈" }], // ✅ 제거
-    ],
-    "전자메일": [
-      { key:"mail-inbox", label:"받은편지함" },
-      { key:"mail-sent",  label:"보낸편지함" },
-      { key:"mail-etc",   label:"기타" }
-    ],
-    "게시판": [
-      { key:"ceo",     label:"CEO Message" },
-      { key:"notice",  label:"전사공지" },
-      { key:"hr",      label:"인사발령" },
-      { key:"event",   label:"경조사" },
-      { key:"orders",  label:"수주소식" },
-      { key:"minutes", label:"회의록" },
-      { key:"weekly",  label:"주간 프로젝트 진행사항" },
-      { key:"manual",  label:"메뉴얼" },
-      { key:"album",   label:"사진첩" },
-      { key:"free",    label:"자유게시판" }
-    ],
-    "전자결재": [
-      { key:"ea-inbox", label:"받은결재함" },
-      { key:"ea-sent",  label:"보낸결재함" },
-      { key:"ea-write", label:"문서작성" }
-    ],
-    "업무관리": [
-      { key:"log",            label:"업무일지" },
-      { key:"approve",        label:"승인", badge:"pending" },
-      { key:"dashboard",      label:"프로젝트 소요시간" },
-      { key:"calendar",       label:"종합 공정관리" },
-      { key:"checklist",      label:"프로젝트별 체크리스트" },
-      { key:"checklist-view", label:"체크리스트 목록" }
-    ],
-    "산출": [
-      { key:"fin", label:"FIN산출" },
-      { key:"etc", label:"ㅇㅇ산출" }
-    ],
-    "일정관리": [
-      { key:"vacation",        label:"휴가관리" },
-      { key:"company-calendar",label:"회사공식일정" }
-    ]
-  };
+
+  "전자메일": [
+    { key:"mail-inbox", label:"받은편지함" },
+    { key:"mail-sent",  label:"보낸편지함" },
+    { key:"mail-etc",   label:"기타" }
+  ],
+  "게시판": [
+    { key:"ceo",     label:"CEO Message" },
+    { key:"notice",  label:"전사공지" },
+    { key:"hr",      label:"인사발령" },
+    { key:"event",   label:"경조사" },
+    { key:"orders",  label:"수주소식" },
+    { key:"minutes", label:"회의록" },
+    { key:"weekly",  label:"주간 프로젝트 진행사항" },
+    { key:"manual",  label:"메뉴얼" },
+    { key:"album",   label:"사진첩" },
+    { key:"free",    label:"자유게시판" }
+  ],
+  "전자결재": [
+    { key:"ea-inbox", label:"받은결재함" },
+    { key:"ea-sent",  label:"보낸결재함" },
+    { key:"ea-write", label:"문서작성" }
+  ],
+  "업무관리": [
+    { key:"log",            label:"업무일지" },
+    { key:"approve",        label:"승인", badge:"pending" },
+    { key:"dashboard",      label:"프로젝트 소요시간" },
+    { key:"calendar",       label:"종합 공정관리" },
+    { key:"checklist",      label:"프로젝트별 체크리스트" },
+    { key:"checklist-view", label:"체크리스트 목록" }
+  ],
+  "산출": [
+    { key:"fin", label:"FIN산출" },
+    { key:"etc", label:"ㅇㅇ산출" }
+  ],
+  "일정관리": [
+    { key:"vacation",        label:"휴가관리" },
+    { key:"company-calendar",label:"회사공식일정" }
+  ]
+};
+
 
   function parseHash(){
   const raw = (location.hash || "").replace(/^#/, "");
