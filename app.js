@@ -590,9 +590,7 @@ function renderLeftProfile(db){
   // ✅ users[].avatarDataUrl (없으면 빈값)
   if (me && typeof me.avatarDataUrl !== "string") me.avatarDataUrl = "";
 
-  // =========================
-  // Avatar upload UI (프로필 카드 내부에 직접 생성)
-  // =========================
+  // Avatar upload UI (프로필 카드 내부에서 생성)
   const avatarInput = el("input", {
     id: "avatarInput",
     type: "file",
@@ -693,6 +691,7 @@ function renderLeftProfile(db){
     )
   );
 }
+
 
 
      // =========================
