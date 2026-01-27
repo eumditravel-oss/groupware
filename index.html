@@ -4,14 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CON COST Groupware</title>
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
 </head>
 <body>
   <!-- TOPBAR -->
   <header class="topbar">
     <a href="#대쉬보드/home" class="brand" id="logoHome" aria-label="Home">
-      <!-- 로고 이미지가 있으면 아래 src만 맞추세요 -->
-      <!-- 예: assets/logo2.png -->
       <img class="logoImg" src="assets/logo2.png" alt="CON COST" onerror="this.style.display='none'">
     </a>
 
@@ -19,20 +17,16 @@
       <div id="topTabs" class="topTabs"></div>
     </div>
 
-    <div id="userBoxTop" class="userBox">
-      <div class="userLabel">사용자</div>
-      <select id="userSelect" class="select"></select>
-
-      <!-- (옵션) 버튼들은 CSS에서 숨김 처리되어 있어도 DOM은 존재하면 좋습니다 -->
-      <button id="btnSheetBackup" class="btn tiny" type="button">시트 백업</button>
-      <button id="btnSheetRestore" class="btn tiny" type="button">시트 복원</button>
-      <button id="btnResetDemo" class="btn tiny" type="button">데모 초기화</button>
-    </div>
+    <!-- ✅ 우측 상단 사용자 박스 제거(요청사항) -->
+    <div class="topRight"></div>
   </header>
 
   <!-- LAYOUT -->
   <div class="app">
     <aside class="side">
+      <!-- ✅ 좌측 프로필 카드(노란 박스 영역에 표시) -->
+      <div id="profileCard"></div>
+
       <div class="sideHead">
         <div class="sideTitle">MENU</div>
         <div class="sideHint muted">좌측 메뉴는 상단 탭에 따라 바뀝니다</div>
@@ -63,6 +57,6 @@
   </div>
 
   <!-- APP -->
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>
