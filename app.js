@@ -319,21 +319,30 @@ function upgradeDB(db){
   if (typeof db.meta.version !== "string") db.meta.version = seed.meta.version;
   if (typeof db.meta.createdAt !== "string") db.meta.createdAt = seed.meta.createdAt;
 
-  // ✅ [추가] 프로젝트 더미 자동 업데이트(버전 기반)
+    // ✅ [추가] 프로젝트 더미 자동 업데이트(버전 기반)
   const curV  = String(db.meta.seedProjectsVersion || "");
   const nextV = String(seed.meta.seedProjectsVersion || "");
   if (nextV && curV !== nextV){
-    db.projects = seed.projects.slice();              // ✅ 프로젝트 목록을 seed로 교체
-    db.meta.seedProjectsVersion = nextV;              // ✅ 버전 갱신
+    db.projects = seed.projects.slice();
+    db.meta.seedProjectsVersion = nextV;
   }
 
-     // ✅ [추가] 게시판 더미 자동 업데이트(버전 기반)
+  // ✅ [추가] 게시판 더미 자동 업데이트(버전 기반)
   const curB  = String(db.meta.seedBoardVersion || "");
   const nextB = String(seed.meta.seedBoardVersion || "");
   if (nextB && curB !== nextB){
-    db.boardPosts = seed.boardPosts.slice();     // ✅ 게시판 목록을 seed로 교체
-    db.meta.seedBoardVersion = nextB;            // ✅ 버전 갱신
+    db.boardPosts = seed.boardPosts.slice();
+    db.meta.seedBoardVersion = nextB;
   }
+
+  // ✅✅✅ 여기 추가
+  const curM  = String(db.meta.seedMailsVersion || "");
+  const nextM = String(seed.meta.seedMailsVersion || "");
+  if (nextM && curM !== nextM){
+    db.mails = seed.mails.slice();
+    db.meta.seedMailsVersion = nextM;
+  }
+
 
 
   // ✅ 배열 필드 보정...
