@@ -859,3 +859,88 @@ header.topbar .topRight{
 
 .mail-toolbar .select{ width: 140px; }
 .mail-toolbar .input{ width: 260px; max-width: 40vw; }
+
+
+/* =========================
+   LEFT: 다가오는 생일 위젯
+========================= */
+.bdayCard{
+  margin: 10px 6px 12px;
+  padding: 14px 14px;
+  border-radius: 18px;
+}
+
+.bdayHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom: 12px;
+}
+
+.bdayTitle{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 8px 18px rgba(0,0,0,.04);
+  font-weight: 1000;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+}
+
+.bdayGrid{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr); /* ✅ 첫번째 이미지처럼 4개씩 */
+  gap: 12px 10px;
+}
+
+.bdayItem{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  text-align:center;
+}
+
+.bdayAvatar{
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(245,247,250,.92);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 18px;
+}
+
+.bdayName{
+  font-weight: 1000;
+  font-size: 12px;
+  line-height: 1.1;
+  max-width: 92px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bdayDate{
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.bdayEmpty{
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px dashed rgba(0,0,0,.18);
+  background: rgba(255,255,255,.78);
+  color: var(--muted);
+  font-weight: 900;
+  font-size: 13px;
+  text-align: center;
+}
+
