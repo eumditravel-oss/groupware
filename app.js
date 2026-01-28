@@ -297,15 +297,21 @@ birthdays: [
 function upgradeDB(db){
   const seed = makeSeedDB();
 
-  // db가 아예 없거나 깨졌으면 seed로
   if (!isPlainObject(db)) return seed;
 
-  // meta 보정
   if (!isPlainObject(db.meta)) db.meta = {};
   if (typeof db.meta.version !== "string") db.meta.version = seed.meta.version;
   if (typeof db.meta.createdAt !== "string") db.meta.createdAt = seed.meta.createdAt;
 
-  // ✅ 배열 필드: 없으면 seed로 채움(중요!)
+  // ✅ [추가] 프로젝트 더미 자동 업데이트(버전 기반)
+  const curV  = String(db.meta.seedProjectsVersion || "");
+  const nextV = String(seed.meta.seedProjectsVersion || "");
+  if (nextV && curV !== nextV){
+    db.projects = seed.projects.slice();              // ✅ 프로젝트 목록을 seed로 교체
+    db.meta.seedProjectsVersion = nextV;              // ✅ 버전 갱신
+  }
+
+  // ✅ 배열 필드 보정...
   const ARR_FIELDS = [
     "users","projects",
     "mails","boardPosts","approvals",
