@@ -68,12 +68,43 @@ function isLeaderPlus(user){ return roleRank(user?.role || "staff") >= roleRank(
   function safeParse(s, fallback){ try { return JSON.parse(s); } catch { return fallback; } }
 
   function uuid(){
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-      const r = (crypto?.getRandomValues?.(new Uint8Array(1))?.[0] ?? Math.random() * 256) & 15;
-      const v = c === "x" ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
+  // ✅ 어떤 환경에서도 동작하는 안전 UUID
+  // 1) crypto.randomUUID() 있으면 사용
+  // 2) crypto.getRandomValues 있으면 사용
+  // 3) 둘 다 없으면 Math.random 기반으로 생성
+  try{
+    if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"){
+      return crypto.randomUUID();
+    }
+  }catch{}
+
+  const hex = [];
+  for (let i=0;i<256;i++) hex[i] = (i+256).toString(16).slice(1);
+
+  let r = new Uint8Array(16);
+  try{
+    if (typeof crypto !== "undefined" && crypto.getRandomValues){
+      crypto.getRandomValues(r);
+    } else {
+      for (let i=0;i<16;i++) r[i] = Math.floor(Math.random()*256);
+    }
+  }catch{
+    for (let i=0;i<16;i++) r[i] = Math.floor(Math.random()*256);
   }
+
+  // RFC4122 v4
+  r[6] = (r[6] & 0x0f) | 0x40;
+  r[8] = (r[8] & 0x3f) | 0x80;
+
+  return (
+    hex[r[0]]+hex[r[1]]+hex[r[2]]+hex[r[3]]+"-"+
+    hex[r[4]]+hex[r[5]]+"-"+
+    hex[r[6]]+hex[r[7]]+"-"+
+    hex[r[8]]+hex[r[9]]+"-"+
+    hex[r[10]]+hex[r[11]]+hex[r[12]]+hex[r[13]]+hex[r[14]]+hex[r[15]]
+  );
+}
+
 
   function pad2(n){ return String(n).padStart(2,"0"); }
   function nowISO(){
@@ -221,6 +252,118 @@ birthdays: [
 }
 
 
+   function isPlainObject(x){
+  return x && typeof x === "object" && !Array.isArray(x);
+}
+
+// ✅ 기존 DB가 있어도, 누락된 필드는 seed로 채워서 “항상 화면에 표시”되게 함
+function upgradeDB(db){
+  const seed = makeSeedDB();
+
+  // db가 아예 없거나 깨졌으면 seed로
+  if (!isPlainObject(db)) return seed;
+
+  // meta 보정
+  if (!isPlainObject(db.meta)) db.meta = {};
+  if (typeof db.meta.version !== "string") db.meta.version = seed.meta.version;
+  if (typeof db.meta.createdAt !== "string") db.meta.createdAt = seed.meta.createdAt;
+
+  // ✅ 배열 필드: 없으면 seed로 채움(중요!)
+  const ARR_FIELDS = [
+    "users","projects",
+    "mails","boardPosts","approvals",
+    "staffSchedules","birthdays",
+    "logs","checklists"
+  ];
+
+  for (const k of ARR_FIELDS){
+    if (!Array.isArray(db[k])){
+      db[k] = Array.isArray(seed[k]) ? seed[k].slice() : [];
+    }
+  }
+
+  // ✅ users/projects 최소 보장(없으면 더미라도)
+  if (!db.users.length) db.users = seed.users.slice();
+  if (!db.projects.length) db.projects = seed.projects.slice();
+
+  // ✅ 각 아이템 기본 shape 보정(화면 렌더에서 undefined로 안 터지게)
+  db.mails = db.mails.map(m => ({
+    mailId: String(m?.mailId || uuid()),
+    box: String(m?.box || "inbox"),
+    subject: String(m?.subject || ""),
+    from: String(m?.from || ""),
+    at: String(m?.at || "")
+  }));
+
+  db.boardPosts = db.boardPosts.map(p => ({
+    postId: String(p?.postId || uuid()),
+    boardKey: String(p?.boardKey || "notice"),
+    title: String(p?.title || ""),
+    writer: String(p?.writer || ""),
+    at: String(p?.at || "")
+  }));
+
+  db.approvals = db.approvals.map(a => ({
+    docId: String(a?.docId || uuid()),
+    box: String(a?.box || "inbox"),
+    title: String(a?.title || ""),
+    from: String(a?.from || ""),
+    at: String(a?.at || ""),
+    status: String(a?.status || "pending")
+  }));
+
+  db.staffSchedules = db.staffSchedules.map(e => ({
+    evId: String(e?.evId || uuid()),
+    type: String(e?.type || "휴가"),
+    name: String(e?.name || ""),
+    date: String(e?.date || ""),
+    note: String(e?.note || "")
+  }));
+
+  db.birthdays = db.birthdays.map(b => ({
+    bId: String(b?.bId || uuid()),
+    name: String(b?.name || "ㅇㅇㅇ 사원"),
+    md: String(b?.md || "01-01")
+  }));
+
+  db.logs = db.logs.map(l => ({
+    logId: String(l?.logId || uuid()),
+    date: String(l?.date || ""),
+    projectId: String(l?.projectId || (db.projects[0]?.projectId || "")),
+    category: String(l?.category || "구조"),
+    process: String(l?.process || (PROCESS_MASTER["구조"]?.[0] || "")),
+    content: String(l?.content || ""),
+    ratio: Number(l?.ratio || 0),
+    writerId: String(l?.writerId || (db.users[0]?.userId || "")),
+    status: String(l?.status || "submitted"),
+    submittedAt: String(l?.submittedAt || ""),
+    approvedBy: String(l?.approvedBy || ""),
+    approvedAt: String(l?.approvedAt || ""),
+    rejectedBy: String(l?.rejectedBy || ""),
+    rejectedAt: String(l?.rejectedAt || ""),
+    rejectReason: String(l?.rejectReason || "")
+  }));
+
+  db.checklists = db.checklists.map(c => ensureChecklistShape({
+    itemId: String(c?.itemId || uuid()),
+    projectId: String(c?.projectId || (db.projects[0]?.projectId || "")),
+    title: String(c?.title || ""),
+    description: String(c?.description || ""),
+    imageDataUrl: String(c?.imageDataUrl || ""),
+    writerId: String(c?.writerId || ""),
+    assigneeId: String(c?.assigneeId || ""),
+    status: String(c?.status || "open"),
+    createdAt: String(c?.createdAt || ""),
+    doneBy: String(c?.doneBy || ""),
+    doneAt: String(c?.doneAt || ""),
+    confirmations: Array.isArray(c?.confirmations) ? c.confirmations : []
+  }));
+
+  return db;
+}
+
+
+
   function seedDB(){
     const db = makeSeedDB();
     localStorage.setItem(LS_KEY, JSON.stringify(db)); // ✅ seed는 로컬만
@@ -228,8 +371,13 @@ birthdays: [
   }
 
   function ensureDB(){
-    return loadDB() || seedDB();
-  }
+  const loaded = loadDB();
+  const db = upgradeDB(loaded);
+  // ✅ 업그레이드/보정 결과를 저장해서 이후에도 안정적으로 유지
+  localStorage.setItem(LS_KEY, JSON.stringify(db));
+  return db;
+}
+
 
   function getUserId(db){
     const saved = localStorage.getItem(LS_USER);
@@ -467,14 +615,25 @@ async function sheetsImport(payload){
     }).filter(c=>c.itemId);
 
     const seed = makeSeedDB();
-    return {
-      meta,
-      users: users.length ? users : seed.users,
-      projects: projects.length ? projects : seed.projects,
-      logs,
-      checklists
-    };
-  }
+const merged = {
+  meta,
+  users: users.length ? users : seed.users,
+  projects: projects.length ? projects : seed.projects,
+
+  // ✅ 시트에는 아직 없으므로 seed로 기본 제공(항상 화면 표시)
+  mails: seed.mails,
+  boardPosts: seed.boardPosts,
+  approvals: seed.approvals,
+  staffSchedules: seed.staffSchedules,
+  birthdays: seed.birthdays,
+
+  logs,
+  checklists
+};
+
+// ✅ 최종 보정(혹시 누락/깨짐 있어도 안전)
+return upgradeDB(merged);
+
 
       /***********************
    * TOP TABS / SIDE MENUS
