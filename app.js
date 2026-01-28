@@ -2488,7 +2488,19 @@ function renderLeftBirthdays(db){
     renderTopTabs();
     renderSideMenu(db);
     renderLeftProfile(db);
-renderLeftBirthdays(db); // ✅ 추가
+
+// ✅ 생일 위젯: 대쉬보드에서만 표시
+const bdayHost = document.getElementById("birthdayCard");
+if (tab === "대쉬보드"){
+  bdayHost?.classList.remove("hidden");
+  renderLeftBirthdays(db);
+} else {
+  if (bdayHost){
+    bdayHost.innerHTML = "";
+    bdayHost.classList.add("hidden");
+  }
+}
+
 
 
 
