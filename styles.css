@@ -998,3 +998,9 @@ header.topbar .topRight{
   min-width: 0;
   flex: 0 1 auto;
 }
+
+.dashItemTitle,
+.dashItemMeta{
+  min-width: 0;
+}
+
