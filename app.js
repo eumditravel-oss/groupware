@@ -633,7 +633,7 @@ const merged = {
 
 // ✅ 최종 보정(혹시 누락/깨짐 있어도 안전)
 return upgradeDB(merged);
-
+  }
 
       /***********************
    * TOP TABS / SIDE MENUS
