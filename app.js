@@ -205,6 +205,16 @@ const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
       { evId: uuid(), type:"휴가", name:"실장",   date:"2026-02-03", note:"반차" }
     ],
 
+     // ✅ 다가오는 생일(MVP 더미 데이터) - 이름은 익명 처리
+birthdays: [
+  { bId: uuid(), name: "ㅇㅇㅇ 사원", md: "05-06" },
+  { bId: uuid(), name: "ㅇㅇㅇ 사원", md: "05-11" },
+  { bId: uuid(), name: "ㅇㅇㅇ 사원", md: "05-18" },
+  { bId: uuid(), name: "ㅇㅇㅇ 사원", md: "06-02" },
+  { bId: uuid(), name: "ㅇㅇㅇ 사원", md: "06-19" }
+],
+
+
     logs: [],
     checklists: []
   };
@@ -2250,6 +2260,62 @@ function viewCalc(db, sub){
     }
   }
 
+
+   /***********************
+ * LEFT: 다가오는 생일 위젯
+ ***********************/
+function renderLeftBirthdays(db){
+  const host = $("#birthdayCard");
+  if (!host) return;
+
+  const items = Array.isArray(db.birthdays) ? db.birthdays.slice() : [];
+
+  // ✅ 오늘 기준 “다가오는 순” 정렬 (MM-DD -> 다음 발생일 계산)
+  function nextTime(md){
+    const [mm, dd] = String(md||"").split("-").map(Number);
+    if (!mm || !dd) return Number.POSITIVE_INFINITY;
+
+    const now = new Date();
+    const y = now.getFullYear();
+
+    const t0 = new Date(y, mm - 1, dd, 0, 0, 0, 0);
+    if (t0 >= new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0,0,0,0)) return t0.getTime();
+
+    const t1 = new Date(y + 1, mm - 1, dd, 0, 0, 0, 0);
+    return t1.getTime();
+  }
+
+  items.sort((a,b)=> nextTime(a.md) - nextTime(b.md));
+  const top = items.slice(0, 8);
+
+  const body =
+    top.length
+      ? el("div", { class:"bdayGrid" },
+          ...top.map(x=>{
+            const md = String(x.md||"-- --");
+            const name = String(x.name||"ㅇㅇㅇ 사원");
+
+            return el("div", { class:"bdayItem" },
+              el("div", { class:"bdayAvatar" }, "👤"),
+              el("div", { class:"bdayName" }, name),
+              el("div", { class:"bdayDate" }, md)
+            );
+          })
+        )
+      : el("div", { class:"bdayEmpty" }, "다가오는 생일이 없습니다.");
+
+  host.innerHTML = "";
+  host.appendChild(
+    el("div", { class:"bdayCard card" },
+      el("div", { class:"bdayHead" },
+        el("div", { class:"bdayTitle" }, "다가오는 생일")
+      ),
+      body
+    )
+  );
+}
+
+
   /***********************
    * Global Render (탭/좌측메뉴 기반)
    ***********************/
@@ -2262,7 +2328,9 @@ function viewCalc(db, sub){
     // 상단 탭/좌측 메뉴
     renderTopTabs();
     renderSideMenu(db);
-     renderLeftProfile(db);
+    renderLeftProfile(db);
+renderLeftBirthdays(db); // ✅ 추가
+
 
 
     
