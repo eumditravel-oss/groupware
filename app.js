@@ -190,7 +190,7 @@ const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
     meta: {
       version:"0.5",
       createdAt: nowISO(),
-      seedProjectsVersion: "2026-01-30" // ✅ 프로젝트 더미 변경 시 이 값만 올리기
+      seedProjectsVersion: "2026-01-31" // ✅ 프로젝트 더미 변경 시 이 값만 올리기
     },
     users: [
       { userId:"u_staff_1", name:"작업자A", role:"staff" },
