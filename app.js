@@ -243,10 +243,21 @@ const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
 
     // ✅ 전자메일(MVP 더미 데이터)
     mails: [
-      { mailId: uuid(), box:"inbox", subject:"[현대산업개발] 의왕 스마트시티 문의사항 답변", from:"현대산업개발", at:"2026-01-26 09:12" },
-      { mailId: uuid(), box:"inbox", subject:"[롯데건설] 마트 수지점 주상복합 개발사업 납품자료", from:"롯데건설", at:"2026-01-25 17:40" },
-      { mailId: uuid(), box:"inbox", subject:"[고려건설] 안동동 프로젝트 샘플 도면 송부", from:"고려건설", at:"2026-01-24 10:03" },
-      { mailId: uuid(), box:"sent",  subject:"Re: 견적요청 건 회신드립니다", from:"(보낸메일)", at:"2026-01-23 16:22" }
+      { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 의왕 스마트시티 문의사항 답변", from:"ㅇㅇ건설", at:"2026-01-26 09:12" },
+      { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 마트 수지점 주상복합 개발사업 납품자료", from:"ㅇㅇ건설", at:"2026-01-25 17:40" },
+      { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 안흥동 프로젝트 샘플 도면 송부", from:"ㅇㅇ건설", at:"2026-01-24 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 물량산출 체크리스트 송부", from:"ㅇㅇ건설", at:"2026-01-24 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 부촌아파트 원가계산서 송부", from:"ㅇㅇ건설", at:"2026-01-23 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 26년 적산용역 연단가 VOC 의견요청", from:"ㅇㅇ건설", at:"2026-01-22 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 안동동 프로젝트 샘플 도면 송부", from:"ㅇㅇ건설", at:"2026-01-21 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 안동동 프로젝트 샘플 도면 송부", from:"ㅇㅇ건설", at:"2026-01-20 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 안동동 프로젝트 샘플 도면 송부", from:"ㅇㅇ건설", at:"2026-01-19 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 안동동 프로젝트 샘플 도면 송부", from:"ㅇㅇ건설", at:"2026-01-18 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 안동동 프로젝트 샘플 도면 송부", from:"ㅇㅇ건설", at:"2026-01-17 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 안동동 프로젝트 샘플 도면 송부", from:"ㅇㅇ건설", at:"2026-01-16 10:03" },
+       { mailId: uuid(), box:"inbox", subject:"[ㅇㅇ건설] 안동동 프로젝트 샘플 도면 송부", from:"ㅇㅇ건설", at:"2026-01-15 10:03" },
+      { mailId: uuid(), box:"sent",  subject:"[ㅇㅇ건설] ㅇㅇㅇ프로젝트 구조 작업 데이터 송부", from:"(보낸메일)", at:"2026-01-23 16:22" },
+       { mailId: uuid(), box:"sent",  subject:"[ㅇㅇ건설] ㅇㅇㅇ프로젝트 공정률 송부", from:"(보낸메일)", at:"2026-01-22 16:22" }
     ],
 
     // ✅ 게시판(MVP 더미 데이터)
