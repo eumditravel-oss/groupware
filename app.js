@@ -322,6 +322,15 @@ function upgradeDB(db){
     db.meta.seedProjectsVersion = nextV;              // ✅ 버전 갱신
   }
 
+     // ✅ [추가] 게시판 더미 자동 업데이트(버전 기반)
+  const curB  = String(db.meta.seedBoardVersion || "");
+  const nextB = String(seed.meta.seedBoardVersion || "");
+  if (nextB && curB !== nextB){
+    db.boardPosts = seed.boardPosts.slice();     // ✅ 게시판 목록을 seed로 교체
+    db.meta.seedBoardVersion = nextB;            // ✅ 버전 갱신
+  }
+
+
   // ✅ 배열 필드 보정...
   const ARR_FIELDS = [
     "users","projects",
