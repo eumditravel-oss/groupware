@@ -2549,9 +2549,13 @@ function renderLeftBirthdays(db){
   items.sort((a,b)=> nextTime(a.md) - nextTime(b.md));
   const top = items.slice(0, 8);
 
-  const body =
+    const body =
     top.length
-      ? el("div", { class:"bdayGrid" },
+      ? el("div", {
+          class:"bdayGrid",
+          // ✅ 한 줄 최대 3명, 초과 시 자동 줄바꿈
+          style: "display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;"
+        },
           ...top.map(x=>{
             const md = String(x.md||"-- --");
             const name = String(x.name||"ㅇㅇㅇ 사원");
@@ -2564,6 +2568,7 @@ function renderLeftBirthdays(db){
           })
         )
       : el("div", { class:"bdayEmpty" }, "다가오는 생일이 없습니다.");
+
 
   host.innerHTML = "";
   host.appendChild(
