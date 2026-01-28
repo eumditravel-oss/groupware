@@ -484,6 +484,54 @@ function upgradeDB(db){
     });
   }
 
+
+   /***********************
+ * Scroll / Background Fix (중간 스크롤 제거 + 하단 색상 고정)
+ ***********************/
+function applyScrollFix(){
+  // 1) 문서 기본 스크롤은 body가 담당하도록 통일
+  document.documentElement.style.height = "100%";
+  document.body.style.minHeight = "100%";
+  document.body.style.overflowY = "auto";
+  document.body.style.overflowX = "hidden";
+
+  // 2) 강제 CSS 오버라이드 주입 (기존 CSS에 overflow:scroll 같은게 있어도 덮어씀)
+  const styleId = "conc0st-scroll-fix";
+  if (document.getElementById(styleId)) return;
+
+  const style = document.createElement("style");
+  style.id = styleId;
+  style.textContent = `
+    /* ✅ 불필요한 '항상 보이는 스크롤바' 제거 */
+    * { scrollbar-gutter: auto; }
+
+    /* ✅ 바닥 배경색이 튀는 현상 방지 (body 배경 고정) */
+    html, body {
+      height: 100%;
+      background: #f4f6f9;   /* 현재 화면 톤에 맞춘 연한 회색 */
+    }
+
+    /* ✅ 중첩 스크롤의 흔한 원인들: overflow-y: scroll/auto + 고정 height */
+    /* 아래 셀렉터는 "있으면 덮어쓰기" 용도라 안전하게 !important 사용 */
+    #view {
+      overflow: visible !important;   /* view 자체가 스크롤 컨테이너가 되지 않게 */
+      background: transparent !important;
+    }
+
+    /* 앱 레이아웃에서 자주 쓰는 컨테이너 이름들(혹시 존재하면 중첩 스크롤 제거) */
+    .layout, .container, .main, .content, .right, .center, .page, .app {
+      overflow-y: visible !important;
+      overflow-x: hidden !important;
+      background: transparent;
+    }
+
+    /* ✅ 대신 window(body)만 스크롤이 생기도록: 스크롤이 필요한 곳은 view가 아니라 body */
+    body { overscroll-behavior: none; }
+  `;
+  document.head.appendChild(style);
+}
+
+
   /***********************
    * Google Sheets API
    ***********************/
@@ -2574,6 +2622,8 @@ if (tab === "대쉬보드"){
  ***********************/
 async function boot(){
   ensureDB();
+   // ✅ 추가: 중간 스크롤 제거 + 하단 배경색 고정
+  applyScrollFix();
 
 
     // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
