@@ -1183,4 +1183,23 @@ header.topbar .topRight{
   font-weight: 900;
 }
 
+/* ✅ 공백 제거: 왼쪽 사이드 전체를 스크롤로, 생일카드는 자연 배치 */
+.side{
+  display:block !important;
+  height: calc(100vh - var(--topbarH)) !important;
+  overflow: auto !important;
+  min-height: 0 !important;
+}
+
+.sideNav{
+  flex: none !important;
+  overflow: visible !important;
+  min-height: auto !important;
+}
+
+#birthdayCard{
+  margin-top: 12px !important;  /* ✅ 아래로 밀착 제거 */
+  padding: 0 6px 12px !important;
+}
+
 
