@@ -972,3 +972,29 @@ header.topbar .topRight{
 }
 
 
+/* ✅ Dashboard: 그리드 아이템이 컨텐츠 때문에 컬럼 밖으로 밀리지 않게 */
+.dashRow2 > *,
+.dashRow3 > *{
+  min-width: 0;
+}
+
+/* 카드 자체도 안전빵 */
+.dashCard{
+  min-width: 0;
+}
+
+/* 헤더(타이틀/서브)가 flex에서 너비 늘리는 경우 방지 */
+.dashCardHead{
+  min-width: 0;
+  flex-wrap: wrap;          /* 필요 없으면 빼도 됨 */
+}
+
+.dashCardTitleLink{
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.dashCardSub{
+  min-width: 0;
+  flex: 0 1 auto;
+}
