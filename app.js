@@ -193,7 +193,7 @@ const PUSH_DEBOUNCE_MS   = 1200;   // 저장 묶기
   seedProjectsVersion: "2026-01-31", // ✅ 프로젝트 더미 변경 시 이 값만 올리기
 
   // ✅ [추가] 더미 변경 버전키들
-  seedMailsVersion: "2026-01-31",    // ✅ 메일 더미 변경 시 이 값만 올리기
+  seedMailsVersion: "2026-02-01",    // ✅ 메일 더미 변경 시 이 값만 올리기
   seedBoardVersion: "2026-01-31"     // ✅ 게시판 더미 변경 시 이 값만 올리기
 },
 
