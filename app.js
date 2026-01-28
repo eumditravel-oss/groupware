@@ -327,7 +327,7 @@ function upgradeDB(db){
   const nextB = String(seed.meta.seedBoardVersion || "");
   if (nextB && curB !== nextB){
     db.boardPosts = seed.boardPosts.slice();     // ✅ 게시판 목록을 seed로 교체
-    db.meta.seedBoardVersion = nextB;            // ✅ 버전 갱신
+    db.meta.seedBoardVersion = nextB1;            // ✅ 버전 갱신
   }
 
 
