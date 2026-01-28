@@ -1004,3 +1004,75 @@ header.topbar .topRight{
   min-width: 0;
 }
 
+/* =========================================================
+   ✅ DASHBOARD 카드 밀림(오버플로우) 최종 강제 FIX
+   - grid/flex 기본 min-width:auto 때문에 생기는 "컬럼 밀어내기"를 전부 차단
+   - 클래스명이 조금 달라도 잡히도록 범위를 넓힘
+========================================================= */
+
+/* 1) 그리드 컬럼이 컨텐츠에 의해 늘어나지 않게 */
+.dashRow2,
+.dashRow3,
+.dash,
+.split{
+  min-width: 0;
+}
+
+.dashRow2{
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+.dashRow3{
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+/* 2) 그리드 자식(카드)이 컬럼 밖으로 못 나가게 */
+.dashRow2 > *,
+.dashRow3 > *,
+.dash > *,
+.split > *{
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* 3) 카드 자체가 내부 컨텐츠 때문에 커지지 않게 */
+.dashCard,
+.card{
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* 4) 카드 헤더가 flex에서 폭을 강제로 늘리는 현상 차단 */
+.dashCardHead,
+.card-head{
+  min-width: 0 !important;
+}
+
+.dashCardHead > *,
+.card-head > *{
+  min-width: 0 !important;
+}
+
+/* 5) 헤더의 "왼쪽(타이틀)"은 줄어들 수 있게, "오른쪽(서브)"도 줄어들 수 있게 */
+.dashCardHead > :first-child,
+.card-head > :first-child{
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+}
+
+.dashCardHead > :last-child,
+.card-head > :last-child{
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+}
+
+/* 6) 긴 텍스트는 무조건 말줄임 처리 */
+.dashCardTitleLink,
+.dashCardSub,
+.dashItemTitle,
+.dashItemMeta{
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
