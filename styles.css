@@ -944,3 +944,31 @@ header.topbar .topRight{
   text-align: center;
 }
 
+/* ✅ DASHBOARD grid overflow 방지 */
+.dashRow2{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:14px;
+}
+.dashRow3{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:14px;
+}
+
+/* ✅ 헤더 내부 요소가 컬럼 폭을 강제로 늘리지 않게 */
+.dashCardHead{ min-width:0; }
+.dashCardTitleLink{
+  max-width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.dashCardSub{
+  max-width:100%;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+
