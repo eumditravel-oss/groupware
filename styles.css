@@ -1,3 +1,14 @@
+/* styles.css (FULL) - Scroll/Background Fix 포함 버전
+   ✅ 목표
+   1) “중간 스크롤바(내부 컨테이너 스크롤)” 제거 → body(페이지)만 세로 스크롤
+   2) “하단 배경색 튐/얼룩(끝에서 다른 색)” 최소화 → html/body 배경 고정 + 배경을 ::before에 올림
+   3) 가로는 레이아웃 유지(최소폭) → body overflow-x: auto 유지
+   4) 모달만 자체 스크롤 허용
+*/
+
+/* =========================
+   ROOT
+========================= */
 :root{
   /* ✅ Clean ivory + soft gray (얼룩/밴딩 최소화) */
   --bg:#f4f6f9;
@@ -39,27 +50,50 @@
   --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%236b6b73' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
 }
 
+/* =========================
+   BASE
+========================= */
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
 html{ color-scheme: light; }
 
+/* ✅ “하단 색상 튐” 방지: html/body는 단색 고정 */
+html{ background: var(--bg); }
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic";
   color:var(--ink);
 
+  /* ✅ 세로 스크롤은 body가 담당(중간 스크롤 제거 핵심) */
+  overflow-y: auto;
+  overflow-x: auto; /* ✅ 배치 고정 + 가로스크롤 허용 */
+  min-height: 100%;
+
+  /* ✅ body 자체 배경은 투명(배경은 ::before에서 담당) */
+  background: transparent;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ✅ 배경 그라데이션은 “고정 레이어”로 분리 → 밴딩/끊김/끝색 튐 최소화 */
+body::before{
+  content:"";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
   background:
     radial-gradient(1200px 700px at 18% -10%, rgba(255,181,90,.18), transparent 60%),
     radial-gradient(900px 520px at 85% 0%, rgba(240,138,36,.10), transparent 62%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
-
-  -webkit-tap-highlight-color: transparent;
-  overflow-x: auto; /* ✅ 배치 고정 + 스크롤 허용 */
 }
 
+/* 링크/유틸 */
 a{ color:inherit; text-decoration:none; }
 .hidden{ display:none !important; }
 
+/* 폼 기본 */
 button, select, input, textarea{
   -webkit-appearance: none;
   appearance: none;
@@ -122,7 +156,7 @@ header.topbar .topRight{
   width: 12px;
 }
 
-/* ✅ (노란박스 느낌) 큰 캡슐 바 + 세그먼트 탭 */
+/* ✅ 큰 캡슐 바 + 세그먼트 탭 */
 #topTabs.topTabs{
   display:flex;
   align-items:center;
@@ -133,15 +167,19 @@ header.topbar .topRight{
   border: 1px solid rgba(0,0,0,.08);
   background: rgba(245,247,250,.92);
   box-shadow: 0 10px 22px rgba(0,0,0,.06);
-  overflow:auto;
 
   width: fit-content;
   max-width: 100%;
   border-radius: 18px;
+
+  /* ✅ 탭이 많아지면 가로로만 스크롤(세로 스크롤 금지) */
+  overflow-x: auto;
+  overflow-y: hidden;
+
   scrollbar-width: thin;
 }
 
-/* 탭 버튼: 기본은 “회색 세그먼트”, active는 “흰 배경 + 밑줄 강조” */
+/* 탭 버튼 */
 .topTab,
 .top-tab,
 #topTabs button,
@@ -199,6 +237,10 @@ header.topbar .topRight{
 ========================= */
 .app{
   display:flex;
+
+  /* ✅ 앱 전체 세로 스크롤은 body가 담당하도록: app은 overflow 금지 */
+  overflow: visible;
+
   min-height: 100vh;
   min-width: calc(var(--sideW) + var(--minMainW));
 }
@@ -211,6 +253,9 @@ header.topbar .topRight{
   padding: 12px 10px 16px;
   border-right: 1px solid rgba(0,0,0,.06);
   background: rgba(255,255,255,.62);
+
+  /* ✅ 내부 스크롤 금지(중간 스크롤 제거 핵심) */
+  overflow: visible;
 }
 
 /* ✅ LEFT PROFILE CARD */
@@ -237,7 +282,7 @@ header.topbar .topRight{
   align-items:center;
   justify-content:center;
 
-  overflow: hidden; /* ✅ 추가: 실루엣이 바깥(구분선)으로 침범 못하게 */
+  overflow: hidden;
 }
 
 .profileAvatarInner{
@@ -304,6 +349,9 @@ header.topbar .topRight{
   flex-direction:column;
   gap:6px;
   padding: 6px 6px 0;
+
+  /* ✅ 내부 스크롤 금지(중간 스크롤 제거) */
+  overflow: visible;
 }
 
 /* ✅ 좌측 메뉴 */
@@ -362,6 +410,9 @@ header.topbar .topRight{
   flex:1;
   min-width: var(--minMainW);
   padding: 16px 18px 26px;
+
+  /* ✅ 내부 스크롤 금지(중간 스크롤 제거 핵심) */
+  overflow: visible;
 }
 
 .mainHead{
@@ -370,7 +421,11 @@ header.topbar .topRight{
   padding:0 !important;
 }
 
-.view{ min-height: 520px; }
+/* ✅ view도 스크롤 컨테이너가 되지 않게 */
+.view{
+  min-height: 520px;
+  overflow: visible;
+}
 
 /* =========================
    CARD / FORM
@@ -381,6 +436,10 @@ header.topbar .topRight{
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 14px 14px;
+
+  /* ✅ 내부 컨텐츠가 카드 폭을 밀어내지 않게 */
+  min-width: 0;
+  max-width: 100%;
 }
 
 .sectionTitle,
@@ -404,7 +463,9 @@ header.topbar .topRight{
   justify-content:space-between;
   gap:10px;
   margin-bottom:10px;
+  min-width: 0;
 }
+.card-head > *{ min-width:0; }
 
 .stack{ display:flex; flex-direction:column; gap:12px; }
 .row{ display:flex; align-items:center; gap:8px; }
@@ -419,6 +480,7 @@ header.topbar .topRight{
   outline: none;
   transition: border-color .12s ease, box-shadow .12s ease;
   color: var(--ink);
+  min-width: 0;
 }
 
 .select{
@@ -502,10 +564,10 @@ header.topbar .topRight{
 ========================= */
 .dashWrap{ display:flex; flex-direction:column; gap:14px; }
 
-.dashRow2{ display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
-.dashRow3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:14px; }
+.dashRow2{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:14px; }
+.dashRow3{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:14px; }
 
-.dashCard{ padding: 14px 16px; }
+.dashCard{ padding: 14px 16px; min-width:0; max-width:100%; }
 
 .dashCardHead{
   display:flex;
@@ -513,7 +575,10 @@ header.topbar .topRight{
   justify-content:space-between;
   gap:10px;
   margin-bottom: 10px;
+  min-width:0;
+  flex-wrap: wrap;
 }
+.dashCardHead > *{ min-width:0; }
 
 .dashCardTitleLink{
   background: rgba(255,255,255,.92);
@@ -528,6 +593,12 @@ header.topbar .topRight{
   font-size: 16px;
   letter-spacing: -0.2px;
   color: var(--ink);
+
+  max-width:100%;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 @media (hover:hover) and (pointer:fine){
@@ -541,6 +612,12 @@ header.topbar .topRight{
   font-size: 12px;
   color: var(--muted);
   font-weight: 900;
+
+  max-width:100%;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
 .dashList{ display:flex; flex-direction:column; gap:10px; }
@@ -550,15 +627,21 @@ header.topbar .topRight{
   border-radius: 14px;
   border: 1px solid rgba(0,0,0,.06);
   background: rgba(255,255,255,.92);
+  min-width:0;
+}
+
+.dashItemTitle,
+.dashItemMeta{
+  min-width:0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dashItemTitle{
   font-weight: 1000;
   font-size: 13px;
   line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .dashItemMeta{
@@ -566,9 +649,6 @@ header.topbar .topRight{
   font-size: 12px;
   color: var(--muted);
   font-weight: 900;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .dashEmpty{
@@ -606,7 +686,7 @@ header.topbar .topRight{
 }
 
 /* =========================
-   MODAL
+   MODAL  (✅ 모달만 스크롤 허용)
 ========================= */
 .modalBackdrop{
   position:fixed;
@@ -621,7 +701,10 @@ header.topbar .topRight{
 .modal{
   width: min(860px, 96vw);
   max-height: 86vh;
+
+  /* ✅ 모달 내용이 길면 모달 내부만 스크롤 */
   overflow:auto;
+
   background: rgba(255,255,255,.97);
   border: 1px solid rgba(0,0,0,.10);
   border-radius: 18px;
@@ -647,6 +730,8 @@ header.topbar .topRight{
 
 /* =========================
    EMBED(iframe)
+   ✅ iframe는 "높이를 주면" 내부가 스크롤처럼 보일 수 있음
+   ✅ 하지만 여기서는 wrapper만 고정 높이, 스크롤은 body가 아니라 iframe 내부(기본 동작)
 ========================= */
 .viewTopTools{
   display:flex;
@@ -655,13 +740,17 @@ header.topbar .topRight{
   gap:10px;
   margin: 6px 0 10px;
 }
+
 .embedWrap{
   width:100%;
   height: calc(100vh - 170px);
   min-height: 520px;
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 16px;
+
+  /* ✅ wrapper는 넘침 숨김(iframe 자체 스크롤은 iframe이 처리) */
   overflow:hidden;
+
   background: rgba(255,255,255,.80);
 }
 .embedFrame{
@@ -687,6 +776,10 @@ header.topbar .topRight{
 ========================= */
 .split{ display:grid; grid-template-columns: 260px 1fr; gap:12px; }
 .dash{ display:grid; grid-template-columns: 320px 1fr; gap:12px; }
+
+/* ✅ grid/flex overflow 안전 */
+.split, .dash { min-width:0; }
+.split > *, .dash > * { min-width:0; }
 
 /* CALENDAR */
 .cal-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -761,12 +854,16 @@ header.topbar .topRight{
   .dash{ grid-template-columns: 1fr; }
 }
 
+/* =========================
+   (하단에 남아있던 추가 스타일들)
+========================= */
 .profile-card{
   background: rgba(255,255,255,.92);
   border: 1px solid rgba(0,0,0,.06);
   border-radius: 18px;
   box-shadow: 0 12px 30px rgba(0,0,0,.08);
   padding: 14px 14px 12px;
+  min-width:0;
 }
 
 .profile-head{
@@ -774,6 +871,7 @@ header.topbar .topRight{
   align-items:center;
   justify-content:flex-start;
   margin-bottom: 10px;
+  min-width:0;
 }
 
 .profile-badge{
@@ -794,9 +892,9 @@ header.topbar .topRight{
 .avatar{
   display:block;
   width: 100%;
-  aspect-ratio: 1 / 1;      /* 정사각 */
+  aspect-ratio: 1 / 1;
   border-radius: 14px;
-  border: 3px solid var(--accent); /* 노란 박스 느낌 */
+  border: 3px solid var(--accent);
   background: rgba(0,0,0,.02);
   overflow:hidden;
   cursor:pointer;
@@ -848,7 +946,6 @@ header.topbar .topRight{
   font-weight: 800;
 }
 
-
 /* ✅ 전자메일: 목록 상단 검색툴바 */
 .mail-toolbar{
   display:flex;
@@ -856,10 +953,8 @@ header.topbar .topRight{
   gap:8px;
   flex-wrap:wrap;
 }
-
 .mail-toolbar .select{ width: 140px; }
 .mail-toolbar .input{ width: 260px; max-width: 40vw; }
-
 
 /* =========================
    LEFT: 다가오는 생일 위젯
@@ -869,12 +964,16 @@ header.topbar .topRight{
   padding: 14px 14px;
   border-radius: 18px;
 }
+.bdayCard.card{
+  overflow:hidden;
+}
 
 .bdayHead{
   display:flex;
   align-items:center;
   justify-content:space-between;
   margin-bottom: 12px;
+  min-width:0;
 }
 
 .bdayTitle{
@@ -893,7 +992,7 @@ header.topbar .topRight{
 
 .bdayGrid{
   display:grid;
-  grid-template-columns: repeat(4, 1fr); /* ✅ 첫번째 이미지처럼 4개씩 */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px 10px;
 }
 
@@ -903,6 +1002,7 @@ header.topbar .topRight{
   align-items:center;
   gap:6px;
   text-align:center;
+  min-width:0;
 }
 
 .bdayAvatar{
@@ -944,262 +1044,18 @@ header.topbar .topRight{
   text-align: center;
 }
 
-/* ✅ DASHBOARD grid overflow 방지 */
-.dashRow2{
-  display:grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap:14px;
-}
-.dashRow3{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap:14px;
-}
-
-/* ✅ 헤더 내부 요소가 컬럼 폭을 강제로 늘리지 않게 */
-.dashCardHead{ min-width:0; }
-.dashCardTitleLink{
-  max-width:100%;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.dashCardSub{
-  max-width:100%;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-
-/* ✅ Dashboard: 그리드 아이템이 컨텐츠 때문에 컬럼 밖으로 밀리지 않게 */
-.dashRow2 > *,
-.dashRow3 > *{
-  min-width: 0;
-}
-
-/* 카드 자체도 안전빵 */
-.dashCard{
-  min-width: 0;
-}
-
-/* 헤더(타이틀/서브)가 flex에서 너비 늘리는 경우 방지 */
-.dashCardHead{
-  min-width: 0;
-  flex-wrap: wrap;          /* 필요 없으면 빼도 됨 */
-}
-
-.dashCardTitleLink{
-  min-width: 0;
-  flex: 1 1 auto;
-}
-
-.dashCardSub{
-  min-width: 0;
-  flex: 0 1 auto;
-}
-
-.dashItemTitle,
-.dashItemMeta{
-  min-width: 0;
-}
-
-/* =========================================================
-   ✅ DASHBOARD 카드 밀림(오버플로우) 최종 강제 FIX
-   - grid/flex 기본 min-width:auto 때문에 생기는 "컬럼 밀어내기"를 전부 차단
-   - 클래스명이 조금 달라도 잡히도록 범위를 넓힘
-========================================================= */
-
-/* 1) 그리드 컬럼이 컨텐츠에 의해 늘어나지 않게 */
-.dashRow2,
-.dashRow3,
-.dash,
-.split{
-  min-width: 0;
-}
-
-.dashRow2{
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-}
-.dashRow3{
-  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-}
-
-/* 2) 그리드 자식(카드)이 컬럼 밖으로 못 나가게 */
-.dashRow2 > *,
-.dashRow3 > *,
-.dash > *,
-.split > *{
-  min-width: 0 !important;
-  max-width: 100% !important;
-}
-
-/* 3) 카드 자체가 내부 컨텐츠 때문에 커지지 않게 */
-.dashCard,
-.card{
-  min-width: 0 !important;
-  max-width: 100% !important;
-}
-
-/* 4) 카드 헤더가 flex에서 폭을 강제로 늘리는 현상 차단 */
-.dashCardHead,
-.card-head{
-  min-width: 0 !important;
-}
-
-.dashCardHead > *,
-.card-head > *{
-  min-width: 0 !important;
-}
-
-/* 5) 헤더의 "왼쪽(타이틀)"은 줄어들 수 있게, "오른쪽(서브)"도 줄어들 수 있게 */
-.dashCardHead > :first-child,
-.card-head > :first-child{
-  flex: 1 1 0 !important;
-  min-width: 0 !important;
-}
-
-.dashCardHead > :last-child,
-.card-head > :last-child{
-  flex: 0 1 auto !important;
-  min-width: 0 !important;
-}
-
-/* 6) 긴 텍스트는 무조건 말줄임 처리 */
-.dashCardTitleLink,
-.dashCardSub,
-.dashItemTitle,
-.dashItemMeta{
-  max-width: 100% !important;
-  min-width: 0 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  white-space: nowrap !important;
-}
-
 /* =========================
-   LEFT SIDE: layout fix (birthday card overflow)
+   ✅ (중요) 중간 스크롤 발생 원인 차단
+   - 혹시 JS/기존 CSS에서 overflow-y:scroll, height:100vh 등을 줬을 때도 덮어쓰기
 ========================= */
-
-/* ✅ 사이드 패널을 "세로 레이아웃"으로 고정하고 내부만 스크롤 */
+#view,
+.view,
+.main,
 .side{
-  display:flex;
-  flex-direction:column;
-  /* topbar 아래부터 화면 높이만큼 */
-  min-height: calc(100vh - var(--topbarH));
+  overflow-y: visible !important;
 }
 
-/* ✅ 프로필카드/생일카드는 고정, 메뉴만 스크롤 */
-.sideNav{
-  flex: 1 1 auto;
-  min-height: 0;          /* 중요: 내부 스크롤이 제대로 생기게 */
-  overflow: auto;
-  padding-bottom: 10px;
-}
-
-/* ✅ 생일 위젯은 항상 아래로 밀착 */
-#birthdayCard{
-  margin-top: auto;
-  padding: 10px 6px 0;
-}
-
-/* =========================
-   Birthday widget styles (no overflow)
-========================= */
-
-.bdayCard.card{
-  padding: 12px 12px;
-  border-radius: 18px;
-  overflow: hidden;       /* ✅ 카드 밖 삐져나감 방지 */
-}
-
-.bdayHead{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom: 10px;
-}
-
-.bdayTitle{
-  font-weight: 1000;
-  font-size: 13px;
-  color: var(--ink);
-}
-
-.bdayGrid{
-  display:grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)); /* ✅ minmax(0,1fr) 중요 */
-  gap: 10px;
-}
-
-.bdayItem{
-  min-width: 0;           /* ✅ grid/flex에서 글자 overflow의 핵심 */
-  border: 1px solid rgba(0,0,0,.06);
-  background: rgba(255,255,255,.86);
-  border-radius: 14px;
-  padding: 10px 10px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap: 4px;
-}
-
-.bdayAvatar{
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: rgba(245,247,250,.95);
-  border: 1px solid rgba(0,0,0,.06);
-  flex: 0 0 auto;
-}
-
-.bdayName{
-  min-width: 0;
-  width: 100%;
-  text-align:center;
-  font-weight: 950;
-  font-size: 12px;
-
-  overflow:hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;     /* ✅ 한 줄로 안전하게 */
-}
-
-.bdayDate{
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 900;
-}
-
-.bdayEmpty{
-  padding: 10px 6px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 900;
-}
-
-/* ✅ 공백 제거: 왼쪽 사이드 전체를 스크롤로, 생일카드는 자연 배치 */
-.side{
-  display:block !important;
-  height: calc(100vh - var(--topbarH)) !important;
+/* 단, 모달은 예외 */
+.modal{
   overflow: auto !important;
-  min-height: 0 !important;
 }
-
-.sideNav{
-  flex: none !important;
-  overflow: visible !important;
-  min-height: auto !important;
-}
-
-#birthdayCard{
-  margin-top: 12px !important;  /* ✅ 아래로 밀착 제거 */
-  padding: 0 6px 12px !important;
-}
-
-
