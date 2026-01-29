@@ -1513,3 +1513,137 @@ header.topbar .topCenter{
     grid-template-columns: repeat(2, minmax(0,1fr)) !important;
   }
 }
+
+
+
+/* =========================================================
+   ✅ FINAL MEGA MENU ALIGN FIX (탭과 메가메뉴 1:1 정렬)
+   - 탭과 메가메뉴가 동일 "가로 컨테이너"를 공유하도록 강제
+   - 두번째 스샷처럼 세로라인이 탭 아래 정확히 떨어짐
+========================================================= */
+
+:root{
+  --navMaxW: 1200px;      /* 탭/메가 공통 최대폭 */
+  --navPad: 18px;         /* 좌우 패딩(공통 기준) */
+  --megaCols: 6;          /* 기본 컬럼 수 */
+}
+
+/* ✅ topCenter를 "기준 컨테이너"로 만든다 */
+header.topbar .topCenter{
+  position: relative !important;
+  flex: 1 1 auto !important;
+  display: block !important;
+  padding: 0 var(--navPad) !important; /* 탭/메가 좌우 기준 패딩 동일 */
+  justify-content: stretch !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+/* ✅ 탭: 무조건 6등분 그리드 + max-width 기준으로 중앙정렬 */
+#topTabs.topTabs{
+  width: 100% !important;
+  max-width: var(--navMaxW) !important;
+  margin: 0 auto !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(var(--megaCols), minmax(0, 1fr)) !important;
+
+  gap: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  overflow: visible !important;
+}
+
+/* 탭 버튼 중앙 정렬 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button,
+#topTabs a{
+  width: 100% !important;
+  justify-content: center !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  padding: 14px 6px 12px !important;
+  font-weight: 900 !important;
+}
+
+/* active underline */
+#topTabs .topTab.active::after,
+#topTabs .top-tab.active::after{
+  left: 26% !important;
+  right: 26% !important;
+  bottom: 6px !important;
+  height: 2px !important;
+  background: rgba(0,0,0,.82) !important;
+}
+
+/* ✅ 메가메뉴: 탭 바로 아래 + 동일 max-width + 동일 6등분 grid */
+.mega-menu{
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  top: calc(100% + 8px) !important;
+  z-index: 999 !important;
+
+  width: 100% !important;
+  max-width: var(--navMaxW) !important;
+
+  display: none !important;
+  grid-template-columns: repeat(var(--megaCols), minmax(0, 1fr)) !important;
+
+  gap: 0 !important;
+  padding: 12px 0 14px !important;
+
+  background: #fff !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.10) !important;
+}
+
+/* ✅ 열림 조건 유지 */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover,
+.mega-menu.open{
+  display: grid !important;
+}
+
+/* ✅ 세로 라인(탭 컬럼 경계와 1:1 정렬) */
+.mega-menu .mega-col{
+  padding: 12px 14px 14px !important;
+  border-left: 1px solid rgba(0,0,0,.08) !important;
+}
+.mega-menu .mega-col:first-child{
+  border-left: 0 !important;
+}
+
+/* 리스트/타이틀 스타일 */
+.mega-menu .mega-col-title{
+  font-weight: 1000 !important;
+  font-size: 13px !important;
+  margin-bottom: 10px !important;
+  color: rgba(0,0,0,.78) !important;
+}
+.mega-menu .mega-item{
+  width: 100% !important;
+  text-align: center !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+}
+
+/* ✅ 반응형: 컬럼 수를 변수로만 변경 → 탭/메가 자동 동일 */
+@media (max-width: 1100px){
+  :root{ --megaCols: 3; }
+}
+@media (max-width: 720px){
+  :root{ --megaCols: 2; }
+}
+
