@@ -2797,16 +2797,20 @@ function renderLeftBirthdays(db){
     renderLeftProfile(db);
 
 // ✅ 생일 위젯: 대쉬보드에서만 표시
+// ✅ 생일 위젯: 대쉬보드에서만 표시 (CSS hidden이 안 먹는 경우까지 강제 처리)
 const bdayHost = document.getElementById("birthdayCard");
-if (tab === "대쉬보드"){
-  bdayHost?.classList.remove("hidden");
-  renderLeftBirthdays(db);
-} else {
-  if (bdayHost){
+if (bdayHost){
+  if (tab === "대쉬보드"){
+    bdayHost.classList.remove("hidden");
+    bdayHost.style.display = "";          // ← 강제 복구
+    renderLeftBirthdays(db);
+  } else {
     bdayHost.innerHTML = "";
     bdayHost.classList.add("hidden");
+    bdayHost.style.display = "none";      // ← 강제 숨김
   }
 }
+
 
 
 
