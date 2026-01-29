@@ -1787,35 +1787,45 @@ header.topbar .navWrap .mega-menu{
 }
 
 /* =========================================================
-   ✅ CSS-ONLY FALLBACK: mega-menu를 "탭 영역(topCenter)" 기준으로 정렬
-   - navWrap이 실제 DOM에 없을 때를 대비
+   ✅ FINAL: CSS-ONLY (navWrap 없음) - mega-menu를 "오른쪽(화살표 방향)"으로 정렬
+   - 기준: header.topbar .topCenter
 ========================================================= */
 
-/* 탭 영역을 기준점으로 */
+/* 기준점: 탭 영역 */
 header.topbar .topCenter{
   position: relative !important;
   overflow: visible !important;
 }
 
-/* mega-menu를 "탭 아래 + 가운데"로 강제 */
+/* 탭은 100% 폭 유지(탭이 가운데에서만 놀지 않게) */
+#topTabs.topTabs{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ✅ mega-menu를 오른쪽으로 붙이기 */
 header.topbar .mega-menu{
   position: absolute !important;
   top: calc(100% + 8px) !important;
 
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  /* ⬇️ 핵심: 오른쪽 정렬 */
+  right: 0 !important;
+  left: auto !important;
+  transform: none !important;
 
-  width: min(1200px, calc(100vw - 120px)) !important; /* 화면에서 너무 꽉 차지 않게 */
+  /* 폭: 너무 넓으면 화면 벗어나니 안전폭 */
+  width: min(1200px, calc(100vw - 60px)) !important;
   max-width: 1200px !important;
 
-  z-index: 999 !important;
+  z-index: 9999 !important;
 }
 
-/* 열림 조건(기존 유지) */
+/* 열림 조건(hover 유지) */
 #topTabs:hover + .mega-menu,
 header.topbar .mega-menu:hover,
 header.topbar .mega-menu.open{
   display: grid !important;
 }
+
 
 
