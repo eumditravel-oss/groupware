@@ -1151,3 +1151,234 @@ header.topbar .topRight{
   .mega-menu{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
 
+
+/* =========================================================
+   ✅ Apple-like Topbar + 탭/메가 세로라인 100% 정렬 (OVERRIDE)
+   - 핵심: topTabs와 megaMenu가 동일한 "가로 컨테이너"를 공유
+========================================================= */
+
+/* 1) 상단바: 애플 느낌 (연한 회색, 얇은 보더, 과한 블러 제거) */
+header.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(245,245,247,.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  padding: 0;
+}
+
+/* 2) 상단바 내부 컨테이너: 여기 폭이 "정렬 기준" */
+header.topbar .topInner{
+  /* ✅ 이 클래스가 없으면 아래에서 fallback 적용됨 */
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  height: 52px;              /* 애플 느낌 높이 */
+  display: grid;
+  grid-template-columns: 160px 1fr 160px;
+  align-items: center;
+  padding: 0 18px;            /* ✅ 좌우 패딩 = 탭/메가 공통 기준 */
+}
+
+/* 만약 topInner가 없으면: topbar 내부를 기준 컨테이너처럼 동작시키는 fallback */
+header.topbar .brand,
+header.topbar .topCenter,
+header.topbar .topRight{
+  min-width: 0;
+}
+
+/* 3) 탭바(#topTabs): pill 제거 + “동일 그리드”로 정렬 */
+#topTabs.topTabs{
+  width: 100%;
+  max-width: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  overflow: visible !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(var(--mega-cols, 6), 1fr) !important; /* ✅ 메가와 동일 */
+  align-items: center;
+  justify-items: center;
+
+  gap: 0 !important; /* 컬럼 자체가 간격 */
+}
+
+/* 탭 버튼: 애플처럼 깔끔하게 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button{
+  width: 100%;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  padding: 10px 6px !important;
+  border-radius: 0 !important;
+
+  font-weight: 800;
+  font-size: 12.5px;
+  color: rgba(0,0,0,.82);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* hover */
+@media (hover:hover) and (pointer:fine){
+  #topTabs .topTab:hover,
+  #topTabs .top-tab:hover{
+    color: rgba(0,0,0,.95);
+  }
+}
+
+/* active: 얇은 밑줄 */
+#topTabs .topTab.active::after,
+#topTabs .top-tab.active::after{
+  content:"";
+  position:absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.82);
+  opacity: 1;
+}
+
+/* =========================================================
+   4) 메가메뉴: "같은 컨테이너 폭 + 같은 그리드" + 세로 구분선 정렬
+========================================================= */
+
+/* 메가메뉴는 header.topbar를 기준으로 펼쳐지게 */
+header.topbar{ position: sticky; }
+header.topbar{ overflow: visible; }
+
+/* 기본 숨김 */
+.mega-menu{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 120;
+
+  display: none;
+  padding: 0; /* 내부 컨테이너에서 패딩 처리 */
+
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 18px 40px rgba(0,0,0,.10);
+}
+
+/* ✅ 열림 조건: JS가 .open 붙이거나, topbar에 마우스 올라가면 */
+header.topbar:hover .mega-menu,
+.mega-menu.open{
+  display: block;
+}
+
+/* 메가메뉴 내부 컨테이너(탭 컨테이너와 폭/패딩 동일) */
+.mega-menu::before{
+  content:"";
+  display:block;
+  height: 8px; /* 탭 아래 살짝 여백 */
+}
+
+.mega-menu .mega-inner{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 18px 18px;  /* ✅ topInner와 동일 좌우 18px */
+}
+
+/* mega-inner가 없으면(현재 구조) mega-menu 자체를 컨테이너처럼 동작 */
+.mega-menu{
+  /* fallback padding을 mega-inner처럼 */
+}
+.mega-menu{
+  /* mega-inner가 없을 때는 아래 gridWrap을 직접 사용하게끔 */
+}
+
+/* 실제 그리드: 탭과 1:1로 맞춤 */
+.mega-menu{
+  /* 바깥은 block, 안쪽에 grid를 만들기 위해 */
+}
+.mega-menu .mega-grid{
+  display: grid;
+  grid-template-columns: repeat(var(--mega-cols, 6), 1fr);
+}
+
+/* ✅ 지금 너 구조는 .mega-col이 바로 mega-menu 아래에 붙어있으니
+   mega-inner/mega-grid가 없을 경우를 위해 "직접 그리드"도 잡아줌 */
+.mega-menu{
+  /* 직접 grid로 써도 되지만 컨테이너 폭을 맞추려면 내부 래핑이 제일 좋음 */
+}
+.mega-menu{
+  /* direct-grid fallback */
+}
+.mega-menu{
+  /* direct grid fallback은 아래 규칙으로 커버 */
+}
+.mega-menu{
+  /* (직접 그리드) */
+  display: none;
+}
+header.topbar:hover .mega-menu,
+.mega-menu.open{
+  display: grid;
+  grid-template-columns: repeat(var(--mega-cols, 6), 1fr);
+}
+
+/* ✅ 세로 라인(컬럼 경계선) */
+.mega-menu .mega-col{
+  padding: 14px 14px 16px;
+  border-left: 1px solid rgba(0,0,0,.08);
+}
+.mega-menu .mega-col:first-child{
+  border-left: 0;
+}
+
+/* 컬럼 타이틀/아이템 톤 정리 */
+.mega-col-title{
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(0,0,0,.75);
+  margin-bottom: 10px;
+}
+.mega-item{
+  border: 0;
+  background: transparent;
+  padding: 7px 8px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: rgba(0,0,0,.82);
+}
+@media (hover:hover) and (pointer:fine){
+  .mega-item:hover{
+    background: rgba(0,0,0,.05);
+  }
+}
+
+/* 반응형 */
+@media (max-width: 1100px){
+  #topTabs.topTabs{
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  header.topbar:hover .mega-menu,
+  .mega-menu.open{
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 720px){
+  #topTabs.topTabs{
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  header.topbar:hover .mega-menu,
+  .mega-menu.open{
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
