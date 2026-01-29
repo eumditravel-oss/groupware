@@ -566,6 +566,106 @@ function applyScrollFix(){
 }
 
 
+   /***********************
+ * Mega Menu Fix (정렬/구분선/호버 유지)
+ ***********************/
+function applyMegaMenuFix(){
+  const styleId = "conc0st-mega-fix";
+  if (document.getElementById(styleId)) return;
+
+  const style = document.createElement("style");
+  style.id = styleId;
+  style.textContent = `
+    /* ✅ 상단 탭(초록 영역) = 그리드로 통일 → 메가메뉴 컬럼과 정렬 */
+    #topTabs{
+      display: grid !important;
+      grid-template-columns: repeat(var(--mega-cols, 6), 1fr) !important;
+      gap: 24px !important;                 /* ✅ 기존 대비 1.5배 느낌(여기서 조절) */
+      align-items: center;
+      justify-items: center;
+      padding: 10px 18px !important;
+    }
+
+    /* 탭 버튼이 그리드 칸을 꽉 쓰도록 */
+    #topTabs .top-tab{
+      width: 100%;
+      max-width: 180px;                     /* 너무 벌어지면 여기 조절 */
+      text-align: center;
+    }
+
+    /* ✅ 메가메뉴 컨테이너 */
+    #megaMenu.mega-menu{
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      z-index: 9999;
+
+      background: #fff;
+      border-top: 1px solid #e6e9ef;        /* ✅ 첫번째 사진 느낌의 "중간 선" */
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;                 /* 닫힌 상태에서 클릭/호버 차단 */
+      transition: opacity .15s ease, transform .15s ease;
+    }
+
+    /* ✅ 열 정렬: 상단 탭과 동일한 컬럼 수로 그리드 구성 */
+    #megaMenu.mega-menu{
+      display: grid;
+      grid-template-columns: repeat(var(--mega-cols, 6), 1fr);
+    }
+
+    /* ✅ 열(컬럼) 내부 패딩 */
+    #megaMenu .mega-col{
+      padding: 18px 18px 20px;
+      min-width: 0;
+    }
+
+    /* ✅ 첫번째 사진처럼 "세로 중간선" (컬럼 사이 구분선) */
+    #megaMenu .mega-col:not(:first-child){
+      border-left: 1px solid #e6e9ef;
+    }
+
+    /* ✅ 타이틀/아이템 스타일(기존 유지 + 약간만 정리) */
+    #megaMenu .mega-col-title{
+      font-weight: 900;
+      font-size: 13px;
+      margin-bottom: 10px;
+      color: #111;
+    }
+
+    #megaMenu .mega-col-items{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    #megaMenu .mega-item{
+      text-align: left;
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 10px;
+    }
+
+    #megaMenu .mega-item:hover{
+      background: rgba(0,0,0,.05);
+    }
+
+    /* ✅ 열려있는 상태(hover 유지/클릭 가능) */
+    .mega-open #megaMenu.mega-menu,
+    #megaMenu.mega-menu.open{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+
+
   /***********************
    * Google Sheets API
    ***********************/
@@ -1030,15 +1130,25 @@ function renderLeftProfile(db){
 
   // ✅ 메가메뉴 컨테이너(없으면 생성)
   let mega = $("#megaMenu");
+  const wrap = host.parentElement; // topTabs를 감싸는 헤더 영역
+
   if (!mega){
     mega = el("div", { id:"megaMenu", class:"mega-menu" });
-    // topTabs 바로 아래에 붙여서 "탭영역 hover"에 같이 반응하도록
-    host.parentElement?.appendChild(mega);
+
+    // ✅ wrap 안으로 넣어야 hover 영역이 끊기지 않음(탭→메가 이동 시 닫힘 방지)
+    if (wrap) wrap.appendChild(mega);
+    else host.parentElement?.appendChild(mega);
   }
 
   // ✅ 메가메뉴 내용 렌더
   mega.innerHTML = "";
-  const tabsForMega = TOP_TABS.filter(t => t.key !== "대쉬보드"); // 안전
+  const tabsForMega = TOP_TABS.filter(t => t.key !== "대쉬보드");
+  const cols = tabsForMega.length || 6;
+
+  // ✅ 상단탭/메가메뉴 모두 같은 컬럼 수로 맞춤
+  if (wrap) wrap.style.setProperty("--mega-cols", String(cols));
+  host.style.setProperty("--mega-cols", String(cols));
+  mega.style.setProperty("--mega-cols", String(cols));
 
   tabsForMega.forEach(t=>{
     const items = SIDE_MENUS[t.key] || [];
@@ -1057,20 +1167,42 @@ function renderLeftProfile(db){
     );
   });
 
-  // ✅ hover가 아닌 환경(모바일/터치)을 위해: 탭영역 클릭 시 토글도 가능하게(선택)
-  // - 터치에서는 hover가 없으니, 상단 탭 영역을 누르면 펼쳐지게
-  // - 이미 다른 클릭이 많으면 제거해도 됨
-  const wrap = host.parentElement; // topTabs를 감싸는 헤더 영역을 가정
-  if (wrap && !wrap.dataset.megaBound){
-    wrap.dataset.megaBound = "1";
+  // ✅ 데스크탑: hover로 열고, 메가메뉴 위에 커서가 있어도 닫히지 않게
+  if (wrap && !wrap.dataset.megaHoverBound){
+    wrap.dataset.megaHoverBound = "1";
+
+    let closeTimer = null;
+
+    const openMega = ()=>{
+      clearTimeout(closeTimer);
+      wrap.classList.add("mega-open");
+      mega.classList.add("open");
+    };
+
+    const closeMega = ()=>{
+      clearTimeout(closeTimer);
+      closeTimer = setTimeout(()=>{
+        wrap.classList.remove("mega-open");
+        mega.classList.remove("open");
+      }, 120); // 살짝 딜레이 → 탭에서 메가로 이동할 때 안정감
+    };
+
+    wrap.addEventListener("mouseenter", openMega);
+    wrap.addEventListener("mouseleave", closeMega);
+
+    // ✅ 혹시 메가메뉴가 wrap 밖으로 렌더되는 구조였을 때도 대비
+    mega.addEventListener("mouseenter", openMega);
+    mega.addEventListener("mouseleave", closeMega);
+
+    // ✅ 터치/모바일: 빈 공간 클릭 시 토글(기존 의도 유지)
     wrap.addEventListener("click", (e)=>{
-      // 탭 버튼 눌렀을 때는 기존 이동이 우선이므로 토글 방지
       if (e.target && e.target.classList && e.target.classList.contains("top-tab")) return;
-      // 빈 공간 클릭하면 토글
       mega.classList.toggle("open");
+      wrap.classList.toggle("mega-open");
     });
   }
 }
+
 
 
   function pendingCount(db){
@@ -2708,6 +2840,8 @@ async function boot(){
   ensureDB();
    // ✅ 추가: 중간 스크롤 제거 + 하단 배경색 고정
   applyScrollFix();
+applyMegaMenuFix();   // ✅ 추가
+
 
 
     // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
