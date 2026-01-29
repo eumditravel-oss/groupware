@@ -1059,3 +1059,95 @@ header.topbar .topRight{
 .modal{
   overflow: auto !important;
 }
+
+
+
+/* =========================
+   MEGA MENU (hover open)
+========================= */
+
+/* topTabs가 들어있는 헤더 래퍼(부모)에 position이 필요함
+   - topTabs의 부모에 .topbar 같은 클래스가 있으면 거기에 주는게 베스트
+   - 모르겠으면 #topTabs의 부모를 대상으로 아래처럼 처리 */
+#topTabs {
+  position: relative;
+  z-index: 20;
+}
+
+/* megaMenu 기본: 숨김 */
+.mega-menu{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 50;
+
+  display: none;
+  padding: 18px 18px;
+
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+/* ✅ hover 했을 때 펼치기:
+   - #topTabs 영역에 마우스를 올리면 mega-menu 표시
+   - mega-menu 위로 마우스 이동해도 유지되도록 :hover 체인 사용 */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover{
+  display: grid;
+}
+
+/* ✅ 터치용 토글(open 클래스) */
+.mega-menu.open{
+  display: grid;
+}
+
+/* 컬럼 레이아웃 */
+.mega-menu{
+  grid-template-columns: repeat(6, minmax(0, 1fr)); /* TOP_TABS 6개 기준 */
+  gap: 14px;
+}
+
+/* 컬럼 카드 */
+.mega-col{
+  padding: 10px 10px;
+  border-radius: 12px;
+}
+
+.mega-col-title{
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.mega-col-items{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mega-item{
+  text-align: left;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.mega-item:hover{
+  background: rgba(0,0,0,0.05);
+}
+
+/* 반응형: 화면 좁으면 2~3컬럼 */
+@media (max-width: 1100px){
+  .mega-menu{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 720px){
+  .mega-menu{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
