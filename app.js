@@ -1012,21 +1012,66 @@ function renderLeftProfile(db){
    * UI RENDER: TABS / SIDE
    ***********************/
   function renderTopTabs(){
-    const host = $("#topTabs");
-    if (!host) return;
-    host.innerHTML = "";
+  const host = $("#topTabs");
+  if (!host) return;
+  host.innerHTML = "";
 
-    const { tab:curTab } = parseHash();
+  const { tab:curTab } = parseHash();
 
-    TOP_TABS.forEach(t=>{
-      host.appendChild(
-        el("button", {
-          class: `top-tab ${curTab === t.key ? "active" : ""}`,
-          onclick: ()=> setHash(t.key, firstMenuKey(t.key))
-        }, t.label)
-      );
+  // ✅ 탭 버튼들
+  TOP_TABS.forEach(t=>{
+    host.appendChild(
+      el("button", {
+        class: `top-tab ${curTab === t.key ? "active" : ""}`,
+        onclick: ()=> setHash(t.key, firstMenuKey(t.key))
+      }, t.label)
+    );
+  });
+
+  // ✅ 메가메뉴 컨테이너(없으면 생성)
+  let mega = $("#megaMenu");
+  if (!mega){
+    mega = el("div", { id:"megaMenu", class:"mega-menu" });
+    // topTabs 바로 아래에 붙여서 "탭영역 hover"에 같이 반응하도록
+    host.parentElement?.appendChild(mega);
+  }
+
+  // ✅ 메가메뉴 내용 렌더
+  mega.innerHTML = "";
+  const tabsForMega = TOP_TABS.filter(t => t.key !== "대쉬보드"); // 안전
+
+  tabsForMega.forEach(t=>{
+    const items = SIDE_MENUS[t.key] || [];
+    mega.appendChild(
+      el("div", { class:"mega-col" },
+        el("div", { class:"mega-col-title" }, t.label),
+        el("div", { class:"mega-col-items" },
+          ...items.map(m =>
+            el("button", {
+              class:"mega-item",
+              onclick: ()=> setHash(t.key, m.key)
+            }, m.label)
+          )
+        )
+      )
+    );
+  });
+
+  // ✅ hover가 아닌 환경(모바일/터치)을 위해: 탭영역 클릭 시 토글도 가능하게(선택)
+  // - 터치에서는 hover가 없으니, 상단 탭 영역을 누르면 펼쳐지게
+  // - 이미 다른 클릭이 많으면 제거해도 됨
+  const wrap = host.parentElement; // topTabs를 감싸는 헤더 영역을 가정
+  if (wrap && !wrap.dataset.megaBound){
+    wrap.dataset.megaBound = "1";
+    wrap.addEventListener("click", (e)=>{
+      // 탭 버튼 눌렀을 때는 기존 이동이 우선이므로 토글 방지
+      if (e.target && e.target.classList && e.target.classList.contains("top-tab")) return;
+      // 빈 공간 클릭하면 토글
+      mega.classList.toggle("open");
     });
   }
+}
+
 
   function pendingCount(db){
     return db.logs.filter(l => l.status === "submitted").length;
