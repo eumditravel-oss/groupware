@@ -1382,3 +1382,134 @@ header.topbar:hover .mega-menu,
 }
 
 
+/* =========================================================
+   ✅ MEGA MENU ALIGN FIX (탭 컬럼 경계와 1:1 정렬)
+   - mega-menu를 topCenter(탭 영역) 기준으로 absolute 배치
+   - topTabs도 topCenter 폭 100%를 사용(=컬럼 기준 동일)
+========================================================= */
+
+/* 1) 탭이 들어있는 영역을 기준 컨테이너로 만든다 */
+header.topbar .topCenter{
+  position: relative !important;   /* ✅ mega-menu absolute 기준점 */
+  justify-content: stretch !important;
+  width: 100% !important;
+}
+
+/* 2) topTabs: 가운데 pill/fit-content를 버리고 "탭 영역 폭 100%"로 */
+#topTabs.topTabs{
+  width: 100% !important;
+  max-width: 100% !important;
+
+  /* ✅ 6등분 그리드로 고정 → 세로라인 기준 */
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+
+  gap: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  overflow: visible !important;
+}
+
+/* 탭 버튼은 각 컬럼 중앙정렬 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button,
+#topTabs a{
+  width: 100% !important;
+  justify-content: center !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  padding: 14px 6px 12px !important;  /* 애플 느낌 높이 */
+  font-weight: 900;
+}
+
+/* active 밑줄(얇게) */
+#topTabs .topTab.active::after,
+#topTabs .top-tab.active::after{
+  left: 26% !important;
+  right: 26% !important;
+  height: 2px !important;
+  bottom: 6px !important;
+  background: rgba(0,0,0,.82) !important;
+}
+
+/* 3) mega-menu: "탭 아래" + "탭 폭(100%)"로 정확히 맞춘다 */
+.mega-menu{
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: calc(100% + 8px) !important; /* 탭 아래 간격 */
+  z-index: 200 !important;
+
+  /* ✅ topCenter 폭을 그대로 사용 */
+  width: 100% !important;
+
+  /* ✅ 6등분 그리드 동일 */
+  display: none !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+
+  padding: 12px 0 14px !important;
+  background: #fff !important;
+
+  border: 1px solid rgba(0,0,0,.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.10) !important;
+}
+
+/* 4) 열림 조건(기존 #topTabs:hover + .mega-menu 유지) */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover,
+.mega-menu.open{
+  display: grid !important;
+}
+
+/* 5) mega 컬럼: 세로라인(경계선) 생성 → 탭 컬럼 경계와 일치 */
+.mega-menu .mega-col{
+  padding: 12px 14px 14px !important;
+  border-left: 1px solid rgba(0,0,0,.08) !important;
+}
+.mega-menu .mega-col:first-child{
+  border-left: 0 !important;
+}
+
+/* 6) 타이틀/아이템 톤 정리 */
+.mega-menu .mega-col-title{
+  font-weight: 1000 !important;
+  font-size: 13px !important;
+  margin-bottom: 10px !important;
+  color: rgba(0,0,0,.78) !important;
+}
+.mega-menu .mega-item{
+  width: 100% !important;
+  text-align: center !important; /* 스샷처럼 가운데 정렬이면 */
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+}
+
+/* 7) 반응형(필요 시) */
+@media (max-width: 1100px){
+  #topTabs.topTabs{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+  .mega-menu{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 720px){
+  #topTabs.topTabs{
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  }
+  .mega-menu{
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  }
+}
