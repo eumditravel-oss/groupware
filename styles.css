@@ -87,7 +87,6 @@ button, select, input, textarea{
 /* =========================
    ✅ TOPBAR (2번째 사진 스타일로 복구)
    - "얇은 흰 바 + 하단 라인"
-   - 가운데 탭이 화면 폭 전체로 퍼지는 느낌
 ========================= */
 header.topbar{
   position: sticky;
@@ -100,10 +99,8 @@ header.topbar{
   align-items: center;
   gap: 12px;
 
-  /* ✅ 원래 느낌: 위아래 여백 적고, 좌우는 넉넉 */
   padding: 0 18px;
 
-  /* ✅ blur/pill 느낌 제거 → 완전 흰 바 */
   background: #fff;
   backdrop-filter: none;
   border-bottom: 1px solid rgba(0,0,0,.10);
@@ -118,7 +115,6 @@ header.topbar .brand{
   align-items:center;
   gap:10px;
 
-  /* ✅ 원래 느낌: 배경/호버 강조 최소화 */
   padding: 0;
   border-radius: 0;
   background: transparent;
@@ -154,16 +150,19 @@ header.topbar .topRight{
 /* =========================
    ✅ TOP TABS (2번째 사진 스타일)
    핵심:
-   - width: 100% + max-width 제거 → 탭이 상단 바에서 쫙 퍼짐
-   - "텍스트 메뉴" 느낌: 배경 없음, 하단 오렌지 언더라인
+   - ✅ grid(등분) 제거 → flex + gap 로 “탭 간격” 확보
+   - ✅ 탭 너비 auto → 텍스트 메뉴 느낌
 ========================= */
 #topTabs.topTabs{
-  display: grid;
-  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr));
-  align-items: stretch;
-  justify-items: stretch;
+  /* ✅ 기존 grid 제거 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  /* ✅ 여기서 “원래처럼 넓게” 만드는 포인트 */
+  /* ✅ 탭 간격(2번째 사진 느낌) */
+  gap: 56px;
+
+  /* ✅ 가운데로 정돈 + 폭 전체 */
   width: 100%;
   max-width: none;
   margin: 0;
@@ -174,8 +173,6 @@ header.topbar .topRight{
   border-radius: 0;
 
   padding: 0;
-  gap: 0;
-
   overflow: visible;
 }
 
@@ -185,18 +182,21 @@ header.topbar .topRight{
 #topTabs button,
 #topTabs a{
   position: relative;
-  width: 100%;
+
+  /* ✅ auto 폭(중요) */
+  width: auto;
+  min-width: 84px;
+
   height: var(--topbarH);
 
   border: 0;
   background: transparent;
   box-shadow: none;
 
-  /* ✅ 원래 탭은 세로로 조금 여유 */
-  padding: 0 6px;
+  /* ✅ 텍스트 메뉴 여백 */
+  padding: 0 8px;
   border-radius: 0;
 
-  /* ✅ 원래는 너무 굵지 않음 */
   font-weight: 700;
   font-size: 14px;
   color: rgba(0,0,0,.78);
@@ -229,8 +229,8 @@ header.topbar .topRight{
 #topTabs .top-tab.active::after{
   content:"";
   position:absolute;
-  left: 20%;
-  right: 20%;
+  left: 10%;
+  right: 10%;
   bottom: 10px;
   height: 2px;
   border-radius: 999px;
@@ -802,7 +802,7 @@ header.topbar .topRight{
 }
 @media (max-width: 980px){
   /* ✅ 모바일에서도 탭은 “전체 폭” 유지 */
-  #topTabs.topTabs{ width: 100%; }
+  #topTabs.topTabs{ width: 100%; gap: 28px; }
   .dashRow2{ grid-template-columns: 1fr; }
   .main{ padding: 12px; }
   .split{ grid-template-columns: 1fr; }
@@ -937,8 +937,109 @@ header.topbar .topRight{
 }
 
 /* =========================
-   ✅ MEGA MENU (정렬은 app.js var + JS open 클래스)
+   ✅ MEGA MENU (2번째 사진 스타일)
+   핵심:
+   - ✅ 배경/패딩/그림자 정돈
+   - ✅ 컬럼 구분선
+   - ✅ 컬럼 내부 간격 + 리스트 느낌(버튼/태그 느낌 제거)
 ========================= */
 #megaMenu.mega-menu{
   border-radius: 18px;
+
+  /* ✅ “큰 흰 패널” 느낌 */
+  background: rgba(255,255,255,.98);
+  border: 1px solid rgba(0,0,0,.08);
+  box-shadow: 0 18px 46px rgba(0,0,0,.10);
+
+  padding: 28px 22px;
+
+  /* ✅ 컬럼 정렬 (기존 var 유지) */
+  display: grid;
+  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr));
+  gap: 0;
+
+  /* (app.js에서 위치 잡는다 했으니 여기선 overflow만 정리) */
+  overflow: hidden;
+}
+
+/* ✅ 컬럼 공통 (여러 클래스명 대응) */
+#megaMenu .megaCol,
+#megaMenu .mega-col,
+#megaMenu .menuCol,
+#megaMenu .menu-column,
+#megaMenu .col{
+  padding: 0 22px;
+  min-width: 0;
+}
+
+/* ✅ 컬럼 구분선 */
+#megaMenu .megaCol:not(:last-child),
+#megaMenu .mega-col:not(:last-child),
+#megaMenu .menuCol:not(:last-child),
+#megaMenu .menu-column:not(:last-child),
+#megaMenu .col:not(:last-child){
+  border-right: 1px solid rgba(0,0,0,.08);
+}
+
+/* ✅ 컬럼 타이틀(상단 카테고리 라벨) */
+#megaMenu .megaTitle,
+#megaMenu .mega-title,
+#megaMenu h4,
+#megaMenu .colTitle{
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(0,0,0,.82);
+  margin: 0 0 18px 0;
+  text-align: center;
+}
+
+/* ✅ 목록 레이아웃: 리스트 느낌 */
+#megaMenu ul{
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* ✅ 항목 간 간격 */
+}
+
+/* ✅ 항목(버튼/태그 느낌 제거) */
+#megaMenu li,
+#megaMenu .megaItem,
+#megaMenu .mega-item{
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+/* ✅ 항목 내부가 a/button/div 어떤 것이든 동일 스타일 */
+#megaMenu a,
+#megaMenu button,
+#megaMenu .item,
+#megaMenu .link{
+  width: 100%;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+
+  padding: 6px 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(0,0,0,.72);
+  text-align: center;
+
+  cursor: pointer;
+}
+
+/* hover 시만 강조 */
+@media (hover:hover) and (pointer:fine){
+  #megaMenu a:hover,
+  #megaMenu button:hover,
+  #megaMenu .item:hover,
+  #megaMenu .link:hover{
+    color: rgba(0,0,0,.95);
+    text-decoration: none;
+  }
 }
