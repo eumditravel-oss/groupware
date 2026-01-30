@@ -567,7 +567,7 @@ function applyScrollFix(){
 
 
    /***********************
- * Mega Menu Fix (정렬/구분선/호버 유지)
+ * Mega Menu Fix (정렬/구분선/호버 유지) - ✅탭 디자인은 CSS에 맡김
  ***********************/
 function applyMegaMenuFix(){
   const styleId = "conc0st-mega-fix";
@@ -576,30 +576,12 @@ function applyMegaMenuFix(){
   const style = document.createElement("style");
   style.id = styleId;
   style.textContent = `
-  /* ✅ megaMenu absolute 기준점 */
-#topTabs{ position: relative; }   /* 또는 topTabs의 부모(wrap)에 relative */
+    /* ✅ megaMenu absolute 기준점 */
+    #topTabs{ position: relative; }
 
-    /* ✅ 상단 탭(초록 영역) = 그리드로 통일 → 메가메뉴 컬럼과 정렬 */
-    #topTabs{
-      display: grid !important;
-      grid-template-columns: repeat(var(--mega-cols, 6), 1fr) !important;
-      gap: 24px !important;                 /* ✅ 기존 대비 1.5배 느낌(여기서 조절) */
-      align-items: center;
-      justify-items: center;
-      padding: 10px 18px !important;
-    }
-
-    /* 탭 버튼이 그리드 칸을 꽉 쓰도록 */
-    #topTabs .top-tab{
-      width: 100%;
-      max-width: 180px;                     /* 너무 벌어지면 여기 조절 */
-      text-align: center;
-    }
-
-        /* ✅ 메가메뉴 컨테이너 */
+    /* ✅ 메가메뉴 컨테이너 (탭 폭/시작점은 JS var로 맞춤) */
     #megaMenu.mega-menu{
       position: absolute;
-      /* ✅ FIX: topTabs의 실제 시작점/폭과 100% 일치 */
       left: var(--mega-x, 0px);
       width: var(--mega-w, 100%);
       right: auto;
@@ -608,59 +590,54 @@ function applyMegaMenuFix(){
       z-index: 9999;
 
       background: #fff;
-      border-top: 1px solid #e6e9ef;        /* ✅ 첫번째 사진 느낌의 "중간 선" */
+      border-top: 1px solid #e6e9ef;
       box-shadow: 0 10px 30px rgba(0,0,0,.08);
 
       opacity: 0;
       transform: translateY(6px);
-      pointer-events: none;                 /* 닫힌 상태에서 클릭/호버 차단 */
+      pointer-events: none;
       transition: opacity .15s ease, transform .15s ease;
-    }
 
-
-    /* ✅ 열 정렬: 상단 탭과 동일한 컬럼 수로 그리드 구성 */
-    #megaMenu.mega-menu{
       display: grid;
       grid-template-columns: repeat(var(--mega-cols, 6), 1fr);
     }
 
-    /* ✅ 열(컬럼) 내부 패딩 */
+    /* ✅ 컬럼 패딩/구분선 */
     #megaMenu .mega-col{
       padding: 18px 18px 20px;
       min-width: 0;
     }
-
-    /* ✅ 첫번째 사진처럼 "세로 중간선" (컬럼 사이 구분선) */
     #megaMenu .mega-col:not(:first-child){
       border-left: 1px solid #e6e9ef;
     }
 
-    /* ✅ 타이틀/아이템 스타일(기존 유지 + 약간만 정리) */
+    /* ✅ 타이틀/아이템 */
     #megaMenu .mega-col-title{
       font-weight: 900;
       font-size: 13px;
       margin-bottom: 10px;
       color: #111;
+      text-align: center;
     }
 
     #megaMenu .mega-col-items{
       display: flex;
       flex-direction: column;
       gap: 8px;
+      align-items: center;
     }
 
     #megaMenu .mega-item{
-      text-align: left;
+      text-align: center;
       width: 100%;
       padding: 6px 8px;
       border-radius: 10px;
     }
-
     #megaMenu .mega-item:hover{
       background: rgba(0,0,0,.05);
     }
 
-    /* ✅ 열려있는 상태(hover 유지/클릭 가능) */
+    /* ✅ 열림 상태 */
     .mega-open #megaMenu.mega-menu,
     #megaMenu.mega-menu.open{
       opacity: 1;
@@ -670,6 +647,7 @@ function applyMegaMenuFix(){
   `;
   document.head.appendChild(style);
 }
+
 
 
 
