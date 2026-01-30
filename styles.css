@@ -144,18 +144,18 @@ header.topbar .topRight{
 }
 
 /* =========================
-   ✅ TOP TABS (원래 디자인으로 복구)
-   - 빨간박스처럼 "텍스트 메뉴" 느낌
-   - 정렬은 JS에서 --mega-cols로 맞추되, 디자인은 여기서
+   ✅ TOP TABS (2번째 이미지처럼: 원래 상단 텍스트 메뉴 느낌)
+   - 전체폭에서 가운데 정렬
+   - grid/알약/박스 느낌 제거
 ========================= */
 #topTabs.topTabs{
-  display: grid;
-  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr));
+  display: flex;
   align-items: center;
-  justify-items: center;
+  justify-content: center;
 
-  width: min(980px, 100%);
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
+  margin: 0;
 
   background: transparent;
   border: 0;
@@ -163,59 +163,76 @@ header.topbar .topRight{
   border-radius: 0;
 
   padding: 0;
-  gap: 0;
-
+  gap: 34px;              /* ✅ 메뉴 간격(원래 느낌) */
   overflow: visible;
 }
 
+/* 각 탭 = 그냥 텍스트 메뉴 */
 #topTabs .topTab,
 #topTabs .top-tab,
 #topTabs button,
 #topTabs a{
   position: relative;
-  width: 100%;
+  width: auto;            /* ✅ 1fr 강제 제거 */
+  min-width: 0;
+
   border: 0;
   background: transparent;
   box-shadow: none;
 
-  padding: 14px 6px 12px;
+  padding: 14px 0;        /* ✅ 상단 바 높이만 맞춤 */
   border-radius: 0;
 
-  font-weight: 950;
+  font-weight: 800;
   font-size: 14px;
-  color: rgba(0,0,0,.78);
+  color: rgba(0,0,0,.72);
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-  cursor:pointer;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 @media (hover:hover) and (pointer:fine){
   #topTabs .topTab:hover,
-  #topTabs .top-tab:hover{
-    color: rgba(0,0,0,.95);
+  #topTabs .top-tab:hover,
+  #topTabs button:hover,
+  #topTabs a:hover{
+    color: rgba(0,0,0,.92);
   }
 }
 
+/* 활성 탭 표시(원래처럼 “텍스트 강조 + 아래 얇은 라인”) */
 #topTabs .topTab.active,
-#topTabs .top-tab.active{
+#topTabs .top-tab.active,
+#topTabs button.active,
+#topTabs a.active{
   color: rgba(0,0,0,.95);
+  font-weight: 900;
 }
 
 #topTabs .topTab.active::after,
-#topTabs .top-tab.active::after{
+#topTabs .top-tab.active::after,
+#topTabs button.active::after,
+#topTabs a.active::after{
   content:"";
   position:absolute;
-  left: 22%;
-  right: 22%;
-  bottom: 6px;
-  height: 3px;
+  left: -6px;
+  right: -6px;
+  bottom: 10px;
+  height: 2px;
   border-radius: 999px;
-  background: var(--accent);
-  opacity: .95;
+  background: rgba(0,0,0,.18); /* ✅ 원래 느낌(검정/회색 라인) */
+  opacity: 1;
 }
+
+/* 반응형에서 간격만 살짝 줄이기 */
+@media (max-width: 980px){
+  #topTabs.topTabs{ gap: 18px; }
+}
+
 
 /* =========================
    LAYOUT
