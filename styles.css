@@ -1063,37 +1063,46 @@ header.topbar .topRight{
 
 
 /* =========================
-   MEGA MENU (hover open)
+   MEGA MENU (hover open) - ✅ 위치 정렬만 수정
+   (대분류 탭 디자인은 건드리지 않음)
 ========================= */
 
-/* topTabs가 들어있는 헤더 래퍼(부모)에 position이 필요함
-   - topTabs의 부모에 .topbar 같은 클래스가 있으면 거기에 주는게 베스트
-   - 모르겠으면 #topTabs의 부모를 대상으로 아래처럼 처리 */
-#topTabs {
+/* ✅ 기준점: 탭이 들어있는 영역을 absolute 기준으로 */
+header.topbar .topCenter{
   position: relative;
-  z-index: 20;
+  overflow: visible;
 }
 
-/* megaMenu 기본: 숨김 */
+/* topTabs는 그대로(필수는 아니지만 z-index 안전) */
+#topTabs{
+  position: relative;
+  z-index: 30;
+}
+
+/* ✅ mega-menu: 전체폭(left/right 0) 금지 → 탭과 같은 "중앙 기준"으로 정렬 */
 .mega-menu{
   position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(100% + 8px);
+  top: calc(100% + 8px);   /* topCenter(=탭 영역) 바로 아래 */
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
   z-index: 50;
 
+  /* ✅ 탭 캡슐처럼 '내용 폭' 기반으로 (정렬 핵심) */
+  width: max-content;
+  max-width: calc(100vw - 60px); /* 화면 밖으로 나가지 않게 안전장치 */
+  margin: 0;
+
+  /* (기존 디자인 값은 유지) */
   display: none;
   padding: 18px 18px;
-
   background: #fff;
   border: 1px solid rgba(0,0,0,0.08);
   border-radius: 14px;
   box-shadow: 0 12px 28px rgba(0,0,0,0.12);
 }
 
-/* ✅ hover 했을 때 펼치기:
-   - #topTabs 영역에 마우스를 올리면 mega-menu 표시
-   - mega-menu 위로 마우스 이동해도 유지되도록 :hover 체인 사용 */
+/* ✅ 열림 조건 유지 */
 #topTabs:hover + .mega-menu,
 .mega-menu:hover{
   display: grid;
@@ -1103,6 +1112,7 @@ header.topbar .topRight{
 .mega-menu.open{
   display: grid;
 }
+
 
 /* 컬럼 레이아웃 */
 .mega-menu{
