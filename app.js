@@ -1126,8 +1126,7 @@ function renderLeftProfile(db){
     else host.parentElement?.appendChild(mega);
   }
 
-  // ✅ 메가메뉴 내용 렌더
-  mega.innerHTML = "";
+    // ✅ 메가메뉴 내용 렌더 (index.html에 있는 mega-inner 구조를 그대로 사용)
   const tabsForMega = TOP_TABS.filter(t => t.key !== "대쉬보드");
   const cols = tabsForMega.length || 6;
 
@@ -1136,7 +1135,7 @@ function renderLeftProfile(db){
   host.style.setProperty("--mega-cols", String(cols));
   mega.style.setProperty("--mega-cols", String(cols));
 
-       // ✅ FIX: megaMenu가 wrap(left:0)가 아니라 "topTabs 시작점/폭"과 동일하게 펼쳐지도록 좌표 주입
+  // ✅ FIX: megaMenu가 "topTabs 시작점/폭"과 동일하게 펼쳐지도록 좌표 주입
   const syncMegaRect = () => {
     if (!wrap) return;
     const rTabs = host.getBoundingClientRect();
@@ -1144,36 +1143,51 @@ function renderLeftProfile(db){
     const x = Math.round(rTabs.left - rWrap.left);
     const w = Math.round(rTabs.width);
 
-    // CSS var로 넘김(스타일에서 left/width로 사용)
     wrap.style.setProperty("--mega-x", `${x}px`);
     wrap.style.setProperty("--mega-w", `${w}px`);
   };
-
   syncMegaRect();
-
-  // ✅ resize 시에도 계속 일치(한 번만 바인딩)
   if (wrap && !wrap.dataset.megaRectBound){
     wrap.dataset.megaRectBound = "1";
     window.addEventListener("resize", syncMegaRect);
   }
 
+  // ✅ index.html의 mega-inner/mega-col을 그대로 활용해서 items만 채운다
+  const inner = mega.querySelector(".mega-inner") || mega;
+
+  // mega-col들을 title 기준으로 매핑
+  const allCols = Array.from(inner.querySelectorAll(".mega-col"));
+  const colByTitle = (name) => {
+    return allCols.find(c => {
+      const h = c.querySelector(".mega-col-title");
+      const t = (h ? h.textContent : "").trim();
+      return t === name;
+    }) || null;
+  };
 
   tabsForMega.forEach(t=>{
+    const col = colByTitle(t.label);
+    if (!col) return;
+
+    // 타이틀 텍스트는 혹시 다르면 맞춰주기
+    const titleEl = col.querySelector(".mega-col-title");
+    if (titleEl) titleEl.textContent = t.label;
+
+    const itemsHost = col.querySelector(".mega-col-items");
+    if (!itemsHost) return;
+
+    itemsHost.innerHTML = "";
     const items = SIDE_MENUS[t.key] || [];
-    mega.appendChild(
-      el("div", { class:"mega-col" },
-        el("div", { class:"mega-col-title" }, t.label),
-        el("div", { class:"mega-col-items" },
-          ...items.map(m =>
-            el("button", {
-              class:"mega-item",
-              onclick: ()=> setHash(t.key, m.key)
-            }, m.label)
-          )
-        )
-      )
-    );
+    items.forEach(m=>{
+      itemsHost.appendChild(
+        el("button", {
+          class:"mega-item",
+          onclick: ()=> setHash(t.key, m.key)
+        }, m.label)
+      );
+    });
   });
+
 
        // ✅ 메가메뉴 타이틀/내용을 탭 열에 맞게 X축 보정(기본: center)
   syncMegaTextToTabs({ mode:"center", safeMax:160, nudge:0 });
