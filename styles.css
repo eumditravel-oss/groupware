@@ -1875,3 +1875,10 @@ header.topbar .topCenter .mega-menu{
   display: grid !important;
 }
 
+
+/* ✅ mega-menu 위치는 JS가 고정하므로, CSS는 안전장치만 */
+.mega-menu{
+  z-index: 99999 !important;
+  transform: none !important;
+}
+
