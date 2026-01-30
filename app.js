@@ -2867,7 +2867,7 @@ async function boot(){
    // ✅ 추가: 중간 스크롤 제거 + 하단 배경색 고정
   applyScrollFix();
 applyMegaMenuFix();   // ✅ 추가
-
+}
 
 
     // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
