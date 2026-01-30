@@ -1836,3 +1836,42 @@ header.topbar .mega-menu:hover,
 header.topbar .mega-menu.open{
   display: grid !important;
 }
+
+/* =========================================================
+   ✅ MEGA MENU POSITION ONLY (탭과 같은 기준으로 "왼쪽 이동" + 정렬)
+   - 대분류 탭(#topTabs) 디자인은 건드리지 않고
+   - 메가메뉴(.mega-menu) 기준점/위치만 topCenter로 고정
+========================================================= */
+
+/* 1) 탭이 있는 중앙 영역을 "기준점"으로 만든다 */
+header.topbar .topCenter{
+  position: relative !important;   /* mega-menu absolute 기준 */
+  overflow: visible !important;
+}
+
+/* 2) 메가메뉴가 header(전체폭) 기준으로 잡히지 않게 강제 */
+header.topbar .mega-menu,
+header.topbar .topCenter .mega-menu{
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+
+  /* ✅ 핵심: "왼쪽으로" 먼저 이동시키는 정렬
+     - topCenter(=탭 영역) 기준으로 좌측 0에서 시작 */
+  left: 0 !important;
+  right: auto !important;
+  transform: none !important;
+
+  /* 폭은 화면 밖으로만 안 나가게 안전장치 */
+  width: min(1200px, calc(100vw - 60px)) !important;
+  max-width: min(1200px, calc(100vw - 60px)) !important;
+
+  z-index: 9999 !important;
+}
+
+/* 3) 열림 조건은 기존 유지 */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover,
+.mega-menu.open{
+  display: grid !important;
+}
+
