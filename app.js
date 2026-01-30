@@ -2877,116 +2877,109 @@ if (bdayHost){
  * Wire events
  ***********************/
 async function boot(){
+  // ✅ DB 준비
   ensureDB();
-   // ✅ 추가: 중간 스크롤 제거 + 하단 배경색 고정
+
+  // ✅ (옵션) 중간 스크롤/배경 보정
   applyScrollFix();
-applyMegaMenuFix();   // ✅ 추가
-}
 
-
-    // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
-    // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
-if (AUTO_PULL_ON_START){
-  isPulling = true;
-  try{
-    const data = await sheetsExport();
-    if (data && data.ok){
-      const db = sheetsPayloadToDB(data);
-      // ✅ Pull 결과 저장은 "직접 localStorage"로 저장 (자동 push 방지)
-      localStorage.setItem(LS_KEY, JSON.stringify(db));
-      toast("✅ 시트에서 최신 데이터 불러옴");
-    } else {
-      toast("ℹ️ 시트 로드 생략/실패 → 로컬 데이터 사용");
+  // ✅ 시작 시: 시트에서 최신 DB 자동 로드 → 로컬 캐시 갱신 → 화면 렌더
+  if (AUTO_PULL_ON_START){
+    isPulling = true;
+    try{
+      const data = await sheetsExport();
+      if (data && data.ok){
+        const db = sheetsPayloadToDB(data);
+        // ✅ Pull 결과 저장은 "직접 localStorage"로 저장 (자동 push 방지)
+        localStorage.setItem(LS_KEY, JSON.stringify(db));
+        toast("✅ 시트에서 최신 데이터 불러옴");
+      } else {
+        toast("ℹ️ 시트 로드 생략/실패 → 로컬 데이터 사용");
+      }
+    }catch(err){
+      toast("ℹ️ 시트 로드 실패(CORS 등) → 로컬 데이터 사용");
+    }finally{
+      isPulling = false;
     }
-  }catch(err){
-    // ✅ 콘솔 빨간 에러 최소화(원하면 console.error로 되돌려도 됨)
-    toast("ℹ️ 시트 로드 실패(CORS 등) → 로컬 데이터 사용");
-  }finally{
-    isPulling = false;
-  }
-}
-
-
-    // modal
-    $("#modalClose")?.addEventListener("click", modalClose);
-    $("#modalBackdrop")?.addEventListener("click", (e)=>{
-      if (e.target === $("#modalBackdrop")) modalClose();
-    });
-
-    
-
-    // reset demo
-$("#btnResetDemo")?.addEventListener("click", ()=>{
-  if (!confirm("데모 데이터를 초기화할까요? (localStorage 초기화)")) return;
-  localStorage.removeItem(LS_KEY);
-  localStorage.removeItem(LS_USER);
-  toast("데모 데이터 초기화");
-  render();
-});
-
-// sheets backup (수동 Push)
-$("#btnSheetBackup")?.addEventListener("click", async ()=>{
-  if (!SHEETS_ENABLED){
-    toast("ℹ️ 시트 백업이 비활성화되어 있습니다. (SHEETS_ENABLED=true 필요)");
-    return;
-  }
-  try{
-    const db = ensureDB();
-    const payload = dbToSheetsPayload(db);
-    const res = await sheetsImport(payload);
-    if (res && res.ok) toast("✅ 시트로 백업 완료");
-    else toast("❌ 백업 실패(시트 응답 오류)");
-  }catch(err){
-    console.error(err);
-    toast("❌ 백업 실패(콘솔 확인)");
-  }
-});
-
-// sheets restore (수동 Pull)
-$("#btnSheetRestore")?.addEventListener("click", async ()=>{
-  if (!SHEETS_ENABLED){
-    toast("ℹ️ 시트 복원이 비활성화되어 있습니다. (SHEETS_ENABLED=true 필요)");
-    return;
   }
 
-  isPulling = true;
-  try{
-    const data = await sheetsExport();
-    if (!data || !data.ok){
-      toast("❌ 시트 export 실패");
+  // modal
+  $("#modalClose")?.addEventListener("click", modalClose);
+  $("#modalBackdrop")?.addEventListener("click", (e)=>{
+    if (e.target === $("#modalBackdrop")) modalClose();
+  });
+
+  // reset demo
+  $("#btnResetDemo")?.addEventListener("click", ()=>{
+    if (!confirm("데모 데이터를 초기화할까요? (localStorage 초기화)")) return;
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_USER);
+    toast("데모 데이터 초기화");
+    render();
+  });
+
+  // sheets backup (수동 Push)
+  $("#btnSheetBackup")?.addEventListener("click", async ()=>{
+    if (!SHEETS_ENABLED){
+      toast("ℹ️ 시트 백업이 비활성화되어 있습니다. (SHEETS_ENABLED=true 필요)");
       return;
     }
-    const db = sheetsPayloadToDB(data);
-    localStorage.setItem(LS_KEY, JSON.stringify(db));
-    toast("✅ 시트에서 복원 완료");
-    render();
-  }catch(err){
-    console.error(err);
-    toast("❌ 복원 실패(콘솔 확인)");
-  }finally{
-    isPulling = false;
-  }
-});
+    try{
+      const db = ensureDB();
+      const payload = dbToSheetsPayload(db);
+      const res = await sheetsImport(payload);
+      if (res && res.ok) toast("✅ 시트로 백업 완료");
+      else toast("❌ 백업 실패(시트 응답 오류)");
+    }catch(err){
+      console.error(err);
+      toast("❌ 백업 실패(콘솔 확인)");
+    }
+  });
 
+  // sheets restore (수동 Pull)
+  $("#btnSheetRestore")?.addEventListener("click", async ()=>{
+    if (!SHEETS_ENABLED){
+      toast("ℹ️ 시트 복원이 비활성화되어 있습니다. (SHEETS_ENABLED=true 필요)");
+      return;
+    }
 
+    isPulling = true;
+    try{
+      const data = await sheetsExport();
+      if (!data || !data.ok){
+        toast("❌ 시트 export 실패");
+        return;
+      }
+      const db = sheetsPayloadToDB(data);
+      localStorage.setItem(LS_KEY, JSON.stringify(db));
+      toast("✅ 시트에서 복원 완료");
+      render();
+    }catch(err){
+      console.error(err);
+      toast("❌ 복원 실패(콘솔 확인)");
+    }finally{
+      isPulling = false;
+    }
+  });
 
-    // route
-    window.addEventListener("hashchange", render);
+  // route
+  window.addEventListener("hashchange", render);
 
-        // default route (탭/서브 구조)
-    if (!location.hash) setHash("대쉬보드", "home");
+  // default route (탭/서브 구조)
+  if (!location.hash) setHash("대쉬보드", "home");
 
-     // ✅ logo -> dashboard home
-document.getElementById("logoHome")?.addEventListener("click", (e)=>{
-  e.preventDefault();
-  setHash("대쉬보드", "home");
-});
+  // ✅ logo -> dashboard home
+  document.getElementById("logoHome")?.addEventListener("click", (e)=>{
+    e.preventDefault();
+    setHash("대쉬보드", "home");
+  });
 
+  // ✅ 최초 렌더
+  render();
+}
 
-    render();
-  }
+document.addEventListener("DOMContentLoaded", boot);
 
-  document.addEventListener("DOMContentLoaded", boot);
 
    /* ✅ MegaMenu position hard-fix (탭 기준으로 무조건 정렬) */
 (() => {
