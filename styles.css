@@ -1830,3 +1830,61 @@ header.topbar .mega-menu.open{
 
 
 
+/* =========================================================
+   ✅ MEGA MENU ONLY PATCH (탭/레이아웃 손대지 않음)
+   - mega-menu 위치/정렬만 강제
+========================================================= */
+
+/* mega-menu의 기준점: navWrap */
+header.topbar .navWrap{
+  position: relative;
+  overflow: visible;
+}
+
+/* mega-menu를 navWrap 기준으로 정확히 탭 아래에 */
+header.topbar .navWrap > #megaMenu.mega-menu{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 9999;
+
+  /* ✅ 6열 고정 */
+  display: none;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0;
+
+  padding: 14px 0 16px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.10);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0,0,0,.10);
+}
+
+/* 열림 조건 유지 */
+header.topbar .navWrap > #topTabs:hover + #megaMenu,
+header.topbar .navWrap > #megaMenu:hover,
+header.topbar .navWrap > #megaMenu.open{
+  display: grid;
+}
+
+/* 컬럼 경계선 */
+header.topbar .navWrap > #megaMenu .mega-col{
+  padding: 12px 14px 14px;
+  border-left: 1px solid rgba(0,0,0,.08);
+}
+header.topbar .navWrap > #megaMenu .mega-col:first-child{
+  border-left: 0;
+}
+
+/* 반응형: 메가메뉴만 3열/2열 */
+@media (max-width: 1100px){
+  header.topbar .navWrap > #megaMenu.mega-menu{
+    grid-template-columns: repeat(3, minmax(0,1fr));
+  }
+}
+@media (max-width: 720px){
+  header.topbar .navWrap > #megaMenu.mega-menu{
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
