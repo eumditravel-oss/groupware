@@ -1,9 +1,16 @@
-/* styles.css (FULL) - MegaMenu Align 유지 + ✅ Topbar/TopTabs "원래(2번째 사진)" 디자인 복구 */
+/* styles.css (FULL) - Scroll/Background Fix 포함 버전
+   ✅ 목표
+   1) “중간 스크롤바(내부 컨테이너 스크롤)” 제거 → body(페이지)만 세로 스크롤
+   2) “하단 배경색 튐/얼룩(끝에서 다른 색)” 최소화 → html/body 배경 고정 + 배경을 ::before에 올림
+   3) 가로는 레이아웃 유지(최소폭) → body overflow-x: auto 유지
+   4) 모달만 자체 스크롤 허용
+*/
 
 /* =========================
    ROOT
 ========================= */
 :root{
+  /* ✅ Clean ivory + soft gray (얼룩/밴딩 최소화) */
   --bg:#f4f6f9;
   --bg2:#eef2f7;
 
@@ -31,12 +38,15 @@
   --topbarH: 74px;
   --sideW: 260px;
 
+  /* ✅ 모바일에서도 웹 배치 유지용 최소 폭(가로스크롤 허용) */
   --minMainW: 820px;
 
+  /* ✅ PAD 느낌: “pill 채움” 톤 */
   --pillBg: rgba(255,255,255,.92);
   --pillBorder: rgba(0,0,0,.06);
   --pillShadow: 0 10px 24px rgba(0,0,0,.06);
 
+  /* ✅ 드롭다운 화살표(인라인 SVG) */
   --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%236b6b73' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
 }
 
@@ -46,21 +56,26 @@
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
 html{ color-scheme: light; }
-html{ background: var(--bg); }
 
+/* ✅ “하단 색상 튐” 방지: html/body는 단색 고정 */
+html{ background: var(--bg); }
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic";
   color:var(--ink);
 
+  /* ✅ 세로 스크롤은 body가 담당(중간 스크롤 제거 핵심) */
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: auto; /* ✅ 배치 고정 + 가로스크롤 허용 */
   min-height: 100%;
+
+  /* ✅ body 자체 배경은 투명(배경은 ::before에서 담당) */
   background: transparent;
 
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ✅ 배경 그라데이션은 “고정 레이어”로 분리 → 밴딩/끊김/끝색 튐 최소화 */
 body::before{
   content:"";
   position: fixed;
@@ -74,9 +89,11 @@ body::before{
     linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
 }
 
+/* 링크/유틸 */
 a{ color:inherit; text-decoration:none; }
 .hidden{ display:none !important; }
 
+/* 폼 기본 */
 button, select, input, textarea{
   -webkit-appearance: none;
   appearance: none;
@@ -85,27 +102,23 @@ button, select, input, textarea{
 }
 
 /* =========================
-   ✅ TOPBAR (2번째 사진 스타일로 복구)
-   - "얇은 흰 바 + 하단 라인"
+   TOPBAR
 ========================= */
 header.topbar{
   position: sticky;
   top: 0;
   z-index: 50;
 
-  height: var(--topbarH);
+  height: auto;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 12px;
 
-  padding: 0 18px;
-
-  background: #fff;
-  backdrop-filter: none;
-  border-bottom: 1px solid rgba(0,0,0,.10);
-
-  overflow: visible;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.90);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0,0,0,.06);
 }
 
 /* 브랜드(로고만) */
@@ -114,14 +127,13 @@ header.topbar .brand{
   display:flex;
   align-items:center;
   gap:10px;
-
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
+  padding: 6px 8px;
+  border-radius: 14px;
 }
 @media (hover:hover) and (pointer:fine){
-  header.topbar .brand:hover{ background: transparent; }
+  header.topbar .brand:hover{ background: var(--accentSoft); }
 }
+
 .logoImg{
   width: 120px;
   height: 34px;
@@ -136,103 +148,85 @@ header.topbar .topCenter{
   display: flex;
   justify-content: center;
   align-items: center;
-
-  position: relative;
-  overflow: visible;
 }
 
-/* 오른쪽 비움 */
+/* 오른쪽은 비워둠(요청: 사용자 박스 제거) */
 header.topbar .topRight{
   flex: 0 0 auto;
   width: 12px;
 }
 
-/* =========================
-   ✅ TOP TABS (2번째 사진 스타일)
-   핵심:
-   - ✅ grid(등분) 제거 → flex + gap 로 “탭 간격” 확보
-   - ✅ 탭 너비 auto → 텍스트 메뉴 느낌
-========================= */
+/* ✅ 큰 캡슐 바 + 세그먼트 탭 */
 #topTabs.topTabs{
-  /* ✅ 기존 grid 제거 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  /* ✅ 탭 간격(2번째 사진 느낌) */
-  gap: 56px;
-
-  /* ✅ 가운데로 정돈 + 폭 전체 */
-  width: 100%;
-  max-width: none;
-  margin: 0;
-
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  border-radius: 0;
-
-  padding: 0;
-  overflow: visible;
-}
-
-/* 탭 버튼 공통 */
-#topTabs .topTab,
-#topTabs .top-tab,
-#topTabs button,
-#topTabs a{
-  position: relative;
-
-  /* ✅ auto 폭(중요) */
-  width: auto;
-  min-width: 84px;
-
-  height: var(--topbarH);
-
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-
-  /* ✅ 텍스트 메뉴 여백 */
-  padding: 0 8px;
-  border-radius: 0;
-
-  font-weight: 700;
-  font-size: 14px;
-  color: rgba(0,0,0,.78);
-
   display:flex;
   align-items:center;
   justify-content:center;
+  gap:6px;
+  padding: 7px 8px;
 
-  cursor:pointer;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(245,247,250,.92);
+  box-shadow: 0 10px 22px rgba(0,0,0,.06);
+
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 18px;
+
+  /* ✅ 탭이 많아지면 가로로만 스크롤(세로 스크롤 금지) */
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scrollbar-width: thin;
 }
 
-/* hover */
+/* 탭 버튼 */
+.topTab,
+.top-tab,
+#topTabs button,
+#topTabs a{
+  position: relative;
+  border: 1px solid rgba(0,0,0,.06);
+  cursor:pointer;
+
+  padding:10px 14px 12px;
+  border-radius: 14px !important;
+  font-weight: 950;
+  font-size: 13px;
+
+  color:#2f2f34;
+  background: rgba(255,255,255,.60);
+
+  display:flex;
+  align-items:center;
+  gap:6px;
+
+  transition: background .12s ease, color .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+
 @media (hover:hover) and (pointer:fine){
-  #topTabs .topTab:hover,
-  #topTabs .top-tab:hover,
-  #topTabs button:hover,
-  #topTabs a:hover{
-    color: rgba(0,0,0,.95);
+  .topTab:hover,
+  .top-tab:hover{
+    border-color: rgba(0,0,0,.10);
+    background: rgba(255,255,255,.82);
   }
 }
 
-/* active */
-#topTabs .topTab.active,
-#topTabs .top-tab.active{
-  color: rgba(0,0,0,.95);
+/* ✅ active: 흰 캡슐 + 오렌지 밑줄 */
+.topTab.active,
+.top-tab.active{
+  background: rgba(255,255,255,.98);
+  color:#111;
+  border-color: rgba(0,0,0,.10);
+  box-shadow: 0 10px 18px rgba(0,0,0,.06);
 }
-
-/* active underline (원래처럼 얇고 길게) */
-#topTabs .topTab.active::after,
-#topTabs .top-tab.active::after{
+.topTab.active::after,
+.top-tab.active::after{
   content:"";
   position:absolute;
-  left: 10%;
-  right: 10%;
-  bottom: 10px;
-  height: 2px;
+  left:12px;
+  right:12px;
+  bottom:6px;
+  height:3px;
   border-radius: 999px;
   background: var(--accent);
   opacity: .95;
@@ -243,6 +237,8 @@ header.topbar .topRight{
 ========================= */
 .app{
   display:flex;
+
+  /* ✅ 앱 전체 세로 스크롤은 body가 담당하도록: app은 overflow 금지 */
   overflow: visible;
 
   min-height: 100vh;
@@ -258,6 +254,7 @@ header.topbar .topRight{
   border-right: 1px solid rgba(0,0,0,.06);
   background: rgba(255,255,255,.62);
 
+  /* ✅ 내부 스크롤 금지(중간 스크롤 제거 핵심) */
   overflow: visible;
 }
 
@@ -273,6 +270,38 @@ header.topbar .topRight{
   align-items:center;
   justify-content:center;
   padding: 6px 0 10px;
+}
+
+.profileAvatar{
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(245,247,250,.92);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  overflow: hidden;
+}
+
+.profileAvatarInner{
+  width: 62px;
+  height: 62px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.86);
+  position: relative;
+}
+.profileAvatarInner::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top: 52px;
+  transform: translateX(-50%);
+  width: 84px;
+  height: 54px;
+  border-radius: 999px 999px 18px 18px;
+  background: rgba(0,0,0,.86);
 }
 
 .profileBody{
@@ -320,6 +349,8 @@ header.topbar .topRight{
   flex-direction:column;
   gap:6px;
   padding: 6px 6px 0;
+
+  /* ✅ 내부 스크롤 금지(중간 스크롤 제거) */
   overflow: visible;
 }
 
@@ -379,6 +410,8 @@ header.topbar .topRight{
   flex:1;
   min-width: var(--minMainW);
   padding: 16px 18px 26px;
+
+  /* ✅ 내부 스크롤 금지(중간 스크롤 제거 핵심) */
   overflow: visible;
 }
 
@@ -388,6 +421,7 @@ header.topbar .topRight{
   padding:0 !important;
 }
 
+/* ✅ view도 스크롤 컨테이너가 되지 않게 */
 .view{
   min-height: 520px;
   overflow: visible;
@@ -403,6 +437,7 @@ header.topbar .topRight{
   box-shadow: var(--shadow);
   padding: 14px 14px;
 
+  /* ✅ 내부 컨텐츠가 카드 폭을 밀어내지 않게 */
   min-width: 0;
   max-width: 100%;
 }
@@ -651,7 +686,7 @@ header.topbar .topRight{
 }
 
 /* =========================
-   MODAL  (모달만 스크롤 허용)
+   MODAL  (✅ 모달만 스크롤 허용)
 ========================= */
 .modalBackdrop{
   position:fixed;
@@ -666,7 +701,10 @@ header.topbar .topRight{
 .modal{
   width: min(860px, 96vw);
   max-height: 86vh;
+
+  /* ✅ 모달 내용이 길면 모달 내부만 스크롤 */
   overflow:auto;
+
   background: rgba(255,255,255,.97);
   border: 1px solid rgba(0,0,0,.10);
   border-radius: 18px;
@@ -692,6 +730,8 @@ header.topbar .topRight{
 
 /* =========================
    EMBED(iframe)
+   ✅ iframe는 "높이를 주면" 내부가 스크롤처럼 보일 수 있음
+   ✅ 하지만 여기서는 wrapper만 고정 높이, 스크롤은 body가 아니라 iframe 내부(기본 동작)
 ========================= */
 .viewTopTools{
   display:flex;
@@ -707,7 +747,10 @@ header.topbar .topRight{
   min-height: 520px;
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 16px;
+
+  /* ✅ wrapper는 넘침 숨김(iframe 자체 스크롤은 iframe이 처리) */
   overflow:hidden;
+
   background: rgba(255,255,255,.80);
 }
 .embedFrame{
@@ -734,6 +777,7 @@ header.topbar .topRight{
 .split{ display:grid; grid-template-columns: 260px 1fr; gap:12px; }
 .dash{ display:grid; grid-template-columns: 320px 1fr; gap:12px; }
 
+/* ✅ grid/flex overflow 안전 */
 .split, .dash { min-width:0; }
 .split > *, .dash > * { min-width:0; }
 
@@ -792,6 +836,7 @@ header.topbar .topRight{
   color:#7a4a12;
 }
 
+/* Checkbox */
 .chk{ width: 18px; height: 18px; margin-top: 2px; cursor:pointer; }
 
 /* =========================
@@ -800,14 +845,116 @@ header.topbar .topRight{
 @media (max-width: 1100px){
   .dashRow3{ grid-template-columns: 1fr; }
 }
+
 @media (max-width: 980px){
-  /* ✅ 모바일에서도 탭은 “전체 폭” 유지 */
-  #topTabs.topTabs{ width: 100%; gap: 28px; }
+  #topTabs.topTabs{ max-width: 360px; }
   .dashRow2{ grid-template-columns: 1fr; }
   .main{ padding: 12px; }
   .split{ grid-template-columns: 1fr; }
   .dash{ grid-template-columns: 1fr; }
 }
+
+/* =========================
+   (하단에 남아있던 추가 스타일들)
+========================= */
+.profile-card{
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.06);
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.08);
+  padding: 14px 14px 12px;
+  min-width:0;
+}
+
+.profile-head{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  margin-bottom: 10px;
+  min-width:0;
+}
+
+.profile-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-weight: 900;
+  font-size: 14px;
+  color: var(--ink);
+}
+.profile-badge::before{
+  content:"🏷️";
+  font-size: 14px;
+  opacity:.9;
+}
+
+/* photo box */
+.avatar{
+  display:block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  border: 3px solid var(--accent);
+  background: rgba(0,0,0,.02);
+  overflow:hidden;
+  cursor:pointer;
+  position:relative;
+}
+
+#avatarPreview{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.avatar-placeholder{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color: rgba(0,0,0,.55);
+}
+
+.avatar-icon{ font-size: 42px; line-height: 1; }
+.avatar-text{ font-size: 13px; font-weight: 700; }
+
+/* meta rows */
+.profile-meta{
+  margin: 12px 2px 0;
+}
+.profile-meta .row{
+  display:grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  align-items:center;
+  padding: 10px 2px;
+  border-top: 1px solid rgba(0,0,0,.10);
+}
+.profile-meta dt{
+  font-size: 12px;
+  color: rgba(0,0,0,.55);
+  font-weight: 800;
+}
+.profile-meta dd{
+  margin:0;
+  font-size: 14px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+/* ✅ 전자메일: 목록 상단 검색툴바 */
+.mail-toolbar{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.mail-toolbar .select{ width: 140px; }
+.mail-toolbar .input{ width: 260px; max-width: 40vw; }
 
 /* =========================
    LEFT: 다가오는 생일 위젯
@@ -817,7 +964,9 @@ header.topbar .topRight{
   padding: 14px 14px;
   border-radius: 18px;
 }
-.bdayCard.card{ overflow:hidden; }
+.bdayCard.card{
+  overflow:hidden;
+}
 
 .bdayHead{
   display:flex;
@@ -846,6 +995,7 @@ header.topbar .topRight{
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px 10px;
 }
+
 .bdayItem{
   display:flex;
   flex-direction:column;
@@ -854,6 +1004,7 @@ header.topbar .topRight{
   text-align:center;
   min-width:0;
 }
+
 .bdayAvatar{
   width: 44px;
   height: 44px;
@@ -865,6 +1016,7 @@ header.topbar .topRight{
   justify-content:center;
   font-size: 18px;
 }
+
 .bdayName{
   font-weight: 1000;
   font-size: 12px;
@@ -874,11 +1026,13 @@ header.topbar .topRight{
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .bdayDate{
   font-size: 12px;
   color: var(--muted);
   font-weight: 900;
 }
+
 .bdayEmpty{
   padding: 12px;
   border-radius: 14px;
@@ -891,40 +1045,8 @@ header.topbar .topRight{
 }
 
 /* =========================
-   Avatar (프로필 업로드 박스)
-========================= */
-.avatar{
-  display:block;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 14px;
-  border: 3px solid var(--accent);
-  background: rgba(0,0,0,.02);
-  overflow:hidden;
-  cursor:pointer;
-  position:relative;
-}
-#avatarPreview{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-.avatar-placeholder{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  color: rgba(0,0,0,.55);
-}
-.avatar-icon{ font-size: 42px; line-height: 1; }
-.avatar-text{ font-size: 13px; font-weight: 700; }
-
-/* =========================
-   ✅ 스크롤 컨테이너 방지
+   ✅ (중요) 중간 스크롤 발생 원인 차단
+   - 혹시 JS/기존 CSS에서 overflow-y:scroll, height:100vh 등을 줬을 때도 덮어쓰기
 ========================= */
 #view,
 .view,
@@ -932,114 +1054,775 @@ header.topbar .topRight{
 .side{
   overflow-y: visible !important;
 }
+
+/* 단, 모달은 예외 */
 .modal{
   overflow: auto !important;
 }
 
+
+
 /* =========================
-   ✅ MEGA MENU (2번째 사진 스타일)
-   핵심:
-   - ✅ 배경/패딩/그림자 정돈
-   - ✅ 컬럼 구분선
-   - ✅ 컬럼 내부 간격 + 리스트 느낌(버튼/태그 느낌 제거)
+   MEGA MENU (hover open)
 ========================= */
-#megaMenu.mega-menu{
-  border-radius: 18px;
 
-  /* ✅ “큰 흰 패널” 느낌 */
-  background: rgba(255,255,255,.98);
-  border: 1px solid rgba(0,0,0,.08);
-  box-shadow: 0 18px 46px rgba(0,0,0,.10);
+/* topTabs가 들어있는 헤더 래퍼(부모)에 position이 필요함
+   - topTabs의 부모에 .topbar 같은 클래스가 있으면 거기에 주는게 베스트
+   - 모르겠으면 #topTabs의 부모를 대상으로 아래처럼 처리 */
+#topTabs {
+  position: relative;
+  z-index: 20;
+}
 
-  padding: 28px 22px;
+/* megaMenu 기본: 숨김 */
+.mega-menu{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: 50;
 
-  /* ✅ 컬럼 정렬 (기존 var 유지) */
+  display: none;
+  padding: 18px 18px;
+
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+/* ✅ hover 했을 때 펼치기:
+   - #topTabs 영역에 마우스를 올리면 mega-menu 표시
+   - mega-menu 위로 마우스 이동해도 유지되도록 :hover 체인 사용 */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover{
   display: grid;
-  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr));
-  gap: 0;
-
-  /* (app.js에서 위치 잡는다 했으니 여기선 overflow만 정리) */
-  overflow: hidden;
 }
 
-/* ✅ 컬럼 공통 (여러 클래스명 대응) */
-#megaMenu .megaCol,
-#megaMenu .mega-col,
-#megaMenu .menuCol,
-#megaMenu .menu-column,
-#megaMenu .col{
-  padding: 0 22px;
-  min-width: 0;
+/* ✅ 터치용 토글(open 클래스) */
+.mega-menu.open{
+  display: grid;
 }
 
-/* ✅ 컬럼 구분선 */
-#megaMenu .megaCol:not(:last-child),
-#megaMenu .mega-col:not(:last-child),
-#megaMenu .menuCol:not(:last-child),
-#megaMenu .menu-column:not(:last-child),
-#megaMenu .col:not(:last-child){
-  border-right: 1px solid rgba(0,0,0,.08);
+/* 컬럼 레이아웃 */
+.mega-menu{
+  grid-template-columns: repeat(6, minmax(0, 1fr)); /* TOP_TABS 6개 기준 */
+  gap: 14px;
 }
 
-/* ✅ 컬럼 타이틀(상단 카테고리 라벨) */
-#megaMenu .megaTitle,
-#megaMenu .mega-title,
-#megaMenu h4,
-#megaMenu .colTitle{
-  font-size: 14px;
+/* 컬럼 카드 */
+.mega-col{
+  padding: 10px 10px;
+  border-radius: 12px;
+}
+
+.mega-col-title{
   font-weight: 900;
-  color: rgba(0,0,0,.82);
-  margin: 0 0 18px 0;
-  text-align: center;
+  font-size: 13px;
+  margin-bottom: 10px;
 }
 
-/* ✅ 목록 레이아웃: 리스트 느낌 */
-#megaMenu ul{
-  list-style: none;
-  padding: 0;
-  margin: 0;
-
+.mega-col-items{
   display: flex;
   flex-direction: column;
-  gap: 14px; /* ✅ 항목 간 간격 */
+  gap: 6px;
 }
 
-/* ✅ 항목(버튼/태그 느낌 제거) */
-#megaMenu li,
-#megaMenu .megaItem,
-#megaMenu .mega-item{
-  margin: 0;
+.mega-item{
+  text-align: left;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.mega-item:hover{
+  background: rgba(0,0,0,0.05);
+}
+
+/* 반응형: 화면 좁으면 2~3컬럼 */
+@media (max-width: 1100px){
+  .mega-menu{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 720px){
+  .mega-menu{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+
+
+/* =========================================================
+   ✅ Apple-like Topbar + 탭/메가 세로라인 100% 정렬 (OVERRIDE)
+   - 핵심: topTabs와 megaMenu가 동일한 "가로 컨테이너"를 공유
+========================================================= */
+
+/* 1) 상단바: 애플 느낌 (연한 회색, 얇은 보더, 과한 블러 제거) */
+header.topbar{
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(245,245,247,.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(0,0,0,.08);
   padding: 0;
+}
+
+/* 2) 상단바 내부 컨테이너: 여기 폭이 "정렬 기준" */
+header.topbar .topInner{
+  /* ✅ 이 클래스가 없으면 아래에서 fallback 적용됨 */
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  height: 52px;              /* 애플 느낌 높이 */
+  display: grid;
+  grid-template-columns: 160px 1fr 160px;
+  align-items: center;
+  padding: 0 18px;            /* ✅ 좌우 패딩 = 탭/메가 공통 기준 */
+}
+
+/* 만약 topInner가 없으면: topbar 내부를 기준 컨테이너처럼 동작시키는 fallback */
+header.topbar .brand,
+header.topbar .topCenter,
+header.topbar .topRight{
   min-width: 0;
 }
 
-/* ✅ 항목 내부가 a/button/div 어떤 것이든 동일 스타일 */
-#megaMenu a,
-#megaMenu button,
-#megaMenu .item,
-#megaMenu .link{
+/* 3) 탭바(#topTabs): pill 제거 + “동일 그리드”로 정렬 */
+#topTabs.topTabs{
   width: 100%;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-  border-radius: 0;
+  max-width: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 
-  padding: 6px 6px;
-  font-size: 13px;
-  font-weight: 800;
-  color: rgba(0,0,0,.72);
-  text-align: center;
+  overflow: visible !important;
 
-  cursor: pointer;
+  display: grid !important;
+  grid-template-columns: repeat(var(--mega-cols, 6), 1fr) !important; /* ✅ 메가와 동일 */
+  align-items: center;
+  justify-items: center;
+
+  gap: 0 !important; /* 컬럼 자체가 간격 */
 }
 
-/* hover 시만 강조 */
+/* 탭 버튼: 애플처럼 깔끔하게 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button{
+  width: 100%;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+
+  padding: 10px 6px !important;
+  border-radius: 0 !important;
+
+  font-weight: 800;
+  font-size: 12.5px;
+  color: rgba(0,0,0,.82);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* hover */
 @media (hover:hover) and (pointer:fine){
-  #megaMenu a:hover,
-  #megaMenu button:hover,
-  #megaMenu .item:hover,
-  #megaMenu .link:hover{
+  #topTabs .topTab:hover,
+  #topTabs .top-tab:hover{
     color: rgba(0,0,0,.95);
-    text-decoration: none;
   }
+}
+
+/* active: 얇은 밑줄 */
+#topTabs .topTab.active::after,
+#topTabs .top-tab.active::after{
+  content:"";
+  position:absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.82);
+  opacity: 1;
+}
+
+/* =========================================================
+   4) 메가메뉴: "같은 컨테이너 폭 + 같은 그리드" + 세로 구분선 정렬
+========================================================= */
+
+/* 메가메뉴는 header.topbar를 기준으로 펼쳐지게 */
+header.topbar{ position: sticky; }
+header.topbar{ overflow: visible; }
+
+/* 기본 숨김 */
+.mega-menu{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  z-index: 120;
+
+  display: none;
+  padding: 0; /* 내부 컨테이너에서 패딩 처리 */
+
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,.10);
+  box-shadow: 0 18px 40px rgba(0,0,0,.10);
+}
+
+/* ✅ 열림 조건: JS가 .open 붙이거나, topbar에 마우스 올라가면 */
+header.topbar:hover .mega-menu,
+.mega-menu.open{
+  display: block;
+}
+
+/* 메가메뉴 내부 컨테이너(탭 컨테이너와 폭/패딩 동일) */
+.mega-menu::before{
+  content:"";
+  display:block;
+  height: 8px; /* 탭 아래 살짝 여백 */
+}
+
+.mega-menu .mega-inner{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 18px 18px;  /* ✅ topInner와 동일 좌우 18px */
+}
+
+/* mega-inner가 없으면(현재 구조) mega-menu 자체를 컨테이너처럼 동작 */
+.mega-menu{
+  /* fallback padding을 mega-inner처럼 */
+}
+.mega-menu{
+  /* mega-inner가 없을 때는 아래 gridWrap을 직접 사용하게끔 */
+}
+
+/* 실제 그리드: 탭과 1:1로 맞춤 */
+.mega-menu{
+  /* 바깥은 block, 안쪽에 grid를 만들기 위해 */
+}
+.mega-menu .mega-grid{
+  display: grid;
+  grid-template-columns: repeat(var(--mega-cols, 6), 1fr);
+}
+
+/* ✅ 지금 너 구조는 .mega-col이 바로 mega-menu 아래에 붙어있으니
+   mega-inner/mega-grid가 없을 경우를 위해 "직접 그리드"도 잡아줌 */
+.mega-menu{
+  /* 직접 grid로 써도 되지만 컨테이너 폭을 맞추려면 내부 래핑이 제일 좋음 */
+}
+.mega-menu{
+  /* direct-grid fallback */
+}
+.mega-menu{
+  /* direct grid fallback은 아래 규칙으로 커버 */
+}
+.mega-menu{
+  /* (직접 그리드) */
+  display: none;
+}
+header.topbar:hover .mega-menu,
+.mega-menu.open{
+  display: grid;
+  grid-template-columns: repeat(var(--mega-cols, 6), 1fr);
+}
+
+/* ✅ 세로 라인(컬럼 경계선) */
+.mega-menu .mega-col{
+  padding: 14px 14px 16px;
+  border-left: 1px solid rgba(0,0,0,.08);
+}
+.mega-menu .mega-col:first-child{
+  border-left: 0;
+}
+
+/* 컬럼 타이틀/아이템 톤 정리 */
+.mega-col-title{
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(0,0,0,.75);
+  margin-bottom: 10px;
+}
+.mega-item{
+  border: 0;
+  background: transparent;
+  padding: 7px 8px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: rgba(0,0,0,.82);
+}
+@media (hover:hover) and (pointer:fine){
+  .mega-item:hover{
+    background: rgba(0,0,0,.05);
+  }
+}
+
+/* 반응형 */
+@media (max-width: 1100px){
+  #topTabs.topTabs{
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  header.topbar:hover .mega-menu,
+  .mega-menu.open{
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 720px){
+  #topTabs.topTabs{
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  header.topbar:hover .mega-menu,
+  .mega-menu.open{
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+
+/* =========================================================
+   ✅ MEGA MENU ALIGN FIX (탭 컬럼 경계와 1:1 정렬)
+   - mega-menu를 topCenter(탭 영역) 기준으로 absolute 배치
+   - topTabs도 topCenter 폭 100%를 사용(=컬럼 기준 동일)
+========================================================= */
+
+/* 1) 탭이 들어있는 영역을 기준 컨테이너로 만든다 */
+header.topbar .topCenter{
+  position: relative !important;   /* ✅ mega-menu absolute 기준점 */
+  justify-content: stretch !important;
+  width: 100% !important;
+}
+
+/* 2) topTabs: 가운데 pill/fit-content를 버리고 "탭 영역 폭 100%"로 */
+#topTabs.topTabs{
+  width: 100% !important;
+  max-width: 100% !important;
+
+  /* ✅ 6등분 그리드로 고정 → 세로라인 기준 */
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+
+  gap: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  overflow: visible !important;
+}
+
+/* 탭 버튼은 각 컬럼 중앙정렬 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button,
+#topTabs a{
+  width: 100% !important;
+  justify-content: center !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  padding: 14px 6px 12px !important;  /* 애플 느낌 높이 */
+  font-weight: 900;
+}
+
+/* active 밑줄(얇게) */
+#topTabs .topTab.active::after,
+#topTabs .top-tab.active::after{
+  left: 26% !important;
+  right: 26% !important;
+  height: 2px !important;
+  bottom: 6px !important;
+  background: rgba(0,0,0,.82) !important;
+}
+
+/* 3) mega-menu: "탭 아래" + "탭 폭(100%)"로 정확히 맞춘다 */
+.mega-menu{
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: calc(100% + 8px) !important; /* 탭 아래 간격 */
+  z-index: 200 !important;
+
+  /* ✅ topCenter 폭을 그대로 사용 */
+  width: 100% !important;
+
+  /* ✅ 6등분 그리드 동일 */
+  display: none !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+
+  padding: 12px 0 14px !important;
+  background: #fff !important;
+
+  border: 1px solid rgba(0,0,0,.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.10) !important;
+}
+
+/* 4) 열림 조건(기존 #topTabs:hover + .mega-menu 유지) */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover,
+.mega-menu.open{
+  display: grid !important;
+}
+
+/* 5) mega 컬럼: 세로라인(경계선) 생성 → 탭 컬럼 경계와 일치 */
+.mega-menu .mega-col{
+  padding: 12px 14px 14px !important;
+  border-left: 1px solid rgba(0,0,0,.08) !important;
+}
+.mega-menu .mega-col:first-child{
+  border-left: 0 !important;
+}
+
+/* 6) 타이틀/아이템 톤 정리 */
+.mega-menu .mega-col-title{
+  font-weight: 1000 !important;
+  font-size: 13px !important;
+  margin-bottom: 10px !important;
+  color: rgba(0,0,0,.78) !important;
+}
+.mega-menu .mega-item{
+  width: 100% !important;
+  text-align: center !important; /* 스샷처럼 가운데 정렬이면 */
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+}
+
+/* 7) 반응형(필요 시) */
+@media (max-width: 1100px){
+  #topTabs.topTabs{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+  .mega-menu{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+  }
+}
+@media (max-width: 720px){
+  #topTabs.topTabs{
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  }
+  .mega-menu{
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+  }
+}
+
+
+
+/* =========================================================
+   ✅ FINAL MEGA MENU ALIGN FIX (탭과 메가메뉴 1:1 정렬)
+   - 탭과 메가메뉴가 동일 "가로 컨테이너"를 공유하도록 강제
+   - 두번째 스샷처럼 세로라인이 탭 아래 정확히 떨어짐
+========================================================= */
+
+:root{
+  --navMaxW: 1200px;      /* 탭/메가 공통 최대폭 */
+  --navPad: 18px;         /* 좌우 패딩(공통 기준) */
+  --megaCols: 6;          /* 기본 컬럼 수 */
+}
+
+/* ✅ topCenter를 "기준 컨테이너"로 만든다 */
+header.topbar .topCenter{
+  position: relative !important;
+  flex: 1 1 auto !important;
+  display: block !important;
+  padding: 0 var(--navPad) !important; /* 탭/메가 좌우 기준 패딩 동일 */
+  justify-content: stretch !important;
+  align-items: stretch !important;
+  overflow: visible !important;
+}
+
+/* ✅ 탭: 무조건 6등분 그리드 + max-width 기준으로 중앙정렬 */
+#topTabs.topTabs{
+  width: 100% !important;
+  max-width: var(--navMaxW) !important;
+  margin: 0 auto !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(var(--megaCols), minmax(0, 1fr)) !important;
+
+  gap: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  overflow: visible !important;
+}
+
+/* 탭 버튼 중앙 정렬 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button,
+#topTabs a{
+  width: 100% !important;
+  justify-content: center !important;
+
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  padding: 14px 6px 12px !important;
+  font-weight: 900 !important;
+}
+
+/* active underline */
+#topTabs .topTab.active::after,
+#topTabs .top-tab.active::after{
+  left: 26% !important;
+  right: 26% !important;
+  bottom: 6px !important;
+  height: 2px !important;
+  background: rgba(0,0,0,.82) !important;
+}
+
+/* ✅ 메가메뉴: 탭 바로 아래 + 동일 max-width + 동일 6등분 grid */
+.mega-menu{
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  top: calc(100% + 8px) !important;
+  z-index: 999 !important;
+
+  width: 100% !important;
+  max-width: var(--navMaxW) !important;
+
+  display: none !important;
+  grid-template-columns: repeat(var(--megaCols), minmax(0, 1fr)) !important;
+
+  gap: 0 !important;
+  padding: 12px 0 14px !important;
+
+  background: #fff !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.10) !important;
+}
+
+/* ✅ 열림 조건 유지 */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover,
+.mega-menu.open{
+  display: grid !important;
+}
+
+/* ✅ 세로 라인(탭 컬럼 경계와 1:1 정렬) */
+.mega-menu .mega-col{
+  padding: 12px 14px 14px !important;
+  border-left: 1px solid rgba(0,0,0,.08) !important;
+}
+.mega-menu .mega-col:first-child{
+  border-left: 0 !important;
+}
+
+/* 리스트/타이틀 스타일 */
+.mega-menu .mega-col-title{
+  font-weight: 1000 !important;
+  font-size: 13px !important;
+  margin-bottom: 10px !important;
+  color: rgba(0,0,0,.78) !important;
+}
+.mega-menu .mega-item{
+  width: 100% !important;
+  text-align: center !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+}
+
+/* ✅ 반응형: 컬럼 수를 변수로만 변경 → 탭/메가 자동 동일 */
+@media (max-width: 1100px){
+  :root{ --megaCols: 3; }
+}
+@media (max-width: 720px){
+  :root{ --megaCols: 2; }
+}
+
+/* =========================================================
+   ✅ MEGA MENU FINAL ALIGN (탭/메가메뉴 1:1 정렬 고정)
+   - #topTabs와 .mega-menu가 같은 navWrap(폭/패딩) 공유
+========================================================= */
+
+/* navWrap = 정렬 기준 컨테이너 */
+header.topbar .topCenter{ width:100% !important; }
+header.topbar .navWrap{
+  position: relative !important;  /* mega-menu absolute 기준 */
+  width: min(1200px, 100%) !important;
+  margin: 0 auto !important;
+  padding: 0 18px !important;     /* 탭/메가 공통 좌우 기준 */
+}
+
+/* 탭: navWrap 100% 폭을 6등분 */
+#topTabs.topTabs{
+  width: 100% !important;
+  max-width: 100% !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+/* 탭 버튼 중앙 정렬 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button,
+#topTabs a{
+  width: 100% !important;
+  justify-content: center !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 14px 6px 12px !important;
+}
+
+/* 메가메뉴: navWrap 기준으로 정확히 탭 아래에 6등분 */
+header.topbar .navWrap .mega-menu{
+  position: absolute !important;
+  left: 18px !important;          /* navWrap padding 만큼 보정 */
+  right: 18px !important;
+  top: calc(100% + 8px) !important;
+  z-index: 300 !important;
+
+  display: none !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+
+  padding: 12px 0 14px !important;
+  background: #fff !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 18px 40px rgba(0,0,0,.10) !important;
+}
+
+/* hover 유지 */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover,
+.mega-menu.open{
+  display: grid !important;
+}
+
+/* 컬럼 구분선 = 탭 6등분 경계와 1:1 */
+header.topbar .navWrap .mega-menu .mega-col{
+  padding: 12px 14px 14px !important;
+  border-left: 1px solid rgba(0,0,0,.08) !important;
+}
+header.topbar .navWrap .mega-menu .mega-col:first-child{
+  border-left: 0 !important;
+}
+
+/* 타이틀/아이템 정렬 */
+header.topbar .navWrap .mega-menu .mega-col-title{
+  text-align: center !important;
+  font-weight: 1000 !important;
+  font-size: 13px !important;
+  margin-bottom: 10px !important;
+}
+header.topbar .navWrap .mega-menu .mega-item{
+  width: 100% !important;
+  text-align: center !important;
+}
+
+/* 반응형 */
+@media (max-width: 1100px){
+  #topTabs.topTabs{ grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+  header.topbar .navWrap .mega-menu{ grid-template-columns: repeat(3, minmax(0,1fr)) !important; }
+}
+@media (max-width: 720px){
+  #topTabs.topTabs{ grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+  header.topbar .navWrap .mega-menu{ grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+}
+
+/* =========================================================
+   ✅ MEGA MENU 위치만 탭(#topTabs) 기준으로 정렬 (TOPBAR는 그대로)
+   - 기준: .navWrap (HTML에서 topTabs + megaMenu를 감싸는 컨테이너)
+========================================================= */
+
+/* 1) mega-menu의 absolute 기준점을 navWrap으로 고정 */
+header.topbar .navWrap{
+  position: relative !important;   /* ✅ 기준점만 추가 (레이아웃 변화 거의 없음) */
+}
+
+/* 2) mega-menu를 topTabs 바로 아래로 */
+header.topbar .navWrap .mega-menu{
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;             /* ✅ navWrap 폭(=탭 영역 폭) 그대로 사용 */
+  top: calc(100% + 8px) !important;/* ✅ topTabs 바로 아래 간격 */
+  z-index: 200 !important;
+
+  /* 기존 디자인 유지 */
+  margin: 0 !important;
+}
+
+/* 3) 열림 조건(기존 방식 유지) */
+#topTabs:hover + .mega-menu,
+header.topbar .navWrap .mega-menu:hover,
+header.topbar .navWrap .mega-menu.open{
+  display: grid !important;        /* ✅ 기존 너의 grid 레이아웃 그대로 */
+}
+
+/* 4) (선택) 탭과 메가메뉴 폭이 살짝 다르면: 메가메뉴를 탭과 동일 폭으로 제한
+   - navWrap이 100%로 늘어나 있는 상황에서 “탭은 가운데, 메가는 양쪽 꽉”처럼 보일 때만 필요
+   - 필요 없으면 이 블록은 지워도 됨 */
+header.topbar .navWrap .mega-menu{
+  width: max-content;
+  min-width: 100%;
+}
+
+/* =========================================================
+   ✅ FINAL: CSS-ONLY (navWrap 없음) - mega-menu를 "오른쪽(화살표 방향)"으로 정렬
+   - 기준: header.topbar .topCenter
+========================================================= */
+
+/* 기준점: 탭 영역 */
+header.topbar .topCenter{
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* 탭은 100% 폭 유지(탭이 가운데에서만 놀지 않게) */
+#topTabs.topTabs{
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* ✅ mega-menu를 오른쪽으로 붙이기 */
+header.topbar .mega-menu{
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+
+  /* ⬇️ 핵심: 오른쪽 정렬 */
+  right: 0 !important;
+  left: auto !important;
+  transform: none !important;
+
+  /* 폭: 너무 넓으면 화면 벗어나니 안전폭 */
+  width: min(1200px, calc(100vw - 60px)) !important;
+  max-width: 1200px !important;
+
+  z-index: 9999 !important;
+}
+
+/* 열림 조건(hover 유지) */
+#topTabs:hover + .mega-menu,
+header.topbar .mega-menu:hover,
+header.topbar .mega-menu.open{
+  display: grid !important;
 }
