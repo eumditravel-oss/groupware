@@ -1889,3 +1889,49 @@ header.topbar .topCenter{ overflow: visible; }
 #topTabs{ position: relative; z-index: 30; }
 
 
+/* =========================
+   Mega menu layout hard reset
+   ========================= */
+.topbar { position: relative; }
+
+#megaMenu.mega-menu{
+  position: absolute !important;
+  left: var(--mega-x, 0px) !important;
+  top: calc(100% + 8px) !important;
+  width: var(--mega-w, 100%) !important;
+  max-width: var(--mega-w, 100%) !important;
+  right: auto !important;
+  transform: none !important;
+
+  display: none;
+  z-index: 5000;
+}
+
+#megaMenu.mega-menu.open{ display: block; }
+
+/* mega-inner가 있으면 그리드로, 없으면 mega-menu 자체가 그리드 */
+#megaMenu .mega-inner,
+#megaMenu.mega-menu{
+  --cols: var(--mega-cols, 6);
+}
+
+#megaMenu .mega-inner{
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 18px;
+}
+
+#megaMenu .mega-col{
+  min-width: 0;
+}
+
+#megaMenu .mega-col-title{
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+#megaMenu .mega-col-items{
+  display: grid;
+  gap: 8px;
+}
+
