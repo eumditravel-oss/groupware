@@ -2981,62 +2981,7 @@ async function boot(){
 document.addEventListener("DOMContentLoaded", boot);
 
 
-   /* ✅ MegaMenu position hard-fix (탭 기준으로 무조건 정렬) */
-(() => {
-  const tabs = document.getElementById("topTabs");
-  const mega =
-    document.querySelector(".mega-menu") ||
-    document.getElementById("megaMenu") ||
-    document.querySelector("[data-mega-menu]");
-
-  if (!tabs || !mega) return;
-
-  const GAP = 8;            // 탭과 메가 사이 간격
-  const MAX_W = 1200;       // 너무 넓어지는 것 방지
-  const SIDE_PAD = 30;      // 화면 좌우 안전 여백(벗어남 방지)
-
-  function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-
-  function placeMega() {
-    const r = tabs.getBoundingClientRect();
-
-    // mega가 grid일 수도 / block일 수도 있으니 일단 보이는 상태에서 폭을 강제
-    const targetW = Math.min(MAX_W, r.width);
-    let left = r.left;
-
-    // 화면 밖으로 나가지 않게 보정
-    left = clamp(left, SIDE_PAD, window.innerWidth - SIDE_PAD - targetW);
-
-    mega.style.position = "fixed";
-    mega.style.left = `${left}px`;
-    mega.style.top = `${r.bottom + GAP}px`;
-    mega.style.width = `${targetW}px`;
-    mega.style.maxWidth = `${targetW}px`;
-    mega.style.right = "auto";
-    mega.style.transform = "none";
-    mega.style.zIndex = "99999";
-  }
-
-  function isOpenNow() {
-    // open 클래스가 있거나 / display가 none이 아니면 열린 것으로 판단
-    if (mega.classList.contains("open")) return true;
-    const d = getComputedStyle(mega).display;
-    return d !== "none";
-  }
-
-  // 열릴 때/리사이즈/스크롤 시 계속 재배치
-  const obs = new MutationObserver(() => {
-    if (isOpenNow()) placeMega();
-  });
-  obs.observe(mega, { attributes: true, attributeFilter: ["class", "style"] });
-
-  window.addEventListener("resize", () => { if (isOpenNow()) placeMega(); }, { passive: true });
-  document.addEventListener("scroll", () => { if (isOpenNow()) placeMega(); }, { passive: true, capture: true });
-
-  // hover로 열리는 케이스도 커버(마우스가 탭에 올라가면 즉시 배치)
-  tabs.addEventListener("mouseenter", () => setTimeout(placeMega, 0));
-  mega.addEventListener("mouseenter", () => setTimeout(placeMega, 0));
-})();
+   
 
 
 })();
