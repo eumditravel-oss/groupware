@@ -1135,22 +1135,7 @@ function renderLeftProfile(db){
   host.style.setProperty("--mega-cols", String(cols));
   mega.style.setProperty("--mega-cols", String(cols));
 
-  // ✅ FIX: megaMenu가 "topTabs 시작점/폭"과 동일하게 펼쳐지도록 좌표 주입
-  const syncMegaRect = () => {
-    if (!wrap) return;
-    const rTabs = host.getBoundingClientRect();
-    const rWrap = wrap.getBoundingClientRect();
-    const x = Math.round(rTabs.left - rWrap.left);
-    const w = Math.round(rTabs.width);
-
-    wrap.style.setProperty("--mega-x", `${x}px`);
-    wrap.style.setProperty("--mega-w", `${w}px`);
-  };
-  syncMegaRect();
-  if (wrap && !wrap.dataset.megaRectBound){
-    wrap.dataset.megaRectBound = "1";
-    window.addEventListener("resize", syncMegaRect);
-  }
+  
 
   // ✅ index.html의 mega-inner/mega-col을 그대로 활용해서 items만 채운다
   const inner = mega.querySelector(".mega-inner") || mega;
@@ -1189,8 +1174,7 @@ function renderLeftProfile(db){
   });
 
 
-       // ✅ 메가메뉴 타이틀/내용을 탭 열에 맞게 X축 보정(기본: center)
-  syncMegaTextToTabs({ mode:"center", safeMax:160, nudge:0 });
+       
 
      
 
@@ -1204,8 +1188,7 @@ function renderLeftProfile(db){
       clearTimeout(closeTimer);
       wrap.classList.add("mega-open");
       mega.classList.add("open");
-             // ✅ 열릴 때 한번 더 보정(가장 안정적)
-      syncMegaTextToTabs({ mode:"center", safeMax:160, nudge:0 });
+            
 
     };
 
@@ -1220,21 +1203,23 @@ function renderLeftProfile(db){
       }, 120); // 살짝 딜레이 → 탭에서 메가로 이동할 때 안정감
     };
 
-    wrap.addEventListener("mouseenter", openMega);
-    wrap.addEventListener("mouseleave", closeMega);
+    host.addEventListener("mouseenter", openMega);
+host.addEventListener("mouseleave", closeMega);
+
 
     // ✅ 혹시 메가메뉴가 wrap 밖으로 렌더되는 구조였을 때도 대비
     mega.addEventListener("mouseenter", openMega);
     mega.addEventListener("mouseleave", closeMega);
 
         // ✅ 터치/모바일: "빈 공간" 클릭 시만 토글 (메가메뉴/탭 클릭은 토글 금지)
-    wrap.addEventListener("click", (e)=>{
-      if (e.target?.closest(".top-tab")) return;    // 탭 클릭은 토글 금지
-      if (e.target?.closest("#megaMenu")) return;   // 메가메뉴 내부 클릭은 토글 금지
+    host.addEventListener("click", (e)=>{
+  if (e.target?.closest(".top-tab")) return;
+  if (e.target?.closest("#megaMenu")) return;
 
-      mega.classList.toggle("open");
-      wrap.classList.toggle("mega-open");
-    });
+  mega.classList.toggle("open");
+  wrap.classList.toggle("mega-open");
+});
+
 
   }
 }
