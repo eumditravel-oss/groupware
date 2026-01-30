@@ -1882,3 +1882,10 @@ header.topbar .topCenter .mega-menu{
   transform: none !important;
 }
 
+/* ✅ (안전장치) JS 주입 스타일이 항상 위로 오도록 */
+#megaMenu.mega-menu{ z-index: 9999; }
+header.topbar .navWrap{ position: relative; overflow: visible; }
+header.topbar .topCenter{ overflow: visible; }
+#topTabs{ position: relative; z-index: 30; }
+
+
