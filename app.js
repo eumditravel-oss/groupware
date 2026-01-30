@@ -596,11 +596,14 @@ function applyMegaMenuFix(){
       text-align: center;
     }
 
-    /* ✅ 메가메뉴 컨테이너 */
+        /* ✅ 메가메뉴 컨테이너 */
     #megaMenu.mega-menu{
       position: absolute;
-      left: 0;
-      right: 0;
+      /* ✅ FIX: topTabs의 실제 시작점/폭과 100% 일치 */
+      left: var(--mega-x, 0px);
+      width: var(--mega-w, 100%);
+      right: auto;
+
       top: 100%;
       z-index: 9999;
 
@@ -613,6 +616,7 @@ function applyMegaMenuFix(){
       pointer-events: none;                 /* 닫힌 상태에서 클릭/호버 차단 */
       transition: opacity .15s ease, transform .15s ease;
     }
+
 
     /* ✅ 열 정렬: 상단 탭과 동일한 컬럼 수로 그리드 구성 */
     #megaMenu.mega-menu{
@@ -1156,6 +1160,28 @@ function renderLeftProfile(db){
   if (wrap) wrap.style.setProperty("--mega-cols", String(cols));
   host.style.setProperty("--mega-cols", String(cols));
   mega.style.setProperty("--mega-cols", String(cols));
+
+       // ✅ FIX: megaMenu가 wrap(left:0)가 아니라 "topTabs 시작점/폭"과 동일하게 펼쳐지도록 좌표 주입
+  const syncMegaRect = () => {
+    if (!wrap) return;
+    const rTabs = host.getBoundingClientRect();
+    const rWrap = wrap.getBoundingClientRect();
+    const x = Math.round(rTabs.left - rWrap.left);
+    const w = Math.round(rTabs.width);
+
+    // CSS var로 넘김(스타일에서 left/width로 사용)
+    wrap.style.setProperty("--mega-x", `${x}px`);
+    wrap.style.setProperty("--mega-w", `${w}px`);
+  };
+
+  syncMegaRect();
+
+  // ✅ resize 시에도 계속 일치(한 번만 바인딩)
+  if (wrap && !wrap.dataset.megaRectBound){
+    wrap.dataset.megaRectBound = "1";
+    window.addEventListener("resize", syncMegaRect);
+  }
+
 
   tabsForMega.forEach(t=>{
     const items = SIDE_MENUS[t.key] || [];
