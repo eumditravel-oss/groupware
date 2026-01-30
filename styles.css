@@ -1,4 +1,4 @@
-/* styles.css (FULL) - Clean + MegaMenu Align 유지 + TopTabs 디자인 원복 */
+/* styles.css (FULL) - MegaMenu Align 유지 + ✅ Topbar/TopTabs "원래(2번째 사진)" 디자인 복구 */
 
 /* =========================
    ROOT
@@ -85,23 +85,28 @@ button, select, input, textarea{
 }
 
 /* =========================
-   TOPBAR
+   ✅ TOPBAR (2번째 사진 스타일로 복구)
+   - "얇은 흰 바 + 하단 라인"
+   - 가운데 탭이 화면 폭 전체로 퍼지는 느낌
 ========================= */
 header.topbar{
   position: sticky;
   top: 0;
   z-index: 50;
 
-  height: auto;
+  height: var(--topbarH);
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: 12px;
 
-  padding: 10px 14px;
-  background: rgba(255,255,255,.90);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(0,0,0,.06);
+  /* ✅ 원래 느낌: 위아래 여백 적고, 좌우는 넉넉 */
+  padding: 0 18px;
+
+  /* ✅ blur/pill 느낌 제거 → 완전 흰 바 */
+  background: #fff;
+  backdrop-filter: none;
+  border-bottom: 1px solid rgba(0,0,0,.10);
 
   overflow: visible;
 }
@@ -112,11 +117,14 @@ header.topbar .brand{
   display:flex;
   align-items:center;
   gap:10px;
-  padding: 6px 8px;
-  border-radius: 14px;
+
+  /* ✅ 원래 느낌: 배경/호버 강조 최소화 */
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
 }
 @media (hover:hover) and (pointer:fine){
-  header.topbar .brand:hover{ background: var(--accentSoft); }
+  header.topbar .brand:hover{ background: transparent; }
 }
 .logoImg{
   width: 120px;
@@ -144,15 +152,18 @@ header.topbar .topRight{
 }
 
 /* =========================
-   ✅ TOP TABS (2번째 이미지처럼: 원래 상단 텍스트 메뉴 느낌)
-   - 전체폭에서 가운데 정렬
-   - grid/알약/박스 느낌 제거
+   ✅ TOP TABS (2번째 사진 스타일)
+   핵심:
+   - width: 100% + max-width 제거 → 탭이 상단 바에서 쫙 퍼짐
+   - "텍스트 메뉴" 느낌: 배경 없음, 하단 오렌지 언더라인
 ========================= */
 #topTabs.topTabs{
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr));
+  align-items: stretch;
+  justify-items: stretch;
 
+  /* ✅ 여기서 “원래처럼 넓게” 만드는 포인트 */
   width: 100%;
   max-width: none;
   margin: 0;
@@ -163,76 +174,69 @@ header.topbar .topRight{
   border-radius: 0;
 
   padding: 0;
-  gap: 34px;              /* ✅ 메뉴 간격(원래 느낌) */
+  gap: 0;
+
   overflow: visible;
 }
 
-/* 각 탭 = 그냥 텍스트 메뉴 */
+/* 탭 버튼 공통 */
 #topTabs .topTab,
 #topTabs .top-tab,
 #topTabs button,
 #topTabs a{
   position: relative;
-  width: auto;            /* ✅ 1fr 강제 제거 */
-  min-width: 0;
+  width: 100%;
+  height: var(--topbarH);
 
   border: 0;
   background: transparent;
   box-shadow: none;
 
-  padding: 14px 0;        /* ✅ 상단 바 높이만 맞춤 */
+  /* ✅ 원래 탭은 세로로 조금 여유 */
+  padding: 0 6px;
   border-radius: 0;
 
-  font-weight: 800;
+  /* ✅ 원래는 너무 굵지 않음 */
+  font-weight: 700;
   font-size: 14px;
-  color: rgba(0,0,0,.72);
+  color: rgba(0,0,0,.78);
 
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-  cursor: pointer;
-  white-space: nowrap;
+  cursor:pointer;
 }
 
+/* hover */
 @media (hover:hover) and (pointer:fine){
   #topTabs .topTab:hover,
   #topTabs .top-tab:hover,
   #topTabs button:hover,
   #topTabs a:hover{
-    color: rgba(0,0,0,.92);
+    color: rgba(0,0,0,.95);
   }
 }
 
-/* 활성 탭 표시(원래처럼 “텍스트 강조 + 아래 얇은 라인”) */
+/* active */
 #topTabs .topTab.active,
-#topTabs .top-tab.active,
-#topTabs button.active,
-#topTabs a.active{
+#topTabs .top-tab.active{
   color: rgba(0,0,0,.95);
-  font-weight: 900;
 }
 
+/* active underline (원래처럼 얇고 길게) */
 #topTabs .topTab.active::after,
-#topTabs .top-tab.active::after,
-#topTabs button.active::after,
-#topTabs a.active::after{
+#topTabs .top-tab.active::after{
   content:"";
   position:absolute;
-  left: -6px;
-  right: -6px;
+  left: 20%;
+  right: 20%;
   bottom: 10px;
   height: 2px;
   border-radius: 999px;
-  background: rgba(0,0,0,.18); /* ✅ 원래 느낌(검정/회색 라인) */
-  opacity: 1;
+  background: var(--accent);
+  opacity: .95;
 }
-
-/* 반응형에서 간격만 살짝 줄이기 */
-@media (max-width: 980px){
-  #topTabs.topTabs{ gap: 18px; }
-}
-
 
 /* =========================
    LAYOUT
@@ -797,7 +801,8 @@ header.topbar .topRight{
   .dashRow3{ grid-template-columns: 1fr; }
 }
 @media (max-width: 980px){
-  #topTabs.topTabs{ width: min(560px, 100%); }
+  /* ✅ 모바일에서도 탭은 “전체 폭” 유지 */
+  #topTabs.topTabs{ width: 100%; }
   .dashRow2{ grid-template-columns: 1fr; }
   .main{ padding: 12px; }
   .split{ grid-template-columns: 1fr; }
@@ -932,8 +937,7 @@ header.topbar .topRight{
 }
 
 /* =========================
-   ✅ MEGA MENU (최종: 정렬은 app.js var + JS open 클래스)
-   - 탭 디자인은 건드리지 않음
+   ✅ MEGA MENU (정렬은 app.js var + JS open 클래스)
 ========================= */
 #megaMenu.mega-menu{
   border-radius: 18px;
