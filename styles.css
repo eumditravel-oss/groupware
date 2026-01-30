@@ -1918,7 +1918,8 @@ header.topbar .topCenter{ overflow: visible; }
   z-index: 5000;
 }
 
-#megaMenu.mega-menu.open{ display: block; }
+#megaMenu.mega-menu.open{ display: grid; }
+
 
 /* mega-inner가 있으면 그리드로, 없으면 mega-menu 자체가 그리드 */
 #megaMenu .mega-inner,
@@ -1945,4 +1946,83 @@ header.topbar .topCenter{ overflow: visible; }
   display: grid;
   gap: 8px;
 }
+
+/* =========================================================
+   ✅ MEGA ALIGN FINAL (탭열 = 메가열 1:1 고정)
+   - topTabs와 megaMenu가 동일한 grid/폭 기준을 공유
+========================================================= */
+
+/* topCenter를 기준점으로 */
+header.topbar .topCenter{
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* ✅ 탭을 6등분 grid로 고정 (메가와 동일) */
+#topTabs.topTabs{
+  width: 100% !important;
+  max-width: var(--mega-w, 1200px) !important; /* JS가 --mega-w를 주면 그 폭을 따름 */
+  margin: 0 auto !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr)) !important;
+  gap: 0 !important;
+
+  /* pill 스타일/스크롤 영향 제거(열 정렬 안정) */
+  overflow: visible !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+/* 탭 버튼은 각 칸 중앙 정렬 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button,
+#topTabs a{
+  width: 100% !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+}
+
+/* ✅ 메가메뉴도 동일 grid/폭 */
+#megaMenu.mega-menu{
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+
+  /* JS가 주입한 left/width(var--mega-x/--mega-w)를 그대로 사용 */
+  left: var(--mega-x, 0px) !important;
+  width: var(--mega-w, 100%) !important;
+  max-width: var(--mega-w, 100%) !important;
+
+  right: auto !important;
+  transform: none !important;
+
+  /* ✅ 메가 자체가 grid가 되도록 */
+  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr)) !important;
+  gap: 0 !important;
+
+  z-index: 5000 !important;
+}
+
+/* ✅ 열릴 때 grid로 */
+#megaMenu.mega-menu.open{
+  display: grid !important;
+}
+
+/* 컬럼 찢김 방지 */
+#megaMenu .mega-col{
+  min-width: 0 !important;
+}
+
+/* 글자 세로로 찢어지는 현상 방지(최후 안전장치) */
+#megaMenu .mega-item,
+#megaMenu .mega-col-title{
+  writing-mode: horizontal-tb !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+}
+
 
