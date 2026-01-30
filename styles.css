@@ -1,16 +1,9 @@
-/* styles.css (FULL) - Scroll/Background Fix 포함 버전
-   ✅ 목표
-   1) “중간 스크롤바(내부 컨테이너 스크롤)” 제거 → body(페이지)만 세로 스크롤
-   2) “하단 배경색 튐/얼룩(끝에서 다른 색)” 최소화 → html/body 배경 고정 + 배경을 ::before에 올림
-   3) 가로는 레이아웃 유지(최소폭) → body overflow-x: auto 유지
-   4) 모달만 자체 스크롤 허용
-*/
+/* styles.css (FULL) - Clean + MegaMenu Align 유지 + TopTabs 디자인 원복 */
 
 /* =========================
    ROOT
 ========================= */
 :root{
-  /* ✅ Clean ivory + soft gray (얼룩/밴딩 최소화) */
   --bg:#f4f6f9;
   --bg2:#eef2f7;
 
@@ -38,15 +31,12 @@
   --topbarH: 74px;
   --sideW: 260px;
 
-  /* ✅ 모바일에서도 웹 배치 유지용 최소 폭(가로스크롤 허용) */
   --minMainW: 820px;
 
-  /* ✅ PAD 느낌: “pill 채움” 톤 */
   --pillBg: rgba(255,255,255,.92);
   --pillBorder: rgba(0,0,0,.06);
   --pillShadow: 0 10px 24px rgba(0,0,0,.06);
 
-  /* ✅ 드롭다운 화살표(인라인 SVG) */
   --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%236b6b73' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
 }
 
@@ -56,26 +46,21 @@
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
 html{ color-scheme: light; }
-
-/* ✅ “하단 색상 튐” 방지: html/body는 단색 고정 */
 html{ background: var(--bg); }
+
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", "Malgun Gothic";
   color:var(--ink);
 
-  /* ✅ 세로 스크롤은 body가 담당(중간 스크롤 제거 핵심) */
   overflow-y: auto;
-  overflow-x: auto; /* ✅ 배치 고정 + 가로스크롤 허용 */
+  overflow-x: auto;
   min-height: 100%;
-
-  /* ✅ body 자체 배경은 투명(배경은 ::before에서 담당) */
   background: transparent;
 
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ✅ 배경 그라데이션은 “고정 레이어”로 분리 → 밴딩/끊김/끝색 튐 최소화 */
 body::before{
   content:"";
   position: fixed;
@@ -89,11 +74,9 @@ body::before{
     linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
 }
 
-/* 링크/유틸 */
 a{ color:inherit; text-decoration:none; }
 .hidden{ display:none !important; }
 
-/* 폼 기본 */
 button, select, input, textarea{
   -webkit-appearance: none;
   appearance: none;
@@ -119,6 +102,8 @@ header.topbar{
   background: rgba(255,255,255,.90);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(0,0,0,.06);
+
+  overflow: visible;
 }
 
 /* 브랜드(로고만) */
@@ -133,7 +118,6 @@ header.topbar .brand{
 @media (hover:hover) and (pointer:fine){
   header.topbar .brand:hover{ background: var(--accentSoft); }
 }
-
 .logoImg{
   width: 120px;
   height: 34px;
@@ -148,85 +132,86 @@ header.topbar .topCenter{
   display: flex;
   justify-content: center;
   align-items: center;
+
+  position: relative;
+  overflow: visible;
 }
 
-/* 오른쪽은 비워둠(요청: 사용자 박스 제거) */
+/* 오른쪽 비움 */
 header.topbar .topRight{
   flex: 0 0 auto;
   width: 12px;
 }
 
-/* ✅ 큰 캡슐 바 + 세그먼트 탭 */
+/* =========================
+   ✅ TOP TABS (원래 디자인으로 복구)
+   - 빨간박스처럼 "텍스트 메뉴" 느낌
+   - 정렬은 JS에서 --mega-cols로 맞추되, 디자인은 여기서
+========================= */
 #topTabs.topTabs{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  padding: 7px 8px;
+  display: grid;
+  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr));
+  align-items: center;
+  justify-items: center;
 
-  border: 1px solid rgba(0,0,0,.08);
-  background: rgba(245,247,250,.92);
-  box-shadow: 0 10px 22px rgba(0,0,0,.06);
+  width: min(980px, 100%);
+  margin: 0 auto;
 
-  width: fit-content;
-  max-width: 100%;
-  border-radius: 18px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
 
-  /* ✅ 탭이 많아지면 가로로만 스크롤(세로 스크롤 금지) */
-  overflow-x: auto;
-  overflow-y: hidden;
+  padding: 0;
+  gap: 0;
 
-  scrollbar-width: thin;
+  overflow: visible;
 }
 
-/* 탭 버튼 */
-.topTab,
-.top-tab,
+#topTabs .topTab,
+#topTabs .top-tab,
 #topTabs button,
 #topTabs a{
   position: relative;
-  border: 1px solid rgba(0,0,0,.06);
-  cursor:pointer;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
 
-  padding:10px 14px 12px;
-  border-radius: 14px !important;
+  padding: 14px 6px 12px;
+  border-radius: 0;
+
   font-weight: 950;
-  font-size: 13px;
-
-  color:#2f2f34;
-  background: rgba(255,255,255,.60);
+  font-size: 14px;
+  color: rgba(0,0,0,.78);
 
   display:flex;
   align-items:center;
-  gap:6px;
+  justify-content:center;
 
-  transition: background .12s ease, color .12s ease, box-shadow .12s ease, border-color .12s ease;
+  cursor:pointer;
 }
 
 @media (hover:hover) and (pointer:fine){
-  .topTab:hover,
-  .top-tab:hover{
-    border-color: rgba(0,0,0,.10);
-    background: rgba(255,255,255,.82);
+  #topTabs .topTab:hover,
+  #topTabs .top-tab:hover{
+    color: rgba(0,0,0,.95);
   }
 }
 
-/* ✅ active: 흰 캡슐 + 오렌지 밑줄 */
-.topTab.active,
-.top-tab.active{
-  background: rgba(255,255,255,.98);
-  color:#111;
-  border-color: rgba(0,0,0,.10);
-  box-shadow: 0 10px 18px rgba(0,0,0,.06);
+#topTabs .topTab.active,
+#topTabs .top-tab.active{
+  color: rgba(0,0,0,.95);
 }
-.topTab.active::after,
-.top-tab.active::after{
+
+#topTabs .topTab.active::after,
+#topTabs .top-tab.active::after{
   content:"";
   position:absolute;
-  left:12px;
-  right:12px;
-  bottom:6px;
-  height:3px;
+  left: 22%;
+  right: 22%;
+  bottom: 6px;
+  height: 3px;
   border-radius: 999px;
   background: var(--accent);
   opacity: .95;
@@ -237,8 +222,6 @@ header.topbar .topRight{
 ========================= */
 .app{
   display:flex;
-
-  /* ✅ 앱 전체 세로 스크롤은 body가 담당하도록: app은 overflow 금지 */
   overflow: visible;
 
   min-height: 100vh;
@@ -254,7 +237,6 @@ header.topbar .topRight{
   border-right: 1px solid rgba(0,0,0,.06);
   background: rgba(255,255,255,.62);
 
-  /* ✅ 내부 스크롤 금지(중간 스크롤 제거 핵심) */
   overflow: visible;
 }
 
@@ -270,38 +252,6 @@ header.topbar .topRight{
   align-items:center;
   justify-content:center;
   padding: 6px 0 10px;
-}
-
-.profileAvatar{
-  width: 120px;
-  height: 120px;
-  border-radius: 999px;
-  border: 1px solid rgba(0,0,0,.08);
-  background: rgba(245,247,250,.92);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  overflow: hidden;
-}
-
-.profileAvatarInner{
-  width: 62px;
-  height: 62px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.86);
-  position: relative;
-}
-.profileAvatarInner::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  top: 52px;
-  transform: translateX(-50%);
-  width: 84px;
-  height: 54px;
-  border-radius: 999px 999px 18px 18px;
-  background: rgba(0,0,0,.86);
 }
 
 .profileBody{
@@ -349,8 +299,6 @@ header.topbar .topRight{
   flex-direction:column;
   gap:6px;
   padding: 6px 6px 0;
-
-  /* ✅ 내부 스크롤 금지(중간 스크롤 제거) */
   overflow: visible;
 }
 
@@ -410,8 +358,6 @@ header.topbar .topRight{
   flex:1;
   min-width: var(--minMainW);
   padding: 16px 18px 26px;
-
-  /* ✅ 내부 스크롤 금지(중간 스크롤 제거 핵심) */
   overflow: visible;
 }
 
@@ -421,7 +367,6 @@ header.topbar .topRight{
   padding:0 !important;
 }
 
-/* ✅ view도 스크롤 컨테이너가 되지 않게 */
 .view{
   min-height: 520px;
   overflow: visible;
@@ -437,7 +382,6 @@ header.topbar .topRight{
   box-shadow: var(--shadow);
   padding: 14px 14px;
 
-  /* ✅ 내부 컨텐츠가 카드 폭을 밀어내지 않게 */
   min-width: 0;
   max-width: 100%;
 }
@@ -686,7 +630,7 @@ header.topbar .topRight{
 }
 
 /* =========================
-   MODAL  (✅ 모달만 스크롤 허용)
+   MODAL  (모달만 스크롤 허용)
 ========================= */
 .modalBackdrop{
   position:fixed;
@@ -701,10 +645,7 @@ header.topbar .topRight{
 .modal{
   width: min(860px, 96vw);
   max-height: 86vh;
-
-  /* ✅ 모달 내용이 길면 모달 내부만 스크롤 */
   overflow:auto;
-
   background: rgba(255,255,255,.97);
   border: 1px solid rgba(0,0,0,.10);
   border-radius: 18px;
@@ -730,8 +671,6 @@ header.topbar .topRight{
 
 /* =========================
    EMBED(iframe)
-   ✅ iframe는 "높이를 주면" 내부가 스크롤처럼 보일 수 있음
-   ✅ 하지만 여기서는 wrapper만 고정 높이, 스크롤은 body가 아니라 iframe 내부(기본 동작)
 ========================= */
 .viewTopTools{
   display:flex;
@@ -747,10 +686,7 @@ header.topbar .topRight{
   min-height: 520px;
   border: 1px solid rgba(0,0,0,.08);
   border-radius: 16px;
-
-  /* ✅ wrapper는 넘침 숨김(iframe 자체 스크롤은 iframe이 처리) */
   overflow:hidden;
-
   background: rgba(255,255,255,.80);
 }
 .embedFrame{
@@ -777,7 +713,6 @@ header.topbar .topRight{
 .split{ display:grid; grid-template-columns: 260px 1fr; gap:12px; }
 .dash{ display:grid; grid-template-columns: 320px 1fr; gap:12px; }
 
-/* ✅ grid/flex overflow 안전 */
 .split, .dash { min-width:0; }
 .split > *, .dash > * { min-width:0; }
 
@@ -836,7 +771,6 @@ header.topbar .topRight{
   color:#7a4a12;
 }
 
-/* Checkbox */
 .chk{ width: 18px; height: 18px; margin-top: 2px; cursor:pointer; }
 
 /* =========================
@@ -845,116 +779,13 @@ header.topbar .topRight{
 @media (max-width: 1100px){
   .dashRow3{ grid-template-columns: 1fr; }
 }
-
 @media (max-width: 980px){
-  #topTabs.topTabs{ max-width: 360px; }
+  #topTabs.topTabs{ width: min(560px, 100%); }
   .dashRow2{ grid-template-columns: 1fr; }
   .main{ padding: 12px; }
   .split{ grid-template-columns: 1fr; }
   .dash{ grid-template-columns: 1fr; }
 }
-
-/* =========================
-   (하단에 남아있던 추가 스타일들)
-========================= */
-.profile-card{
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(0,0,0,.06);
-  border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(0,0,0,.08);
-  padding: 14px 14px 12px;
-  min-width:0;
-}
-
-.profile-head{
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  margin-bottom: 10px;
-  min-width:0;
-}
-
-.profile-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  font-weight: 900;
-  font-size: 14px;
-  color: var(--ink);
-}
-.profile-badge::before{
-  content:"🏷️";
-  font-size: 14px;
-  opacity:.9;
-}
-
-/* photo box */
-.avatar{
-  display:block;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 14px;
-  border: 3px solid var(--accent);
-  background: rgba(0,0,0,.02);
-  overflow:hidden;
-  cursor:pointer;
-  position:relative;
-}
-
-#avatarPreview{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-.avatar-placeholder{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  color: rgba(0,0,0,.55);
-}
-
-.avatar-icon{ font-size: 42px; line-height: 1; }
-.avatar-text{ font-size: 13px; font-weight: 700; }
-
-/* meta rows */
-.profile-meta{
-  margin: 12px 2px 0;
-}
-.profile-meta .row{
-  display:grid;
-  grid-template-columns: 44px 1fr;
-  gap: 10px;
-  align-items:center;
-  padding: 10px 2px;
-  border-top: 1px solid rgba(0,0,0,.10);
-}
-.profile-meta dt{
-  font-size: 12px;
-  color: rgba(0,0,0,.55);
-  font-weight: 800;
-}
-.profile-meta dd{
-  margin:0;
-  font-size: 14px;
-  color: var(--ink);
-  font-weight: 800;
-}
-
-/* ✅ 전자메일: 목록 상단 검색툴바 */
-.mail-toolbar{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.mail-toolbar .select{ width: 140px; }
-.mail-toolbar .input{ width: 260px; max-width: 40vw; }
 
 /* =========================
    LEFT: 다가오는 생일 위젯
@@ -964,9 +795,7 @@ header.topbar .topRight{
   padding: 14px 14px;
   border-radius: 18px;
 }
-.bdayCard.card{
-  overflow:hidden;
-}
+.bdayCard.card{ overflow:hidden; }
 
 .bdayHead{
   display:flex;
@@ -995,7 +824,6 @@ header.topbar .topRight{
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px 10px;
 }
-
 .bdayItem{
   display:flex;
   flex-direction:column;
@@ -1004,7 +832,6 @@ header.topbar .topRight{
   text-align:center;
   min-width:0;
 }
-
 .bdayAvatar{
   width: 44px;
   height: 44px;
@@ -1016,7 +843,6 @@ header.topbar .topRight{
   justify-content:center;
   font-size: 18px;
 }
-
 .bdayName{
   font-weight: 1000;
   font-size: 12px;
@@ -1026,13 +852,11 @@ header.topbar .topRight{
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .bdayDate{
   font-size: 12px;
   color: var(--muted);
   font-weight: 900;
 }
-
 .bdayEmpty{
   padding: 12px;
   border-radius: 14px;
@@ -1045,8 +869,40 @@ header.topbar .topRight{
 }
 
 /* =========================
-   ✅ (중요) 중간 스크롤 발생 원인 차단
-   - 혹시 JS/기존 CSS에서 overflow-y:scroll, height:100vh 등을 줬을 때도 덮어쓰기
+   Avatar (프로필 업로드 박스)
+========================= */
+.avatar{
+  display:block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  border: 3px solid var(--accent);
+  background: rgba(0,0,0,.02);
+  overflow:hidden;
+  cursor:pointer;
+  position:relative;
+}
+#avatarPreview{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.avatar-placeholder{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color: rgba(0,0,0,.55);
+}
+.avatar-icon{ font-size: 42px; line-height: 1; }
+.avatar-text{ font-size: 13px; font-weight: 700; }
+
+/* =========================
+   ✅ 스크롤 컨테이너 방지
 ========================= */
 #view,
 .view,
@@ -1054,178 +910,14 @@ header.topbar .topRight{
 .side{
   overflow-y: visible !important;
 }
-
-/* 단, 모달은 예외 */
 .modal{
   overflow: auto !important;
 }
 
-
-
-/* =========================================================
-   ✅ MEGA MENU (FINAL - single source of truth)
-   - 상단 탭(#topTabs) 폭/컬럼과 메가메뉴(#megaMenu) 폭/컬럼 1:1 정렬
-   - JS(app.js)에서 --mega-cols / --mega-x / --mega-w 를 주입한다고 가정
-========================================================= */
-
-/* 0) 탭 영역(topCenter)을 기준 컨테이너로 (megaMenu absolute 기준점) */
-header.topbar .topCenter{
-  position: relative;
-  overflow: visible;
-}
-
-/* 1) 상단 탭: 6등분 그리드(컬럼 수는 JS var로 연동) */
-#topTabs{
-  display: grid;
-  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr));
-  align-items: center;
-  justify-items: center;
-
-  gap: 0;
-  width: 100%;
-  max-width: 100%;
-
-  /* 기존 pill 느낌 제거(이미지처럼 상단은 깔끔) */
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  border-radius: 0;
-
-  padding: 0;
-  overflow: visible;
-}
-
-/* 탭 버튼: 중앙정렬 + 높이감 */
-#topTabs .top-tab{
-  width: 100%;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-
-  padding: 14px 6px 12px;
-  border-radius: 0;
-
-  font-weight: 900;
-  font-size: 13px;
-  color: rgba(0,0,0,.82);
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-}
-
-@media (hover:hover) and (pointer:fine){
-  #topTabs .top-tab:hover{
-    color: rgba(0,0,0,.96);
-  }
-}
-
-/* active 밑줄 */
-#topTabs .top-tab.active::after{
-  content:"";
-  position:absolute;
-  left: 28%;
-  right: 28%;
-  bottom: 6px;
-  height: 2px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.80);
-}
-
-/* 2) 메가메뉴: 탭 폭과 동일하게 펼치기 (좌표/폭은 JS가 var로 주입) */
+/* =========================
+   ✅ MEGA MENU (최종: 정렬은 app.js var + JS open 클래스)
+   - 탭 디자인은 건드리지 않음
+========================= */
 #megaMenu.mega-menu{
-  position: absolute;
-  top: calc(100% + 10px);
-  z-index: 9999;
-
-  /* ✅ JS에서 계산해서 주입한 탭 시작점/폭과 동일하게 */
-  left: var(--mega-x, 0px);
-  width: var(--mega-w, 100%);
-  right: auto;
-
-  /* ✅ 이미지처럼 흰색 카드 + 둥근 모서리 */
-  background: #fff;
-  border: 1px solid rgba(0,0,0,.08);
-  border-radius: 16px;
-  box-shadow: 0 18px 42px rgba(0,0,0,.10);
-
-  /* ✅ 6열 그리드(컬럼 수는 JS var로 연동) */
-  display: grid;
-  grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr));
-  gap: 0;
-
-  /* 기본은 닫힘(hover/open에서 열림) */
-  opacity: 0;
-  transform: translateY(6px);
-  pointer-events: none;
-  transition: opacity .14s ease, transform .14s ease;
-
-  padding: 0; /* 컬럼 내부에서 패딩 */
+  border-radius: 18px;
 }
-
-/* 열림 상태: JS가 mega-open / open 클래스 붙여줌 */
-.mega-open #megaMenu.mega-menu,
-#megaMenu.mega-menu.open{
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-/* 3) 컬럼 패딩 + 세로 구분선(이미지처럼) */
-#megaMenu .mega-col{
-  padding: 18px 18px 20px;
-  min-width: 0;
-}
-
-#megaMenu .mega-col:not(:first-child){
-  border-left: 1px solid rgba(0,0,0,.08);
-}
-
-/* 4) 컬럼 타이틀 / 아이템(이미지처럼 심플) */
-#megaMenu .mega-col-title{
-  font-weight: 1000;
-  font-size: 13px;
-  color: rgba(0,0,0,.78);
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-#megaMenu .mega-col-items{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-#megaMenu .mega-item{
-  width: 100%;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-
-  font-weight: 900;
-  font-size: 12.5px;
-  color: rgba(0,0,0,.75);
-
-  padding: 8px 10px;
-  border-radius: 12px;
-  text-align: center;
-}
-
-@media (hover:hover) and (pointer:fine){
-  #megaMenu .mega-item:hover{
-    background: rgba(0,0,0,.05);
-  }
-}
-
-/* 5) 반응형: 컬럼 수만 줄이면 탭/메가 자동 동일 */
-@media (max-width: 1100px){
-  #topTabs{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-  #megaMenu.mega-menu{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-}
-@media (max-width: 720px){
-  #topTabs{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-  #megaMenu.mega-menu{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-}
-
