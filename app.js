@@ -568,6 +568,7 @@ function applyScrollFix(){
 
    /***********************
  * Mega Menu Fix (정렬/구분선/호버 유지) - ✅탭 디자인은 CSS에 맡김
+ * + ✅탭 열 기준으로 메가메뉴 텍스트(타이틀/아이템) X축 보정
  ***********************/
 function applyMegaMenuFix(){
   const styleId = "conc0st-mega-fix";
@@ -576,8 +577,9 @@ function applyMegaMenuFix(){
   const style = document.createElement("style");
   style.id = styleId;
   style.textContent = `
-    /* ✅ megaMenu absolute 기준점 */
-    #topTabs{ position: relative; }
+    /* ✅ 기준점: navWrap이 있으면 navWrap, 없으면 topCenter */
+    header.topbar .navWrap{ position: relative; overflow: visible; }
+    header.topbar .topCenter{ position: relative; overflow: visible; }
 
     /* ✅ 메가메뉴 컨테이너 (탭 폭/시작점은 JS var로 맞춤) */
     #megaMenu.mega-menu{
@@ -586,7 +588,7 @@ function applyMegaMenuFix(){
       width: var(--mega-w, 100%);
       right: auto;
 
-      top: 100%;
+      top: calc(100% + 8px);
       z-index: 9999;
 
       background: #fff;
@@ -606,12 +608,25 @@ function applyMegaMenuFix(){
     #megaMenu .mega-col{
       padding: 18px 18px 20px;
       min-width: 0;
+      box-sizing: border-box;
     }
     #megaMenu .mega-col:not(:first-child){
       border-left: 1px solid #e6e9ef;
     }
 
-    /* ✅ 타이틀/아이템 */
+    /* ✅ 타이틀/아이템: "정렬 보정(translateX)"을 먹일 수 있도록 width 100% + 기준 정규화 */
+    #megaMenu .mega-col-title,
+    #megaMenu .mega-col-items{
+      width: 100%;
+      box-sizing: border-box;
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 0;
+      padding-right: 0;
+      will-change: transform;
+    }
+
+    /* ✅ 타이틀 */
     #megaMenu .mega-col-title{
       font-weight: 900;
       font-size: 13px;
@@ -620,11 +635,13 @@ function applyMegaMenuFix(){
       text-align: center;
     }
 
+    /* ✅ 아이템 리스트 */
     #megaMenu .mega-col-items{
       display: flex;
       flex-direction: column;
       gap: 8px;
       align-items: center;
+      text-align: center;
     }
 
     #megaMenu .mega-item{
@@ -647,6 +664,83 @@ function applyMegaMenuFix(){
   `;
   document.head.appendChild(style);
 }
+
+   /***********************
+ * Mega Text Align Fix (탭 열 기준으로 타이틀/아이템 X축 보정)
+ ***********************/
+function syncMegaTextToTabs(opts = {}){
+  const mode = opts.mode || "center";  // "center" | "left"
+  const safeMax = Number(opts.safeMax ?? 160);
+  const nudge = Number(opts.nudge ?? 0);
+
+  const mega = document.getElementById("megaMenu");
+  const topTabs = document.getElementById("topTabs");
+  if (!mega || !topTabs) return;
+
+  const order = ["전자메일","게시판","전자결재","업무관리","산출","일정관리"];
+
+  // 상단 탭 요소 찾기
+  const tabEls = Array.from(topTabs.querySelectorAll("button, a, [role='tab'], .top-tab, .topTab"))
+    .filter(el => order.includes((el.textContent||"").trim()));
+
+  // 메가 컬럼 매핑(타이틀 텍스트 기준)
+  const cols = Array.from(mega.querySelectorAll(".mega-col"));
+  const colByTitle = (name) => cols.find(c => {
+    const h = c.querySelector(".mega-col-title, .col-title, h3, h4, .title, strong");
+    const t = (h ? h.textContent : c.textContent || "").trim();
+    return t.startsWith(name);
+  }) || null;
+
+  const tabs = order.map(name => tabEls.find(el => (el.textContent||"").trim() === name)).filter(Boolean);
+  const finalCols = order.map(colByTitle).filter(Boolean);
+
+  if (tabs.length < 4 || finalCols.length < 4) return;
+
+  const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+  for (let i=0; i<Math.min(tabs.length, finalCols.length); i++){
+    const tab = tabs[i];
+    const col = finalCols[i];
+
+    const tr = tab.getBoundingClientRect();
+    const tabAnchorX = (mode === "left")
+      ? (tr.left + nudge)
+      : (tr.left + tr.width/2 + nudge);
+
+    const titleEl = col.querySelector(".mega-col-title, .col-title, h3, h4, .title, strong");
+    const itemsEl = col.querySelector(".mega-col-items, .col-items, ul, .items");
+
+    const anchorEl = titleEl || itemsEl;
+    if (!anchorEl) continue;
+
+    const ar = anchorEl.getBoundingClientRect();
+    const curAnchorX = (mode === "left")
+      ? ar.left
+      : (ar.left + ar.width/2);
+
+    let dx = Math.round(tabAnchorX - curAnchorX);
+    dx = clamp(dx, -safeMax, safeMax);
+
+    if (titleEl) titleEl.style.transform = `translateX(${dx}px)`;
+    if (itemsEl) itemsEl.style.transform = `translateX(${dx}px)`;
+  }
+}
+
+/***********************
+ * Mega Text Align Reset (필요시)
+ ***********************/
+function resetMegaTextAlign(){
+  const mega = document.getElementById("megaMenu");
+  if (!mega) return;
+  mega.querySelectorAll(".mega-col").forEach(col=>{
+    const titleEl = col.querySelector(".mega-col-title, .col-title, h3, h4, .title, strong");
+    const itemsEl = col.querySelector(".mega-col-items, .col-items, ul, .items");
+    if (titleEl) titleEl.style.transform = "";
+    if (itemsEl) itemsEl.style.transform = "";
+  });
+}
+
+
 
 
 
@@ -1178,6 +1272,11 @@ function renderLeftProfile(db){
     );
   });
 
+       // ✅ 메가메뉴 타이틀/내용을 탭 열에 맞게 X축 보정(기본: center)
+  syncMegaTextToTabs({ mode:"center", safeMax:160, nudge:0 });
+
+     
+
   // ✅ 데스크탑: hover로 열고, 메가메뉴 위에 커서가 있어도 닫히지 않게
   if (wrap && !wrap.dataset.megaHoverBound){
     wrap.dataset.megaHoverBound = "1";
@@ -1188,7 +1287,13 @@ function renderLeftProfile(db){
       clearTimeout(closeTimer);
       wrap.classList.add("mega-open");
       mega.classList.add("open");
+             // ✅ 열릴 때 한번 더 보정(가장 안정적)
+      syncMegaTextToTabs({ mode:"center", safeMax:160, nudge:0 });
+
     };
+
+     
+     
 
     const closeMega = ()=>{
       clearTimeout(closeTimer);
