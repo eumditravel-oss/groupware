@@ -1112,6 +1112,12 @@ header.topbar .topCenter{
 .mega-menu.open{
   display: grid;
 }
+/* 메가메뉴 폭/레이아웃 강제 정상화 */
+.mega-menu { width: 100%; max-width: none; }
+.mega-inner { display: grid; grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr)); }
+.mega-col { min-width: 0; }                 /* ✅ 이거 없으면 컬럼이 찢어짐 */
+.mega-item { white-space: nowrap; width: 100%; display:block; text-align:left; }
+
 
 
 /* 컬럼 레이아웃 */
@@ -1163,6 +1169,8 @@ header.topbar .topCenter{
 @media (max-width: 720px){
   .mega-menu{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
+
+
 
 
 /* =========================================================
