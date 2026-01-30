@@ -1063,9 +1063,110 @@ header.topbar .topRight{
 
 
 
+/* =========================
+   MEGA MENU (hover open) - ✅ 위치 정렬만 수정
+   (대분류 탭 디자인은 건드리지 않음)
+========================= */
 
+/* ✅ 기준점: 탭이 들어있는 영역을 absolute 기준으로 */
+header.topbar .topCenter{
+  position: relative;
+  overflow: visible;
+}
 
+/* topTabs는 그대로(필수는 아니지만 z-index 안전) */
+#topTabs{
+  position: relative;
+  z-index: 30;
+}
 
+/* ✅ mega-menu: 전체폭(left/right 0) 금지 → 탭과 같은 "중앙 기준"으로 정렬 */
+.mega-menu{
+  position: absolute;
+  top: calc(100% + 8px);   /* topCenter(=탭 영역) 바로 아래 */
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  z-index: 50;
+
+  /* ✅ 탭 캡슐처럼 '내용 폭' 기반으로 (정렬 핵심) */
+  width: max-content;
+  max-width: calc(100vw - 60px); /* 화면 밖으로 나가지 않게 안전장치 */
+  margin: 0;
+
+  /* (기존 디자인 값은 유지) */
+  display: none;
+  padding: 18px 18px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 14px;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+/* ✅ 열림 조건 유지 */
+#topTabs:hover + .mega-menu,
+.mega-menu:hover{
+  display: grid;
+}
+
+/* ✅ 터치용 토글(open 클래스) */
+.mega-menu.open{
+  display: grid;
+}
+/* 메가메뉴 폭/레이아웃 강제 정상화 */
+.mega-menu { width: 100%; max-width: none; }
+.mega-inner { display: grid; grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr)); }
+.mega-col { min-width: 0; }                 /* ✅ 이거 없으면 컬럼이 찢어짐 */
+.mega-item { white-space: nowrap; width: 100%; display:block; text-align:left; }
+
+/* 컬럼 레이아웃 */
+.mega-menu{
+  grid-template-columns: repeat(6, minmax(0, 1fr)); /* TOP_TABS 6개 기준 */
+  gap: 14px;
+}
+
+/* 컬럼 카드 */
+.mega-col{
+  padding: 10px 10px;
+  border-radius: 12px;
+}
+
+.mega-col-title{
+  font-weight: 900;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.mega-col-items{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mega-item{
+  text-align: left;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.mega-item:hover{
+  background: rgba(0,0,0,0.05);
+}
+
+.mega-item{ white-space:nowrap; word-break:keep-all; }
+
+/* 반응형: 화면 좁으면 2~3컬럼 */
+@media (max-width: 1100px){
+  .mega-menu{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 720px){
+  .mega-menu{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
 
 /* =========================================================
    ✅ Apple-like Topbar + 탭/메가 세로라인 100% 정렬 (OVERRIDE)
@@ -1165,10 +1266,14 @@ header.topbar .topRight{
   opacity: 1;
 }
 
+/* (이 아래로 너가 붙인 수십개의 mega align fix / final fix / navWrap / css-only right/left / hard reset / mega align final ... 전부) */
+/* ... 너가 마지막에 준 “MEGA ALIGN FINAL (탭열 = 메가열 1:1 고정)” 끝까지 전부 삭제 */
+
+
 /* =========================================================
    ✅ MEGA MENU (JS var 기준) - 최소 유지본
-   - Apple-like Topbar 블록은 그대로 둠
-   - 메가메뉴는 #megaMenu만 제어 (충돌 방지)
+   - Apple-like Topbar 블록은 그대로 둠(수정 금지)
+   - 메가메뉴는 #megaMenu만 제어(충돌 방지)
    - 위치/폭: --mega-x, --mega-w (JS 계산)
    - 열 개수: --mega-cols (기본 6)
 ========================================================= */
@@ -1179,14 +1284,13 @@ header.topbar .topCenter{
   overflow: visible !important;
 }
 
-/* 탭은 Apple-like 블록에서 이미 grid로 맞추고 있으니
-   여기서는 '폭만' JS 계산값과 맞추는 용도 */
+/* 탭 폭을 JS 계산 폭과 일치(세로라인 1:1 정렬 안정) */
 #topTabs.topTabs{
   max-width: var(--mega-w, 1200px) !important;
   margin: 0 auto !important;
 }
 
-/* ✅ 메가메뉴: #megaMenu만 사용 (다른 .mega-menu 규칙과 충돌 차단) */
+/* ✅ 메가메뉴: #megaMenu만 사용 */
 #megaMenu.mega-menu{
   position: absolute !important;
   top: calc(100% + 8px) !important;
@@ -1200,7 +1304,7 @@ header.topbar .topCenter{
 
   display: none !important;
 
-  /* ✅ 탭과 동일하게 열 개수 기준 */
+  display: none !important;
   grid-template-columns: repeat(var(--mega-cols, 6), minmax(0, 1fr)) !important;
   gap: 0 !important;
 
@@ -1221,7 +1325,7 @@ header.topbar .topCenter{
   word-break: keep-all !important;
 }
 
-/* 반응형: 열 수를 변수로만 변경 (탭/메가 같이 변함) */
+/* 반응형: 열 수를 변수로만 변경 */
 @media (max-width: 1100px){
   :root{ --mega-cols: 3; }
 }
