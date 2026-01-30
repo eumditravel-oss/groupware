@@ -576,6 +576,9 @@ function applyMegaMenuFix(){
   const style = document.createElement("style");
   style.id = styleId;
   style.textContent = `
+  /* ✅ megaMenu absolute 기준점 */
+#topTabs{ position: relative; }   /* 또는 topTabs의 부모(wrap)에 relative */
+
     /* ✅ 상단 탭(초록 영역) = 그리드로 통일 → 메가메뉴 컬럼과 정렬 */
     #topTabs{
       display: grid !important;
@@ -1129,8 +1132,12 @@ function renderLeftProfile(db){
   });
 
   // ✅ 메가메뉴 컨테이너(없으면 생성)
-  let mega = $("#megaMenu");
+    let mega = $("#megaMenu");
   const wrap = host.parentElement; // topTabs를 감싸는 헤더 영역
+
+  // ✅ FIX: megaMenu absolute 기준점 확보(위치 튐 방지)
+  if (wrap) wrap.style.position = wrap.style.position || "relative";
+
 
   if (!mega){
     mega = el("div", { id:"megaMenu", class:"mega-menu" });
@@ -1194,12 +1201,15 @@ function renderLeftProfile(db){
     mega.addEventListener("mouseenter", openMega);
     mega.addEventListener("mouseleave", closeMega);
 
-    // ✅ 터치/모바일: 빈 공간 클릭 시 토글(기존 의도 유지)
+        // ✅ 터치/모바일: "빈 공간" 클릭 시만 토글 (메가메뉴/탭 클릭은 토글 금지)
     wrap.addEventListener("click", (e)=>{
-      if (e.target && e.target.classList && e.target.classList.contains("top-tab")) return;
+      if (e.target?.closest(".top-tab")) return;    // 탭 클릭은 토글 금지
+      if (e.target?.closest("#megaMenu")) return;   // 메가메뉴 내부 클릭은 토글 금지
+
       mega.classList.toggle("open");
       wrap.classList.toggle("mega-open");
     });
+
   }
 }
 
