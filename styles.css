@@ -1309,12 +1309,13 @@ header.topbar .topRight{
 #topTabs .topTab,
 #topTabs .top-tab,
 #topTabs button{
-  width: 100%;
+  width: auto !important;           /* ✅ 칸 먹지 않게 */
+  flex: 0 0 auto !important;
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
 
-  padding: 10px 6px !important;
+  padding: 10px 2px !important;     /* ✅ 텍스트 기준 깔끔 */
   border-radius: 0 !important;
 
   font-weight: 800;
@@ -1324,7 +1325,9 @@ header.topbar .topRight{
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  white-space: nowrap !important;
 }
+
 
 /* hover */
 @media (hover:hover) and (pointer:fine){
