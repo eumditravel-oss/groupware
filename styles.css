@@ -1419,4 +1419,9 @@ header.topbar .topCenter{
 }
 
 
+/* ✅ FORCE: topInner 폭 강제 (다른 블록이 1200으로 덮어써도 이게 최종 승리) */
+header.topbar .topInner{
+  max-width: 2200px !important;   /* 더 넓게 */
+  width: 100% !important;
+}
 
