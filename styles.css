@@ -1425,3 +1425,37 @@ header.topbar .topInner{
   width: 100% !important;
 }
 
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   ✅ TEMP: MEGA MENU 완전 비활성화(블럭 처리)
+   - hover/open/JS 토글 전부 무시
+   - 레이아웃 영향/깜빡임 방지
+========================================================= */
+.mega-menu,
+#megaMenu.mega-menu{
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 혹시 aria/hidden 토글로 표시되는 경우까지 차단 */
+.mega-menu.open,
+#megaMenu.mega-menu.open{
+  display: none !important;
+}
+
+/* ✅ hover 조건으로 열리는 케이스까지 차단 */
+#topTabs:hover + .mega-menu,
+#topTabs:hover + #megaMenu.mega-menu{
+  display: none !important;
+}
+
