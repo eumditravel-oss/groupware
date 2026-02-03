@@ -1172,66 +1172,136 @@ header.topbar .topRight{
 
 
 
-function renderMegaMenu(){
-  const host = document.getElementById("megaCols");
-  if(!host) return;
+/* =========================================================
+   ✅ MEGA MENU (②) - 이미지처럼: 흰 패널 + 세로 라인 + 컬럼정렬
+   - topInner와 같은 max-width(2200px), 같은 좌우 패딩(18px) 공유
+   - header 아래로 드롭다운(overlay)로 뜨게
+========================================================= */
 
-  host.innerHTML = MEGA_MENU.map(col => `
-    <div class="megaCol" data-key="${col.key}">
-      <div class="megaTitle">${col.title}</div>
-      <div class="megaList">
-        ${col.items.map(name => `<div class="megaItem" data-key="${col.key}" data-name="${name}">${name}</div>`).join("")}
-      </div>
-    </div>
-  `).join("");
-
-  // ✅ 클릭 시 기존 라우팅/화면 전환 함수로 연결 (너 프로젝트 함수명에 맞게 바꿔)
-  host.addEventListener("click", (e) => {
-    const item = e.target.closest(".megaItem");
-    if(!item) return;
-
-    const key = item.dataset.key;
-    const name = item.dataset.name;
-
-    // TODO: 기존 네비게이션 함수로 연결
-    // navigateTo(key, name) 또는 openSection(key, name) 등
-    console.log("MEGA CLICK:", key, name);
-  });
+/* ① 탭 간격: 이미지처럼 더 넓게 */
+#topTabs.topTabs{
+  gap: 54px !important; /* ✅ 36px → 54px (필요시 48~60 범위로 조절) */
 }
 
-function bindMegaMenu(){
-  const mega = document.getElementById("megaMenu");
-  const tabs = document.getElementById("topTabs");
-  const topbar = document.querySelector("header.topbar");
-  if(!mega || !tabs || !topbar) return;
-
-  const open = () => {
-    mega.classList.add("open");
-    mega.setAttribute("aria-hidden","false");
-  };
-  const close = () => {
-    mega.classList.remove("open");
-    mega.setAttribute("aria-hidden","true");
-  };
-
-  // ✅ PC: 탭 영역에 올리면 열리고, 헤더 밖으로 나가면 닫힘
-  tabs.addEventListener("mouseenter", open);
-  mega.addEventListener("mouseenter", open);
-  topbar.addEventListener("mouseleave", close);
-
-  // ✅ 모바일/터치: 탭 클릭 시 토글(원하는 UX면 유지, 아니면 제거)
-  tabs.addEventListener("click", () => {
-    if(mega.classList.contains("open")) close();
-    else open();
-  });
-
-  // ✅ ESC 닫기
-  window.addEventListener("keydown", (e) => {
-    if(e.key === "Escape") close();
-  });
+/* 탭 텍스트 살짝 또렷하게 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button{
+  font-weight: 800 !important;
+  font-size: 13px !important;
 }
 
-// ✅ 앱 초기화 시점에 호출
-renderMegaMenu();
-bindMegaMenu();
+/* ✅ 메가메뉴 래퍼(헤더 기준으로 드롭다운) */
+.megaMenu{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52px;                 /* ✅ topInner height와 동일(현재 52px) */
+  z-index: 120;
+
+  /* 바깥은 투명, 클릭만 받게 */
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .14s ease, transform .14s ease;
+
+  /* 필요 시 여백 */
+  padding: 12px 0 0;
+}
+
+/* ✅ 열림 상태 */
+.megaMenu.open{
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ✅ topInner와 동일한 “가로 컨테이너” */
+.megaMenu .megaInner{
+  max-width: 2200px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+/* ✅ 실제 흰 패널(이미지의 큰 흰 박스) */
+.megaMenu .megaPanel{
+  background: rgba(255,255,255,.98);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 18px;
+  box-shadow: 0 18px 55px rgba(0,0,0,.12);
+
+  /* 내부 여백 */
+  padding: 22px 20px;
+
+  /* 너무 길어지면 패널 내부만 스크롤(바디 스크롤과 충돌 방지) */
+  max-height: min(72vh, 720px);
+  overflow: auto;
+}
+
+/* ✅ 6열 컬럼(전자메일/게시판/전자결재/업무관리/산출/일정관리) */
+.megaCols{
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0; /* ✅ 세로 라인으로 구분하므로 gap=0 */
+}
+
+/* ✅ 컬럼 한 칸 */
+.megaCol{
+  padding: 6px 22px 10px;
+  min-width: 0;
+  position: relative;
+}
+
+/* ✅ 세로 구분선(이미지처럼) */
+.megaCol + .megaCol{
+  border-left: 1px solid rgba(0,0,0,.10);
+}
+
+/* ✅ 컬럼 타이틀(대분류명) */
+.megaTitle{
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(0,0,0,.78);
+  margin: 2px 0 10px;
+  text-align: center; /* 이미지 느낌 */
+}
+
+/* ✅ 링크 목록 */
+.megaList{
+  display: flex;
+  flex-direction: column;
+  align-items: center;     /* ✅ 이미지처럼 가운데 정렬 */
+  gap: 10px;
+  padding: 6px 0 0;
+}
+
+/* ✅ 링크 아이템 */
+.megaItem{
+  font-weight: 800;
+  font-size: 12.5px;
+  color: rgba(0,0,0,.72);
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background .12s ease, color .12s ease;
+}
+
+@media (hover:hover) and (pointer:fine){
+  .megaItem:hover{
+    background: rgba(0,0,0,.04);
+    color: rgba(0,0,0,.92);
+  }
+}
+
+/* ✅ 반응형: 폭이 좁아지면 3열/2열로 떨어지게 */
+@media (max-width: 1200px){
+  .megaCols{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .megaCol:nth-child(4){ border-left: none; } /* 줄바꿈 라인 보정 */
+}
+@media (max-width: 760px){
+  .megaCols{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .megaCol:nth-child(3),
+  .megaCol:nth-child(5){ border-left: none; }
+}
 
