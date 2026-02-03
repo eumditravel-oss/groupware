@@ -1172,4 +1172,156 @@ header.topbar .topRight{
 
 
 
+/* =========================================================
+   ✅ [FINAL PERFECT] Sidebar Exclusion + Grid Sync
+   - 목표 1: 사이드바(260px) 제외하고 우측 영역만 사용
+   - 목표 2: 탭 버튼과 메가메뉴 컬럼이 1:1로 정확히 직렬 배치
+   ========================================================= */
 
+:root {
+  --side-width: 260px; /* 사이드바 고정 폭 */
+  --top-height: 54px;  /* 상단바 높이 */
+}
+
+/* 1. 상단바 (레이아웃 정리) */
+header.topbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 6000 !important;
+  height: var(--top-height) !important;
+  
+  /* 애플 스타일 배경 */
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+
+  padding: 0 !important;
+  display: flex !important;
+}
+
+/* 로고 영역 (사이드바 폭만큼 고정) */
+header.topbar .brand {
+  flex: 0 0 var(--side-width) !important;
+  width: var(--side-width) !important;
+  display: flex !important;
+  align-items: center !important;
+  padding-left: 20px !important;
+  border-right: 1px solid rgba(0,0,0,0.05) !important; /* 사이드바 구분선 */
+}
+
+/* 2. 탭 영역 (우측 나머지 공간 꽉 채우기 + 6등분) */
+header.topbar .topCenter {
+  flex: 1 !important;
+  width: auto !important;
+  padding: 0 20px !important; /* 좌우 여백 */
+}
+
+#topTabs.topTabs {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  
+  /* ✅ 핵심: 탭 자체를 6등분 그리드로 선언 */
+  display: grid !important;
+  grid-template-columns: repeat(6, 1fr) !important; /* 6개 균등 분할 */
+  gap: 0 !important;
+}
+
+#topTabs .topTab,
+#topTabs button {
+  width: 100% !important; /* 자기 구역 꽉 채움 */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important; /* 텍스트 가운데 정렬 */
+  
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #333 !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  height: var(--top-height) !important;
+}
+
+/* 활성화 시 하단 바 */
+#topTabs .topTab.active {
+  position: relative !important;
+}
+#topTabs .topTab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 20%; right: 20%; /* 텍스트 길이만큼만 */
+  height: 3px;
+  background: #000;
+}
+
+
+/* 3. 메가메뉴 (탭과 정확히 동일한 그리드 적용) */
+#megaMenu.mega-menu {
+  /* 위치: 사이드바 오른쪽부터 시작 */
+  position: fixed !important;
+  top: var(--top-height) !important;
+  left: var(--side-width) !important; /* 260px 띄우기 */
+  right: 0 !important; /* 화면 끝까지 */
+  width: auto !important; /* left/right로 크기 자동 결정 */
+  
+  /* 디자인 */
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(20px) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+  
+  /* 레이아웃: 상단 탭과 동일한 패딩/그리드 적용 */
+  padding: 30px 20px 50px 20px !important; /* topCenter 패딩과 맞춤 */
+  
+  display: none !important;
+  /* ✅ 핵심: 상단 탭과 똑같은 6등분 그리드 */
+  grid-template-columns: repeat(6, 1fr) !important; 
+  gap: 0 !important;
+  
+  z-index: 5900 !important;
+}
+
+#megaMenu.mega-menu.open {
+  display: grid !important;
+}
+
+/* 메가메뉴 내부 컬럼 */
+#megaMenu .mega-col {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important; /* 내용을 가운데 정렬 */
+  border-left: 1px solid rgba(0,0,0,0.03) !important; /* 옅은 구분선 */
+}
+#megaMenu .mega-col:first-child { border-left: none !important; }
+
+/* 타이틀 숨김 (상단 탭이 타이틀 역할이므로 중복 제거, 원하면 block으로 변경) */
+#megaMenu .mega-col-title {
+  display: none !important; 
+}
+
+/* 메뉴 아이템 스타일 */
+#megaMenu .mega-item {
+  font-size: 13px !important;
+  color: #555 !important;
+  padding: 8px 0 !important;
+  text-align: center !important;
+  width: 100% !important;
+  font-weight: 500 !important;
+}
+
+#megaMenu .mega-item:hover {
+  color: #000 !important;
+  font-weight: 700 !important;
+  text-decoration: underline !important;
+}
+
+/* 숨겨야 할 우측 영역 */
+header.topbar .topRight {
+  display: none !important; /* 탭이 끝까지 가야하므로 제거 */
+}
