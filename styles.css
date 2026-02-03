@@ -1173,110 +1173,91 @@ header.topbar .topRight{
 
 
 /* =========================================================
-   ✅ MEGA MENU (②) - 이미지처럼: 흰 패널 + 세로 라인 + 컬럼정렬
-   - topInner와 같은 max-width(2200px), 같은 좌우 패딩(18px) 공유
-   - header 아래로 드롭다운(overlay)로 뜨게
+   ✅ MEGA MENU (index.html 구조 기준)
+   - navWrap 안에서 topTabs 아래로 “그대로” 떨어지는 드롭다운
+   - 이미지처럼: 흰 패널 + 6컬럼 + 세로 라인 + 중앙정렬
 ========================================================= */
 
-/* ① 탭 간격: 이미지처럼 더 넓게 */
-#topTabs.topTabs{
-  gap: 54px !important; /* ✅ 36px → 54px (필요시 48~60 범위로 조절) */
+/* ✅ navWrap: 탭과 메가메뉴가 같은 기준폭을 공유하도록 */
+.navWrap{
+  position: relative;
+  width: 100%;
+  max-width: 2200px; /* topInner 느낌으로 넓게 */
+  margin: 0 auto;
 }
 
-/* 탭 텍스트 살짝 또렷하게 */
-#topTabs .topTab,
-#topTabs .top-tab,
-#topTabs button{
-  font-weight: 800 !important;
-  font-size: 13px !important;
-}
-
-/* ✅ 메가메뉴 래퍼(헤더 기준으로 드롭다운) */
-.megaMenu{
+/* ✅ mega menu: topTabs 바로 아래에 뜨는 overlay */
+#megaMenu.mega-menu{
   position: absolute;
   left: 0;
   right: 0;
-  top: 52px;                 /* ✅ topInner height와 동일(현재 52px) */
+  top: 52px;             /* topbar 높이(너 오버라이드에서 topInner 52px 기준) */
   z-index: 120;
 
-  /* 바깥은 투명, 클릭만 받게 */
-  pointer-events: none;
+  padding-top: 10px;
+
   opacity: 0;
   transform: translateY(-6px);
+  pointer-events: none;
   transition: opacity .14s ease, transform .14s ease;
-
-  /* 필요 시 여백 */
-  padding: 12px 0 0;
 }
 
 /* ✅ 열림 상태 */
-.megaMenu.open{
-  pointer-events: auto;
+#megaMenu.mega-menu.open{
   opacity: 1;
   transform: translateY(0);
+  pointer-events: auto;
 }
 
-/* ✅ topInner와 동일한 “가로 컨테이너” */
-.megaMenu .megaInner{
-  max-width: 2200px;
-  margin: 0 auto;
-  padding: 0 18px;
-}
-
-/* ✅ 실제 흰 패널(이미지의 큰 흰 박스) */
-.megaMenu .megaPanel{
+/* ✅ 내부 흰 패널 (이미지 큰 박스) */
+#megaMenu .mega-inner{
   background: rgba(255,255,255,.98);
-  border: 1px solid rgba(0,0,0,.08);
+  border: 1px solid rgba(0,0,0,.10);
   border-radius: 18px;
   box-shadow: 0 18px 55px rgba(0,0,0,.12);
 
-  /* 내부 여백 */
   padding: 22px 20px;
 
-  /* 너무 길어지면 패널 내부만 스크롤(바디 스크롤과 충돌 방지) */
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0; /* 세로 라인으로 구분 */
+
+  /* 너무 길면 패널 내부만 스크롤 */
   max-height: min(72vh, 720px);
   overflow: auto;
 }
 
-/* ✅ 6열 컬럼(전자메일/게시판/전자결재/업무관리/산출/일정관리) */
-.megaCols{
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0; /* ✅ 세로 라인으로 구분하므로 gap=0 */
-}
-
-/* ✅ 컬럼 한 칸 */
-.megaCol{
-  padding: 6px 22px 10px;
+/* ✅ 각 컬럼 */
+#megaMenu .mega-col{
+  padding: 4px 22px 10px;
   min-width: 0;
-  position: relative;
 }
 
-/* ✅ 세로 구분선(이미지처럼) */
-.megaCol + .megaCol{
+/* ✅ 세로 라인 */
+#megaMenu .mega-col + .mega-col{
   border-left: 1px solid rgba(0,0,0,.10);
 }
 
 /* ✅ 컬럼 타이틀(대분류명) */
-.megaTitle{
+#megaMenu .mega-col-title{
   font-weight: 900;
   font-size: 13px;
   color: rgba(0,0,0,.78);
   margin: 2px 0 10px;
-  text-align: center; /* 이미지 느낌 */
+  text-align: center;
 }
 
-/* ✅ 링크 목록 */
-.megaList{
+/* ✅ 항목 리스트 */
+#megaMenu .mega-col-items{
   display: flex;
   flex-direction: column;
-  align-items: center;     /* ✅ 이미지처럼 가운데 정렬 */
+  align-items: center;   /* 이미지처럼 중앙 정렬 */
   gap: 10px;
-  padding: 6px 0 0;
+  padding-top: 6px;
 }
 
-/* ✅ 링크 아이템 */
-.megaItem{
+/* ✅ 항목 */
+#megaMenu .mega-item{
   font-weight: 800;
   font-size: 12.5px;
   color: rgba(0,0,0,.72);
@@ -1288,20 +1269,22 @@ header.topbar .topRight{
 }
 
 @media (hover:hover) and (pointer:fine){
-  .megaItem:hover{
+  #megaMenu .mega-item:hover{
     background: rgba(0,0,0,.04);
     color: rgba(0,0,0,.92);
   }
 }
 
-/* ✅ 반응형: 폭이 좁아지면 3열/2열로 떨어지게 */
+/* ✅ 반응형 */
 @media (max-width: 1200px){
-  .megaCols{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .megaCol:nth-child(4){ border-left: none; } /* 줄바꿈 라인 보정 */
+  #megaMenu .mega-inner{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+  #megaMenu .mega-col:nth-child(4){ border-left: none; }
 }
 @media (max-width: 760px){
-  .megaCols{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .megaCol:nth-child(3),
-  .megaCol:nth-child(5){ border-left: none; }
+  #megaMenu .mega-inner{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+  #megaMenu .mega-col:nth-child(3),
+  #megaMenu .mega-col:nth-child(5){ border-left: none; }
 }
+
+
 
