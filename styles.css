@@ -1068,121 +1068,163 @@ header.topbar .topRight{
 
 
 /* =========================================================
-   ✅ APPLE-LIKE TOPBAR + MEGA MENU FINAL
-   - 상단바는 애플 스타일 유지
-   - 메가메뉴는 예시 1의 가로 6컬럼 레이아웃 강제
+   ✅ [FIXED] APPLE-LIKE TOPBAR + REAL MEGA MENU (HTML 구조 반영)
+   - .topInner 제거 -> 기존 .topCenter 활용
+   - 메가메뉴: 예시 2처럼 화면 전체 너비(Full Width) 적용
    ========================================================= */
 
-/* 1) 상단바: 애플 공식 홈페이지 감성 */
+/* 1) 상단바: 애플 스타일 (기존 HTML 구조인 brand, topCenter, topRight 유지) */
 header.topbar {
-  background: rgba(245, 245, 247, 0.85) !important;
+  height: 54px !important; /* 높이 약간 조정 */
+  background: rgba(255, 255, 255, 0.85) !important; /* 깨끗한 화이트 톤 */
   backdrop-filter: saturate(180%) blur(20px) !important;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
-  height: 52px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12) !important;
+  
+  /* Flex 레이아웃 재정렬 */
   display: flex !important;
   align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 24px !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* 로고 영역 */
+header.topbar .brand {
+  flex: 0 0 160px !important; /* 왼쪽 너비 고정 */
+}
+
+/* 중앙 탭 영역 (화면 중앙 정렬) */
+header.topbar .topCenter {
+  flex: 1 !important;
+  display: flex !important;
   justify-content: center !important;
-  padding: 0 !important;
+  position: static !important; /* 메가메뉴가 화면 전체 기준이 되도록 static 설정 */
 }
 
-header.topbar .topInner {
-  max-width: 1400px !important; /* 탭과 메가메뉴가 정렬될 기준 폭 */
-  width: 100% !important;
-  display: grid !important;
-  grid-template-columns: 160px 1fr 160px !important;
-  align-items: center !important;
-  padding: 0 20px !important;
-  position: relative !important;
+/* 우측 영역 */
+header.topbar .topRight {
+  flex: 0 0 160px !important; /* 오른쪽 너비 고정 (로고와 대칭) */
 }
 
-/* 2) 탭 스타일 (애플 스타일) */
+
+/* 2) 탭 스타일 (2번 사진처럼 심플한 텍스트) */
 #topTabs.topTabs {
   background: transparent !important;
-  border: 0 !important;
+  border: none !important;
   box-shadow: none !important;
   display: flex !important;
-  justify-content: center !important;
-  gap: 40px !important; /* 탭 사이 간격 */
+  gap: 40px !important; /* 탭 간격 넓게 */
+  padding: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  overflow: visible !important;
 }
 
-#topTabs .topTab, #topTabs button {
+#topTabs .topTab, 
+#topTabs button {
   font-size: 13px !important;
-  font-weight: 500 !important;
-  color: rgba(0,0,0,0.8) !important;
-  padding: 10px 0 !important;
+  font-weight: 600 !important;
+  color: #333 !important;
   background: transparent !important;
-  border: 0 !important;
-  position: relative !important;
-  cursor: pointer !important;
+  border: none !important;
+  padding: 18px 0 !important; /* 상하 여백으로 클릭 영역 확보 */
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
 
-/* 활성화 시 밑줄 효과 */
+/* 호버 시 색상 변경 */
+#topTabs .topTab:hover {
+  color: #000 !important;
+}
+
+/* 활성화 시 짧은 밑줄 (애플 스타일) */
 #topTabs .topTab.active::after {
   content: "";
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px; /* 텍스트 너비만큼만 짧게 */
   height: 2px;
   background: #000;
+  border-radius: 2px;
 }
 
-/* 3) 메가메뉴: 예시 1의 가로 6컬럼 레이아웃 */
+
+/* 3) 메가메뉴: 예시 2번 스타일 (Full Width Grid) */
 #megaMenu.mega-menu {
-  position: absolute !important;
-  top: 52px !important; /* 상단바 바로 밑 */
-  left: 50% !important;
-  transform: translateX(-50%) !important;
+  /* 위치 및 크기 강제 설정 */
+  position: fixed !important; /* 화면 기준 고정 */
+  top: 54px !important; /* 헤더 높이만큼 띄움 */
+  left: 0 !important;
+  right: 0 !important;
   width: 100% !important;
-  max-width: 1400px !important; /* topInner와 동일하게 맞춤 */
+  max-width: 100% !important;
   
-  background: #fff !important;
-  border: 1px solid rgba(0,0,0,0.1) !important;
-  border-top: none !important;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+  /* 디자인 */
+  background: #fff !important; /* 완전 불투명 흰색 */
+  border-bottom: 1px solid rgba(0,0,0,0.1) !important;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08) !important;
   
-  display: none !important; /* 기본 숨김 */
-  grid-template-columns: repeat(6, 1fr) !important; /* 6컬럼 강제 */
-  gap: 0 !important;
-  padding: 25px 0 !important;
-  z-index: 5000 !important;
+  /* 그리드 레이아웃 */
+  display: none !important;
+  justify-content: center !important; /* 그리드 전체를 화면 중앙에 */
+  padding: 40px 0 60px 0 !important; /* 상하 여백 넉넉하게 */
+  z-index: 999 !important;
 }
 
+/* 열림 상태 */
 #megaMenu.mega-menu.open {
-  display: grid !important;
+  display: flex !important; /* 내부 컨텐츠 중앙 정렬을 위해 flex 사용 */
 }
 
-/* 메가메뉴 내부 컬럼/아이템 */
+/* 메가메뉴 내부 그리드 컨테이너 (실제 내용물) */
+/* JS가 그리드를 직접 제어한다면 이 가상 선택자가 중요 */
+#megaMenu.mega-menu {
+  display: none !important;
+}
+#megaMenu.mega-menu.open {
+  display: grid !important; /* 여기서 Grid로 변경 */
+  grid-template-columns: repeat(6, 180px) !important; /* 6개 컬럼, 각 180px 너비 */
+  justify-content: center !important; /* 화면 중앙 정렬 */
+  gap: 20px !important;
+}
+
+/* 각 컬럼 스타일 */
 #megaMenu .mega-col {
-  border-left: 1px solid rgba(0,0,0,0.05) !important;
-  padding: 0 20px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
+  border: none !important; /* 세로선 제거 (예시 2처럼 깔끔하게) */
+  padding: 0 !important;
+  text-align: left !important; /* 텍스트 왼쪽 정렬 */
 }
 
-#megaMenu .mega-col:first-child { border-left: none !important; }
-
+/* 대분류 제목 (예: 전자메일, 게시판...) */
 #megaMenu .mega-col-title {
-  font-size: 14px !important;
+  font-size: 13px !important;
   font-weight: 700 !important;
-  margin-bottom: 15px !important;
-  color: #1d1d1f !important;
+  color: #888 !important; /* 연한 회색 타이틀 */
+  margin-bottom: 16px !important;
+  padding-left: 10px !important;
 }
 
+/* 하위 메뉴 아이템 */
 #megaMenu .mega-item {
-  font-size: 13px !important;
-  color: #515154 !important;
-  padding: 6px 0 !important;
-  text-align: center !important;
-  width: 100% !important;
+  display: block !important;
+  font-size: 14px !important;
+  color: #1d1d1f !important; /* 진한 본문색 */
+  padding: 6px 10px !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
 }
 
 #megaMenu .mega-item:hover {
   color: #0066cc !important;
-  text-decoration: underline !important;
+  background: rgba(0,0,0,0.03) !important; /* 살짝 배경 깔림 */
+  border-radius: 8px !important;
 }
-
 
 
 
