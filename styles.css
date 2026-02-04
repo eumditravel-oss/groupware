@@ -53,7 +53,7 @@
   /* ✅ TOPBAR 가로폭/탭폭 조절은 여기만 만지면 됨 */
   --topbarMaxW: 3400px;   /* header.topbar .topInner 최대폭 */
   --navMaxW: 3400px;      /* .navWrap 최대폭 */
-  --topTabsGap: 100px;     /* 탭 간격 */
+  --topTabsGap: 200px;     /* 탭 간격 */
 }
 
 /* =========================
