@@ -2950,6 +2950,63 @@ async function boot(){
   // route
   window.addEventListener("hashchange", render);
 
+
+
+   /***********************
+ * ✅ MegaMenu close + Route transition
+ ***********************/
+function getMegaMenuEl(){
+  return document.getElementById("megaMenu");
+}
+
+function closeMegaMenu(){
+  const mm = getMegaMenuEl();
+  if (!mm) return;
+  mm.classList.remove("open");
+}
+
+function openRouteTransition(){
+  document.body.classList.add("routeChanging");
+}
+
+function closeRouteTransition(){
+  document.body.classList.remove("routeChanging");
+}
+
+/* 1) 메가메뉴 안의 항목 클릭 → hash 이동 + 메가메뉴 닫기 */
+document.addEventListener("click", (e) => {
+  const item = e.target.closest("#megaMenu .mega-item");
+  if (!item) return;
+
+  // ✅ mega-item에 data-hash="#전자결재/ea-sent" 같은 값이 있다고 가정
+  const hash = item.getAttribute("data-hash");
+  if (!hash) {
+    // data-hash가 없으면 그냥 메뉴 닫기만
+    closeMegaMenu();
+    return;
+  }
+
+  // 이동 “느낌”용 전환 시작
+  openRouteTransition();
+
+  // hash 이동
+  if (location.hash !== hash) location.hash = hash;
+
+  // 메뉴 닫기
+  closeMegaMenu();
+});
+
+/* 2) 해시가 바뀌면 항상 메가메뉴 닫기 + 전환 마무리 */
+window.addEventListener("hashchange", () => {
+  closeMegaMenu();
+
+  // 라우트 렌더링이 동기든 비동기든 일단 짧게 페이드 후 풀어줌
+  setTimeout(() => {
+    closeRouteTransition();
+  }, 180);
+});
+
+
   // default route (탭/서브 구조)
   if (!location.hash) setHash("대쉬보드", "home");
 
