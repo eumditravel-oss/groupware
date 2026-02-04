@@ -251,9 +251,16 @@ header.topbar .topRight{
   bottom: 6px !important;
   height: 2px !important;
   border-radius: 999px !important;
-  background: rgba(0,0,0,.82) !important;
+  background: var(--accent) !important; /* ✅ 주황색으로 변경 */
   opacity: 1 !important;
 }
+
+#topTabs .topTab.active,
+#topTabs .top-tab.active{
+  color: var(--accent) !important;
+}
+
+
 
 /* MEGA MENU: 화면 전체가 아니라 "중앙 패널"로 */
 #megaMenu.mega-menu{
