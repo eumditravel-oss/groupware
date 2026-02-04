@@ -1238,7 +1238,7 @@ header.topbar .topRight{
 .navWrap{
   position: relative !important;
   width: auto !important;
-  max-width: 1400px !important;   /* ✅ 빨간 박스 폭 느낌 */
+  max-width: 2000px !important;   /* ✅ 빨간 박스 폭 느낌 */
   margin: 0 auto !important;
 }
 
