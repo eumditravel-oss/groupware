@@ -273,6 +273,8 @@ header.topbar .topRight{
   transition: opacity .14s ease, transform .14s ease !important;
 }
 
+
+
 #megaMenu.mega-menu.open{
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -306,13 +308,14 @@ header.topbar .topRight{
   border-left: 1px solid rgba(0,0,0,.10) !important;
 }
 
+/* ✅ 메가메뉴 컬럼 타이틀(초록 박스 텍스트) 제거 */
 #megaMenu .mega-col-title{
-  font-weight: 900 !important;
-  font-size: 13px !important;
-  color: rgba(0,0,0,.78) !important;
-  margin: 2px 0 10px !important;
-  text-align: center !important;
+  display:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  height:0 !important;
 }
+
 
 #megaMenu .mega-col-items{
   display: flex !important;
@@ -322,7 +325,7 @@ header.topbar .topRight{
   padding-top: 6px !important;
 }
 
-/* mega item: pill 형태 */
+/* ✅ mega item: pill 제거 → 텍스트만 */
 #megaMenu .mega-item{
   font-weight: 800 !important;
   font-size: 12.5px !important;
@@ -330,20 +333,23 @@ header.topbar .topRight{
   cursor: pointer !important;
   white-space: nowrap !important;
 
-  padding: 7px 12px !important;
-  border-radius: 999px !important;
-  border: 1px solid rgba(0,0,0,.10) !important;
-  background: rgba(255,255,255,.98) !important;
+  padding: 6px 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
 
-  transition: background .12s ease, color .12s ease, border-color .12s ease !important;
+  transition: color .12s ease, text-decoration-color .12s ease !important;
+  text-decoration: none !important;
 }
+
 @media (hover:hover) and (pointer:fine){
   #megaMenu .mega-item:hover{
-    background: rgba(0,0,0,.04) !important;
-    color: rgba(0,0,0,.92) !important;
-    border-color: rgba(0,0,0,.16) !important;
+    color: rgba(0,0,0,.95) !important;
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
   }
 }
+
 
 /* 반응형 컬럼 */
 @media (max-width: 1200px){
