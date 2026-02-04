@@ -1483,7 +1483,7 @@ header.topbar .topInner{
 
 /* 4) navWrap 폭: 빨간 박스(탭 영역) 폭 느낌 조절(이미 FINAL에 있지만 여기서도 1:1로 고정) */
 .navWrap{
-  max-width: 2000px !important; /* ← 필요 시 1400~2400 사이로 조절 */
+  max-width: 3000px !important; /* ← 필요 시 1400~2400 사이로 조절 */
   margin: 0 auto !important;
 }
 
