@@ -54,9 +54,6 @@
   --topbarMaxW: 3000px;   /* header.topbar .topInner 최대폭 */
   --navMaxW: 3000px;      /* .navWrap 최대폭 */
   --topTabsGap: 160px;     /* 탭 간격 */
-
-  --appW: 1680px; /* ✅ 지금 풀화면 기준으로 고정하고 싶은 UI 폭(원하는 값으로 조절) */
-
 }
 
 /* =========================
@@ -133,7 +130,7 @@ header.topbar{
 /* index.html에 topInner가 있으면 이것이 “가로폭 기준” */
 header.topbar .topInner{
   width: 100% !important;
-  max-width: var(--appW) !important;  /* ✅ 기존 --topbarMaxW 대신 고정폭 */
+  max-width: var(--topbarMaxW) !important;
   margin: 0 auto !important;
 
   height: 52px !important;
@@ -186,10 +183,9 @@ header.topbar .topRight{
 .navWrap{
   position: relative !important;
   width: auto !important;
-  max-width: var(--appW) !important;  /* ✅ 기존 --navMaxW 대신 고정폭 */
+  max-width: var(--navMaxW) !important;
   margin: 0 auto !important;
 }
-
 
 /* TOP TABS: pill 제거 + 간격 균등 */
 #topTabs.topTabs{
@@ -377,15 +373,13 @@ header.topbar .topRight{
 ========================= */
 .app{
   display:flex;
+
+  /* ✅ 앱 전체 세로 스크롤은 body가 담당하도록: app은 overflow 금지 */
   overflow: visible;
 
-  width: var(--appW);          /* ✅ 고정 폭 */
-  min-width: var(--appW);      /* ✅ 창이 줄면 가로 스크롤 */
-  margin: 0 auto;              /* ✅ 큰 화면에서 중앙정렬 */
-
   min-height: 100vh;
+  min-width: calc(var(--sideW) + var(--minMainW));
 }
-
 
 /* 왼쪽 */
 .side{
@@ -1263,17 +1257,3 @@ body.routeChanging .view{
 .main, .view{
   transition: opacity .16s ease, transform .16s ease;
 }
-
-/* =========================================================
-   ✅ 레이아웃 고정(창 크기 변화에도 현재 풀화면 기준 유지)
-   - 반응형(1열 변경) 무력화
-========================================================= */
-.dashRow3{ grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-.dashRow2{ grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-
-.split{ grid-template-columns: 260px 1fr !important; }
-.dash{ grid-template-columns: 320px 1fr !important; }
-
-.main{ padding: 16px 18px 26px !important; }
-
-
