@@ -51,9 +51,9 @@
   --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%236b6b73' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
 
   /* ✅ TOPBAR 가로폭/탭폭 조절은 여기만 만지면 됨 */
-  --topbarMaxW: 3000px;   /* header.topbar .topInner 최대폭 */
-  --navMaxW: 3000px;      /* .navWrap 최대폭 */
-  --topTabsGap: 36px;     /* 탭 간격 */
+  --topbarMaxW: 3400px;   /* header.topbar .topInner 최대폭 */
+  --navMaxW: 3400px;      /* .navWrap 최대폭 */
+  --topTabsGap: 50px;     /* 탭 간격 */
 }
 
 /* =========================
