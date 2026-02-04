@@ -1415,4 +1415,75 @@ header.topbar .topRight{
   #megaMenu .mega-col:nth-child(5){ border-left: none !important; }
 }
 
+/* =========================================================
+   ✅ CLEAN PATCH (Paste-only)
+   - 목표: 기존 TOPBAR/TopTabs(초기버전) 중복설정 무력화
+   - Apple-like Topbar(OVERRIDE/FINAL)는 그대로 사용
+   - 탭 간격은 여기서만 조절(1:1)
+========================================================= */
+
+/* 0) (중요) topTabs 버튼: "초기 버전의 큰 padding"을 확실히 제거 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button,
+#topTabs a{
+  /* 초기 TOPBAR 섹션의 패딩/배경/보더/그림자 영향 제거 */
+  padding: 10px 2px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  /* 혹시 초기 정의의 display:flex + gap 등이 섞여도 무시 */
+  flex: 0 0 auto !important;
+  width: auto !important;
+
+  white-space: nowrap !important;
+}
+
+/* 1) topTabs 컨테이너: "초기 버전의 pill 바(배경/보더/패딩/스크롤)" 완전 제거 */
+#topTabs.topTabs{
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  padding: 0 !important;
+  overflow: visible !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  /* ✅ 탭 간격은 여기서만 조절하세요 */
+  gap: 36px !important; /* ← 원하는 값으로 조절 (예: 24~48) */
+}
+
+/* 2) topbar 내부 정렬: FINAL 기준으로 고정(초기 topRight width:12 영향 차단) */
+header.topbar .topRight{
+  width: 160px !important;
+}
+
+/* 3) topInner 중복 방지:
+   - topInner가 HTML에 실제로 없으면 아래는 영향 없음
+   - 있다면 FINAL 기준 폭을 여기서 확실히 고정 */
+header.topbar .topInner{
+  width: 100% !important;
+  max-width: 2200px !important; /* ← 빨간 박스(상단 바) 전체 폭 느낌 조절 */
+  margin: 0 auto !important;
+
+  height: 52px !important;
+  display: grid !important;
+  grid-template-columns: 160px 1fr 160px !important;
+  align-items: center !important;
+
+  padding: 0 18px !important;
+  gap: 12px !important;
+}
+
+/* 4) navWrap 폭: 빨간 박스(탭 영역) 폭 느낌 조절(이미 FINAL에 있지만 여기서도 1:1로 고정) */
+.navWrap{
+  max-width: 2000px !important; /* ← 필요 시 1400~2400 사이로 조절 */
+  margin: 0 auto !important;
+}
 
