@@ -1469,7 +1469,7 @@ header.topbar .topRight{
    - 있다면 FINAL 기준 폭을 여기서 확실히 고정 */
 header.topbar .topInner{
   width: 100% !important;
-  max-width: 2200px !important; /* ← 빨간 박스(상단 바) 전체 폭 느낌 조절 */
+  max-width: 3000px !important; /* ← 빨간 박스(상단 바) 전체 폭 느낌 조절 */
   margin: 0 auto !important;
 
   height: 52px !important;
