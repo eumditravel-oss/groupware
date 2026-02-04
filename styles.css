@@ -1173,118 +1173,246 @@ header.topbar .topRight{
 
 
 /* =========================================================
-   ✅ MEGA MENU (index.html 구조 기준)
-   - navWrap 안에서 topTabs 아래로 “그대로” 떨어지는 드롭다운
-   - 이미지처럼: 흰 패널 + 6컬럼 + 세로 라인 + 중앙정렬
+   ✅ FINAL OVERRIDE: Apple-like Topbar + Centered Mega Panel
+   - 목표: 2번째 이미지(빨간 박스) 형태
+   - 기존 중복 정의 충돌을 "맨 아래에서" 강제 덮어쓰기
 ========================================================= */
 
-/* ✅ navWrap: 탭과 메가메뉴가 같은 기준폭을 공유하도록 */
+/* TOPBAR: 얇고 깔끔한 바 */
+header.topbar{
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 200 !important;
+
+  padding: 0 !important;
+  height: 52px !important;
+
+  background: rgba(245,245,247,.92) !important;
+  backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid rgba(0,0,0,.08) !important;
+
+  display: flex !important;
+  align-items: center !important;
+}
+
+/* index.html에 추가한 topInner 기준 폭 */
+header.topbar .topInner{
+  width: 100% !important;
+  max-width: 2200px !important;
+  margin: 0 auto !important;
+
+  height: 52px !important;
+  display: grid !important;
+  grid-template-columns: 160px 1fr 160px !important;
+  align-items: center !important;
+
+  padding: 0 18px !important;
+  gap: 12px !important;
+}
+
+/* 로고 영역 */
+header.topbar .brand{
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+.logoImg{
+  width: 120px !important;
+  height: 34px !important;
+  object-fit: contain !important;
+}
+
+/* 가운데: 탭 중앙정렬 */
+header.topbar .topCenter{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+}
+
+/* 오른쪽 빈 영역(유지) */
+header.topbar .topRight{
+  width: 160px !important;
+}
+
+/* navWrap: mega-menu 위치 기준 */
 .navWrap{
-  position: relative;
-  width: 100%;
-  max-width: 2200px; /* topInner 느낌으로 넓게 */
-  margin: 0 auto;
+  position: relative !important;
+  width: auto !important;
+  max-width: 1400px !important;   /* ✅ 빨간 박스 폭 느낌 */
+  margin: 0 auto !important;
 }
 
-/* ✅ mega menu: topTabs 바로 아래에 뜨는 overlay */
-#megaMenu.mega-menu{
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 52px;             /* topbar 높이(너 오버라이드에서 topInner 52px 기준) */
-  z-index: 120;
+/* TOP TABS: pill 제거 + 간격 균등 */
+#topTabs.topTabs{
+  width: auto !important;
+  max-width: 100% !important;
 
-  padding-top: 10px;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 
-  opacity: 0;
-  transform: translateY(-6px);
-  pointer-events: none;
-  transition: opacity .14s ease, transform .14s ease;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 36px !important;
+  padding: 0 !important;
+
+  overflow: visible !important;
 }
 
-/* ✅ 열림 상태 */
-#megaMenu.mega-menu.open{
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
+/* 탭 버튼: 단순 텍스트 + active 밑줄 */
+#topTabs .topTab,
+#topTabs .top-tab,
+#topTabs button,
+#topTabs a{
+  position: relative !important;
 
-/* ✅ 내부 흰 패널 (이미지 큰 박스) */
-#megaMenu .mega-inner{
-  background: rgba(255,255,255,.98);
-  border: 1px solid rgba(0,0,0,.10);
-  border-radius: 18px;
-  box-shadow: 0 18px 55px rgba(0,0,0,.12);
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 
-  padding: 22px 20px;
+  padding: 10px 2px !important;
+  font-weight: 800 !important;
+  font-size: 12.5px !important;
+  color: rgba(0,0,0,.82) !important;
 
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0; /* 세로 라인으로 구분 */
-
-  /* 너무 길면 패널 내부만 스크롤 */
-  max-height: min(72vh, 720px);
-  overflow: auto;
-}
-
-/* ✅ 각 컬럼 */
-#megaMenu .mega-col{
-  padding: 4px 22px 10px;
-  min-width: 0;
-}
-
-/* ✅ 세로 라인 */
-#megaMenu .mega-col + .mega-col{
-  border-left: 1px solid rgba(0,0,0,.10);
-}
-
-/* ✅ 컬럼 타이틀(대분류명) */
-#megaMenu .mega-col-title{
-  font-weight: 900;
-  font-size: 13px;
-  color: rgba(0,0,0,.78);
-  margin: 2px 0 10px;
-  text-align: center;
-}
-
-/* ✅ 항목 리스트 */
-#megaMenu .mega-col-items{
-  display: flex;
-  flex-direction: column;
-  align-items: center;   /* 이미지처럼 중앙 정렬 */
-  gap: 10px;
-  padding-top: 6px;
-}
-
-/* ✅ 항목 */
-#megaMenu .mega-item{
-  font-weight: 800;
-  font-size: 12.5px;
-  color: rgba(0,0,0,.72);
-  cursor: pointer;
-  white-space: nowrap;
-  padding: 6px 10px;
-  border-radius: 10px;
-  transition: background .12s ease, color .12s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
 }
 
 @media (hover:hover) and (pointer:fine){
-  #megaMenu .mega-item:hover{
-    background: rgba(0,0,0,.04);
-    color: rgba(0,0,0,.92);
+  #topTabs .topTab:hover,
+  #topTabs .top-tab:hover,
+  #topTabs button:hover,
+  #topTabs a:hover{
+    color: rgba(0,0,0,.95) !important;
   }
 }
 
-/* ✅ 반응형 */
-@media (max-width: 1200px){
-  #megaMenu .mega-inner{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-  #megaMenu .mega-col:nth-child(4){ border-left: none; }
-}
-@media (max-width: 760px){
-  #megaMenu .mega-inner{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-  #megaMenu .mega-col:nth-child(3),
-  #megaMenu .mega-col:nth-child(5){ border-left: none; }
+#topTabs .topTab.active::after,
+#topTabs .top-tab.active::after{
+  content:"" !important;
+  position:absolute !important;
+  left: 20% !important;
+  right: 20% !important;
+  bottom: 6px !important;
+  height: 2px !important;
+  border-radius: 999px !important;
+  background: rgba(0,0,0,.82) !important;
+  opacity: 1 !important;
 }
 
+/* MEGA MENU: 화면 전체가 아니라 "중앙 패널"로 */
+#megaMenu.mega-menu{
+  position: absolute !important;
+
+  /* ✅ navWrap 중앙 기준으로 패널이 뜨게 */
+  left: 50% !important;
+  right: auto !important;
+  top: 52px !important;
+
+  transform: translate(-50%, -6px) !important;
+
+  z-index: 300 !important;
+  padding-top: 10px !important;
+
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity .14s ease, transform .14s ease !important;
+}
+
+#megaMenu.mega-menu.open{
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  transform: translate(-50%, 0) !important;
+}
+
+/* mega-inner: 6컬럼 + 세로라인 + 중앙정렬(빨간 박스 핵심) */
+#megaMenu .mega-inner{
+  width: min(1400px, calc(100vw - 340px)) !important; /* ✅ 좌측 사이드바 감안한 폭 */
+  background: rgba(255,255,255,.98) !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 18px 55px rgba(0,0,0,.12) !important;
+
+  padding: 22px 20px !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+
+  max-height: min(72vh, 720px) !important;
+  overflow: auto !important;
+}
+
+#megaMenu .mega-col{
+  padding: 4px 22px 10px !important;
+  min-width: 0 !important;
+}
+
+#megaMenu .mega-col + .mega-col{
+  border-left: 1px solid rgba(0,0,0,.10) !important;
+}
+
+#megaMenu .mega-col-title{
+  font-weight: 900 !important;
+  font-size: 13px !important;
+  color: rgba(0,0,0,.78) !important;
+  margin: 2px 0 10px !important;
+  text-align: center !important;
+}
+
+#megaMenu .mega-col-items{
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding-top: 6px !important;
+}
+
+/* mega item: pill 형태 */
+#megaMenu .mega-item{
+  font-weight: 800 !important;
+  font-size: 12.5px !important;
+  color: rgba(0,0,0,.72) !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+
+  padding: 7px 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(0,0,0,.10) !important;
+  background: rgba(255,255,255,.98) !important;
+
+  transition: background .12s ease, color .12s ease, border-color .12s ease !important;
+}
+@media (hover:hover) and (pointer:fine){
+  #megaMenu .mega-item:hover{
+    background: rgba(0,0,0,.04) !important;
+    color: rgba(0,0,0,.92) !important;
+    border-color: rgba(0,0,0,.16) !important;
+  }
+}
+
+/* 반응형 컬럼 */
+@media (max-width: 1200px){
+  #megaMenu .mega-inner{
+    grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+    width: min(980px, calc(100vw - 60px)) !important;
+  }
+  #megaMenu .mega-col:nth-child(4){ border-left: none !important; }
+}
+@media (max-width: 760px){
+  #megaMenu .mega-inner{
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    width: min(720px, calc(100vw - 40px)) !important;
+  }
+  #megaMenu .mega-col:nth-child(3),
+  #megaMenu .mega-col:nth-child(5){ border-left: none !important; }
+}
 
 
