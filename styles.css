@@ -1191,3 +1191,17 @@ header.topbar .topRight{
 .modal{
   overflow: auto !important;
 }
+
+
+/* ✅ 라우트 전환 느낌 (짧은 fade + 살짝 아래에서 올라오기) */
+body.routeChanging .main,
+body.routeChanging .view{
+  opacity: .35;
+  transform: translateY(6px);
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+.main, .view{
+  transition: opacity .16s ease, transform .16s ease;
+}
+
