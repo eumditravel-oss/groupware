@@ -281,7 +281,7 @@ header.topbar .topRight{
 
 /* mega-inner: 6컬럼 + 세로라인 + 중앙정렬 */
 #megaMenu .mega-inner{
-  width: min(1250px, calc(100vw - 360px)) !important; /* ✅ 좌측 사이드바 감안한 폭 */
+  width: min(1270px, calc(100vw - 360px)) !important; /* ✅ 좌측 사이드바 감안한 폭 */
   background: rgba(255,255,255,.98) !important;
   border: 1px solid rgba(0,0,0,.10) !important;
   border-radius: 18px !important;
