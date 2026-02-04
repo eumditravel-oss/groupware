@@ -736,19 +736,23 @@ header.topbar .topRight{
 }
 .dashCardHead > *{ min-width:0; }
 
+/* ✅ 대쉬보드 타이틀도 동일하게: 좌측 바 + 텍스트 */
 .dashCardTitleLink{
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(0,0,0,.06);
-  box-shadow: 0 8px 18px rgba(0,0,0,.04);
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
 
-  padding: 8px 12px;
-  border-radius: 16px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
 
   cursor: pointer;
   font-weight: 1100;
   font-size: 16px;
   letter-spacing: -0.2px;
-  color: var(--ink);
+  color: rgba(0,0,0,.86);
 
   max-width:100%;
   min-width:0;
@@ -756,6 +760,23 @@ header.topbar .topRight{
   overflow:hidden;
   text-overflow:ellipsis;
 }
+
+.dashCardTitleLink::before{
+  content:"";
+  width: 6px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--accent);
+  flex: 0 0 auto;
+  opacity: .95;
+}
+
+@media (hover:hover) and (pointer:fine){
+  .dashCardTitleLink:hover{
+    color: rgba(0,0,0,.95);
+  }
+}
+
 
 @media (hover:hover) and (pointer:fine){
   .dashCardTitleLink:hover{
